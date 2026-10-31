@@ -1,0 +1,139 @@
+---
+import { LayoutTemplate, Download, RotateCcw } from '@lucide/astro';
+
+const blocks = [
+  { key: 'problem', label: '01 · ปัญหา', ph: 'ผู้ใช้เจ็บอะไร และตอนนี้แก้อย่างไร' },
+  { key: 'users', label: '02 · ผู้ใช้', ph: 'ใครคือผู้ใช้หลัก ปริมาณ และบริบทการใช้งาน' },
+  { key: 'metric', label: '03 · ความสำเร็จ', ph: 'วัดอะไร ตัวเลขเท่าไรจึงถือว่าสำเร็จ' },
+  { key: 'data', label: '04 · ข้อมูล', ph: 'แหล่งข้อมูล สิทธิ์ ความสด และข้อจำกัด' },
+  { key: 'model', label: '05 · โมเดล', ph: 'เลือกอะไร baseline และเหตุผล' },
+  { key: 'context', label: '06 · Retrieval / Context', ph: 'ต้องดึงอะไร เข้า context อย่างไร' },
+  { key: 'orchestration', label: '07 · Orchestration', ph: 'ลำดับการเรียก tools, fallback, retry' },
+  { key: 'guardrails', label: '08 · Guardrails', ph: 'ความเสี่ยง ผลกระทบ และการป้องกัน' },
+  { key: 'ops', label: '09 · Observability & Cost', ph: 'log อะไร ต้นทุน/latency เป้าหมายเท่าไร' }
+];
+---
+
+<section class="lab" data-canvas-lab>
+  <div class="lab__bar">
+    <span>AI SYSTEM DESIGN CANVAS / 9 BLOCKS</span>
+    <strong data-sl-status>0 / 9</strong>
+  </div>
+  <div class="lab__body">
+    <div class="lab__grid lab__grid--side">
+      <div class="canvas-grid">
+        {blocks.map((b) => (
+          <div class="lab__field canvas-cell">
+            <label for={`sc-${b.key}`}>{b.label}</label>
+            <textarea id={`sc-${b.key}`} class="textarea" rows="2" data-sc={b.key} placeholder={b.ph}></textarea>
+          </div>
+        ))}
+      </div>
+
+      <div>
+        <div class="lab__result">
+          <p class="mono tiny faint">DESIGN READINESS</p>
+          <p class="lab__score" data-sl-score>0<small>%</small></p>
+          <div class="lab__meter"><span data-sl-meter></span></div>
+          <ul class="lab__checklist" data-sl-checks></ul>
+        </div>
+        <div class="lab__actions">
+          <button type="button" class="btn btn--primary btn--small" data-sl-export><LayoutTemplate size={13} /> สร้าง design brief</button>
+          <button type="button" class="btn btn--ghost btn--small" data-sl-download><Download size={13} /> ดาวน์โหลด .md</button>
+          <button type="button" class="btn btn--ghost btn--small" data-sl-reset><RotateCcw size={13} /> ล้าง</button>
+        </div>
+        <pre class="lab__output" data-sl-output hidden></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-canvas-lab]')!;
+  if (root) {
+    const KEY = 'aie:lab:canvas';
+    const areas = [...root.querySelectorAll<HTMLTextAreaElement>('[data-sc]')];
+    const scoreEl = root.querySelector<HTMLElement>('[data-sl-score]');
+    const meter = root.querySelector<HTMLElement>('[data-sl-meter]');
+    const checks = root.querySelector<HTMLElement>('[data-sl-checks]');
+    const output = root.querySelector<HTMLElement>('[data-sl-output]');
+    const status = root.querySelector<HTMLElement>('[data-sl-status]');
+
+    const required = [
+      ['problem', 'ระบุปัญหาและทางแก้ปัจจุบัน'],
+      ['users', 'รู้ผู้ใช้และบริบท'],
+      ['metric', 'มีตัวชี้วัดความสำเร็จ'],
+      ['data', 'ระบุแหล่งข้อมูลและสิทธิ์'],
+      ['model', 'เลือกโมเดลพร้อมเหตุผล'],
+      ['guardrails', 'คิดถึงความเสี่ยงและ guardrail'],
+      ['ops', 'มีแผน observability และต้นทุน']
+    ];
+
+    function values() {
+      return Object.fromEntries(areas.map((a) => [a.dataset.sc || '', a.value.trim()]));
+    }
+    function update() {
+      const v = values();
+      const filled = areas.filter((a) => a.value.trim().length >= 8).length;
+      const passed = required.filter(([key]) => (v[key] || '').length >= 8).length;
+      const pct = Math.round((passed / required.length) * 100);
+      if (scoreEl) scoreEl.innerHTML = `${pct}<small>%</small>`;
+      if (meter) meter.style.width = pct + '%';
+      if (status) status.textContent = `${filled} / 9`;
+      if (checks) {
+        checks.innerHTML = required.map(([key, label]) => `<li class="${(v[key] || '').length >= 8 ? 'is-pass' : 'is-fail'}"><span class="mark">✓</span><span>${label}</span></li>`).join('');
+      }
+      try { localStorage.setItem(KEY, JSON.stringify(v)); } catch {}
+      return v;
+    }
+    function markdown() {
+      const v = update();
+      const titles = Object.fromEntries(areas.map((a) => [a.dataset.sc || '', a.closest('.canvas-cell')?.querySelector('label')?.textContent || a.dataset.sc]));
+      return `# AI System Design Brief
+
+${areas.map((a) => `## ${titles[a.dataset.sc || '']}\n${v[a.dataset.sc || ''] || '_ยังไม่ระบุ_'}`).join('\n\n')}
+
+## Decision log
+- Baseline ที่จะเทียบ:
+- ทางเลือกที่ตัดทิ้งและเหตุผล:
+- ความเสี่ยงที่ยอมรับได้:
+- สิ่งที่จะวัดใน 2 สัปดาห์แรก:
+
+---
+สร้างด้วย Road to AI Engineer · AI System Design Canvas`;
+    }
+    root.querySelector('[data-sl-export]')?.addEventListener('click', () => {
+      if (!output) return;
+      output.hidden = false;
+      output.textContent = markdown();
+      output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    root.querySelector('[data-sl-download]')?.addEventListener('click', () => {
+      const blob = new Blob([markdown()], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'ai-system-brief.md';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    root.querySelector('[data-sl-reset]')?.addEventListener('click', () => {
+      areas.forEach((a) => { a.value = ''; });
+      if (output) { output.hidden = true; output.textContent = ''; }
+      try { localStorage.removeItem(KEY); } catch {}
+      update();
+    });
+    areas.forEach((a) => a.addEventListener('input', update));
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (saved) areas.forEach((a) => { a.value = saved[a.dataset.sc || ''] || ''; });
+    } catch {}
+    update();
+  }
+</script>
+
+<style>
+  .canvas-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; }
+  .canvas-cell textarea { min-height: 76px; font-size: .82rem; }
+  .canvas-cell:nth-child(9) { grid-column: 1 / -1; }
+  @media (max-width: 620px) { .canvas-grid { grid-template-columns: 1fr; } }
+</style>

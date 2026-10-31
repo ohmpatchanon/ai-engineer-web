@@ -1,0 +1,160 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Search, ArrowUpRight, Library, Funnel } from '@lucide/astro';
+import { resources, resourceCategories } from '../data/resources';
+
+const freeCount = resources.filter((r) => r.free).length;
+---
+
+<BaseLayout title="Resources" description="แหล่งเรียน AI Engineer ที่คัดสรร 49 แหล่ง: คอร์ส เอกสารทางการ หนังสือ แบบฝึกหัด เครื่องมือ และชุมชน">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">CURATED RESOURCES / {resources.length}</p>
+        <h1 class="reveal">ไม่ต้องเรียน<br />ทุกอย่างที่มี<span class="text-acid">อยู่ในอินเทอร์เน็ต</span></h1>
+        <p class="lead reveal">รายการนี้คัดจากสิ่งที่ใช้จริงและตรวจคุณภาพแล้ว ไม่ใช่ลิสต์ยาวเพื่อให้ดูครบ — แต่ละแหล่งบอกว่าควรใช้ตอนไหนและเหมาะกับใคร</p>
+      </div>
+      <div class="resources-hero panel reveal">
+        <Library size={20} class="text-acid" />
+        <p class="mono micro">SELECTION RULES</p>
+        <ul>
+          <li>มีเนื้อหาที่ลงมือทำได้ ไม่ใช่แค่ทฤษฎี</li>
+          <li>อัปเดตหรือยังใช้ได้ในปัจจุบัน</li>
+          <li>ไม่ใช่ affiliate หรือSponsored</li>
+          <li>มีเหตุผลชัดว่าควรเปิดเมื่อไร</li>
+        </ul>
+        <div class="resources-hero__stats"><strong>{resources.length}</strong><span>แหล่ง</span><strong>{freeCount}</strong><span>ฟรี</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="res-controls">
+        <div class="res-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหาชื่อ แหล่ง หรือ tag..." aria-label="ค้นหา resource" data-res-search />
+        </div>
+        <div class="res-cats" role="group" aria-label="กรองตามประเภท">
+          <button class="chip is-active" data-res-cat="all">ทั้งหมด</button>
+          {resourceCategories.map((cat) => <button class="chip" data-res-cat={cat}>{cat}</button>)}
+        </div>
+        <div class="res-free">
+          <button class="chip" data-res-free="all">ทั้งหมด</button>
+          <button class="chip" data-res-free="free">ฟรี</button>
+          <button class="chip" data-res-free="paid">มีค่าใช้จ่าย</button>
+        </div>
+        <span class="mono tiny faint" data-res-count>{resources.length} แหล่ง</span>
+      </div>
+
+      <div class="res-list" data-res-list>
+        {resources.map((resource, i) => (
+          <a href={resource.url} target="_blank" rel="noopener noreferrer" class="res-card panel panel--hover" data-res-card data-cat={resource.category} data-free={resource.free ? 'free' : 'paid'} data-title={`${resource.title} ${resource.description} ${resource.tags.join(' ')}`.toLowerCase()}>
+            <span class="res-card__num mono">{String(i + 1).padStart(2, '0')}</span>
+            <div class="res-card__main">
+              <div class="res-card__meta">
+                <span class="tag">{resource.category}</span>
+                <span class="tag">{resource.level}</span>
+                <span class:list={['tag', resource.free ? 'tag--acid' : '']}>{resource.free ? 'ฟรี' : 'มีค่าใช้จ่าย'}</span>
+              </div>
+              <h2>{resource.title}</h2>
+              <p>{resource.description}</p>
+              <div class="res-card__tags">{resource.tags.map((t) => <span class="mono">#{t}</span>)}</div>
+            </div>
+            <ArrowUpRight size={17} class="res-card__arrow" />
+          </a>
+        ))}
+      </div>
+
+      <div class="empty-state" data-res-empty hidden><p>ไม่พบแหล่งเรียนที่ตรงกับตัวกรอง</p><button class="chip" data-res-clear>ล้างตัวกรอง</button></div>
+
+      <aside class="res-note panel">
+        <Funnel size={18} class="text-acid" />
+        <div><h2>เลือกน้อยแต่อ่านจริง</h2><p>แหล่งที่ดีที่สุดคือแหล่งที่คุณเปิดอ่านวันนี้ ไม่ใช่รายการที่เซฟไว้แล้วไม่เคยกลับมา เลือกหนึ่งอย่างแล้วกำหนดวันอ่านให้ชัด</p></div>
+        <a href="/plan" class="link-arrow">ดูแผน 12 สัปดาห์ <ArrowUpRight size={12} /></a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-res-card]')];
+  const search = document.querySelector<HTMLInputElement>('[data-res-search]');
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-res-cat]')];
+  const freeBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-res-free]')];
+  const count = document.querySelector<HTMLElement>('[data-res-count]');
+  const empty = document.querySelector<HTMLElement>('[data-res-empty]');
+  const list = document.querySelector<HTMLElement>('[data-res-list]');
+  let cat = 'all';
+  let free = 'all';
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    cards.forEach((card) => {
+      const visible = (!q || (card.dataset.title || '').includes(q))
+        && (cat === 'all' || card.dataset.cat === cat)
+        && (free === 'all' || card.dataset.free === free);
+      card.hidden = !visible;
+      if (visible) shown++;
+    });
+    if (count) count.textContent = `${shown} แหล่ง`;
+    if (empty) empty.hidden = shown > 0;
+    if (list) list.hidden = shown === 0;
+  }
+  catBtns.forEach((btn) => btn.addEventListener('click', () => {
+    cat = btn.dataset.resCat || 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  freeBtns.forEach((btn) => btn.addEventListener('click', () => {
+    free = btn.dataset.resFree || 'all';
+    freeBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  search?.addEventListener('input', apply);
+  document.querySelector('[data-res-clear]')?.addEventListener('click', () => {
+    if (search) search.value = '';
+    cat = 'all'; free = 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.resCat === 'all'));
+    freeBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.resFree === 'all'));
+    apply();
+  });
+</script>
+
+<style>
+  .resources-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .6rem; align-items: flex-start; }
+  .resources-hero ul { list-style: none; display: flex; flex-direction: column; gap: .35rem; }
+  .resources-hero li { position: relative; padding-left: .85rem; color: var(--muted); font-size: .74rem; line-height: 1.5; }
+  .resources-hero li::before { content: ''; position: absolute; left: 0; top: .55em; width: 4px; height: 4px; border-radius: 50%; background: var(--acid); }
+  .resources-hero__stats { display: flex; align-items: baseline; gap: .35rem; padding-top: .6rem; border-top: 1px solid var(--line); width: 100%; }
+  .resources-hero__stats strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; }
+  .resources-hero__stats span { font-family: var(--font-mono); font-size: .55rem; color: var(--faint); margin-right: .6rem; }
+
+  .res-controls { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+  .res-search { flex: 1 1 240px; max-width: 340px; display: flex; align-items: center; gap: .55rem; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .res-search:focus-within { border-color: var(--acid); }
+  .res-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: .8rem; }
+  .res-cats, .res-free { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .res-controls > .mono { margin-left: auto; }
+
+  .res-list { display: flex; flex-direction: column; gap: .55rem; margin-top: 1.1rem; }
+  .res-card { display: grid; grid-template-columns: 34px 1fr 20px; gap: .8rem; align-items: start; padding: 1rem 1.1rem; text-decoration: none; border-radius: var(--radius); }
+  .res-card__num { color: var(--faint); font-size: .58rem; padding-top: .2rem; }
+  .res-card__meta { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .res-card h2 { margin-top: .5rem; font-family: var(--font-sans); font-size: .98rem; font-weight: 600; letter-spacing: 0; line-height: 1.45; }
+  .res-card p { margin-top: .3rem; color: var(--muted); font-size: .8rem; line-height: 1.65; max-width: 82ch; }
+  .res-card__tags { display: flex; gap: .55rem; flex-wrap: wrap; margin-top: .5rem; color: var(--faint); font-size: .53rem; }
+  .res-card__arrow { color: var(--faint); transition: transform .2s, color .2s; }
+  .res-card:hover .res-card__arrow { color: var(--acid); transform: translate(2px, -2px); }
+
+  .res-note { display: flex; align-items: center; gap: 1rem; margin-top: 1.6rem; padding: 1.2rem; border-radius: var(--radius); }
+  .res-note h2 { font-size: 1.02rem; }
+  .res-note p { margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+  .res-note .link-arrow { margin-left: auto; white-space: nowrap; }
+
+  @media (max-width: 760px) {
+    .res-controls > .mono { margin-left: 0; }
+    .res-note { flex-wrap: wrap; }
+    .res-note .link-arrow { margin-left: 0; }
+  }
+</style>

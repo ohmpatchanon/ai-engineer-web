@@ -1,0 +1,176 @@
+---
+import { ArrowUpRight, Check } from '@lucide/astro';
+import type { Module } from '../data/types';
+import { phaseColor, phaseName, levelTone } from '../lib/ui';
+
+interface Props {
+  module: Module;
+  compact?: boolean;
+  showPhase?: boolean;
+}
+const { module, compact = false, showPhase = true } = Astro.props;
+const color = phaseColor(module.phase);
+---
+<article class:list={['module-card', 'panel', 'panel--hover', `module-card--${color}`, { 'module-card--compact': compact }]} data-module-card data-id={module.id}>
+  <a href={`/modules/${module.slug}`} class="module-card__link" aria-label={`เปิดโมดูล ${module.number}: ${module.title}`}>
+    <div class="module-card__top">
+      <span class="module-card__num mono">{module.number}</span>
+      {showPhase && <span class:list={['tag', `tag--${color}`]}>{phaseName(module.phase)}</span>}
+      <span class="module-card__check" data-module-check aria-hidden="true"><Check size={12} stroke-width={3} /></span>
+      <ArrowUpRight size={16} class="module-card__arrow" />
+    </div>
+
+    <div class="module-card__body">
+      <h3>{module.title}</h3>
+      {!compact && <p class="module-card__en mono">{module.en}</p>}
+      {!compact && <p class="module-card__summary">{module.summary}</p>}
+    </div>
+
+    <div class="module-card__meta">
+      <span>{module.duration}</span>
+      <span class="dot-sep">·</span>
+      <span class:list={[`level-${levelTone[module.level]}`]}>{module.level}</span>
+      {!compact && <span class="module-card__keywords mono">{module.keywords.slice(0, 2).join(' / ')}</span>}
+    </div>
+  </a>
+</article>
+
+<script>
+  const CARDS = document.querySelectorAll<HTMLElement>('[data-module-card]');
+  const getDone = () => {
+    try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
+  };
+  function sync() {
+    const done = getDone();
+    CARDS.forEach((card) => card.classList.toggle('is-done', done.includes(card.dataset.id)));
+  }
+  sync();
+  window.addEventListener('aie:progress', sync);
+  window.addEventListener('storage', (e) => { if (e.key === 'aie:modules') sync(); });
+</script>
+
+<style>
+  .module-card {
+    position: relative;
+    overflow: hidden;
+    border-radius: var(--radius);
+  }
+
+  .module-card::after {
+    content: '';
+    position: absolute;
+    inset: auto 0 0 0;
+    height: 2px;
+    background: var(--acid);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.35s ease;
+  }
+
+  .module-card:hover::after { transform: scaleX(1); }
+  .module-card--amber::after { background: var(--amber); }
+  .module-card--violet::after { background: var(--violet); }
+  .module-card--sky::after { background: var(--sky); }
+  .module-card--coral::after { background: var(--coral); }
+  .module-card--sand::after { background: var(--sand); }
+
+  .module-card.is-done { border-color: rgba(211, 250, 124, 0.3); }
+  .module-card.is-done .module-card__check {
+    background: var(--acid);
+    border-color: var(--acid);
+    color: var(--acid-ink);
+  }
+
+  .module-card__link {
+    display: flex;
+    flex-direction: column;
+    min-height: 235px;
+    padding: 1.1rem 1.15rem 1rem;
+    text-decoration: none;
+    height: 100%;
+  }
+
+  .module-card__top {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    min-height: 24px;
+  }
+
+  .module-card__num {
+    font-size: 0.68rem;
+    color: var(--faint);
+    letter-spacing: 0.08em;
+  }
+
+  .module-card__check {
+    display: grid;
+    place-items: center;
+    width: 17px;
+    height: 17px;
+    margin-left: auto;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    color: transparent;
+    transition: all 0.2s;
+  }
+
+  .module-card__arrow {
+    color: var(--faint);
+    transition: color 0.2s, transform 0.2s;
+    flex: none;
+  }
+
+  .module-card:hover .module-card__arrow { color: var(--acid); transform: translate(2px, -2px); }
+
+  .module-card__body { margin-top: 1.15rem; flex: 1; }
+
+  .module-card h3 {
+    font-size: 1.18rem;
+    letter-spacing: -0.02em;
+    line-height: 1.3;
+  }
+
+  .module-card__en {
+    margin-top: 0.28rem;
+    font-size: 0.59rem;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .module-card__summary {
+    margin-top: 0.75rem;
+    color: var(--muted);
+    font-size: 0.81rem;
+    line-height: 1.65;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .module-card__meta {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+    margin-top: 1.25rem;
+    padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    color: var(--faint);
+  }
+
+  .module-card__keywords { margin-left: auto; color: var(--faint); opacity: 0.7; font-size: 0.56rem; }
+
+  .level-เริ่มต้น { color: var(--sky); }
+  .level-กลาง { color: var(--amber); }
+  .level-สูง { color: var(--coral); }
+
+  .module-card--compact .module-card__link { min-height: 150px; padding: 0.9rem; }
+  .module-card--compact .module-card__body { margin-top: 0.8rem; }
+  .module-card--compact h3 { font-size: 1rem; }
+  .module-card--compact .module-card__meta { margin-top: 0.8rem; padding-top: 0.6rem; }
+</style>

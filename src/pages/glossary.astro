@@ -1,0 +1,167 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Search, BookOpen, ArrowRight, X } from '@lucide/astro';
+import { glossary, glossaryCategories } from '../data/glossary';
+
+const letters = [...new Set(glossary.map((t) => t.term[0].toUpperCase()))].sort();
+const grouped = letters.map((letter) => ({ letter, terms: glossary.filter((t) => t.term[0].toUpperCase() === letter) }));
+---
+
+<BaseLayout title="Glossary 105 คำ" description="อภิธานศัพท์ AI ภาษาไทย–อังกฤษ 105 คำ ครอบคลุมพื้นฐาน, ML, deep learning, LLM, RAG, MLOps และ security">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">GLOSSARY / {glossary.length} TERMS</p>
+        <h1 class="reveal">พูดให้ตรง<br />ก่อนจะ<span class="text-acid">ทำได้</span></h1>
+        <p class="lead reveal">ศัพท์ที่เจอในเอกสาร ประชุม และสัมภาษณ์ — อธิบายด้วยภาษาที่คนทำงานใช้จริง ไม่ใช่คำแปลตรงตัวที่อ่านแล้วยังไม่เข้าใจ</p>
+      </div>
+      <div class="glossary-hero panel reveal">
+        <BookOpen size={20} class="text-acid" />
+        <p class="mono micro">LANGUAGE NOTE</p>
+        <p>ศัพท์เทคนิคคงรูปอังกฤษเพื่อให้ค้นต่อได้ ส่วนคำอธิบายเป็นภาษาไทยที่เน้นการใช้งานจริง</p>
+        <div class="glossary-hero__stats">
+          <div><strong>{glossary.length}</strong><span>TERMS</span></div>
+          <div><strong>{glossaryCategories.length}</strong><span>CATEGORIES</span></div>
+          <div><strong>TH/EN</strong><span>BILINGUAL</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="glossary-controls">
+        <div class="glossary-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหาคำศัพท์ คำแปล หรือคำอธิบาย..." aria-label="ค้นหาคำศัพท์" data-gl-search />
+          <button type="button" class="glossary-clear" data-gl-clear hidden aria-label="ล้างคำค้นหา"><X size={14} /></button>
+        </div>
+        <div class="glossary-cats" role="group" aria-label="กรองตามหมวด">
+          <button class="chip is-active" data-gl-cat="all">ทั้งหมด</button>
+          {glossaryCategories.map((cat) => <button class="chip" data-gl-cat={cat}>{cat}</button>)}
+        </div>
+        <span class="mono tiny faint" data-gl-count>{glossary.length} terms</span>
+      </div>
+
+      <nav class="alpha-nav" aria-label="กระโดดตามตัวอักษร">
+        {letters.map((letter) => <a href={`#letter-${letter}`} data-gl-letter={letter}>{letter}</a>)}
+      </nav>
+
+      <div data-gl-results>
+        {grouped.map(({ letter, terms }) => (
+          <section class="glossary-group" data-gl-group data-letter={letter}>
+            <h2 class="glossary-group__letter" id={`letter-${letter}`}>{letter}</h2>
+            <div class="glossary-grid">
+              {terms.map((term) => (
+                <article class="term-card panel" id={term.term.toLowerCase().replace(/[^a-z0-9]+/g, '-')} data-gl-card data-cat={term.category} data-title={`${term.term} ${term.th} ${term.definition} ${term.category}`.toLowerCase()}>
+                  <div class="term-card__top">
+                    <span class="tag">{term.category}</span>
+                  </div>
+                  <h3 class="term-card__term">{term.term}</h3>
+                  <p class="term-card__th">{term.th}</p>
+                  <p class="term-card__def">{term.definition}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div class="empty-state" data-gl-empty hidden>
+        <p>ไม่พบคำศัพท์ที่ตรงกับคำค้นหา</p>
+        <button class="chip" data-gl-reset>ล้างตัวกรอง</button>
+      </div>
+
+      <aside class="glossary-tip panel">
+        <p class="mono micro">ใช้งานยังไง</p>
+        <p>เจอคำที่ไม่คุ้นในบทเรียน ให้เปิด gloss นี้แล้วอ่านคำอธิบาย จากนั้นลองเขียนประโยคของตัวเองหนึ่งประโยคโดยใช้คำนั้น — ถ้าเขียนได้แปลว่าเข้าใจ</p>
+        <a href="/cheatsheets" class="link-arrow">ดู cheatsheets <ArrowRight size={12} /></a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-gl-card]')];
+  const groups = [...document.querySelectorAll<HTMLElement>('[data-gl-group]')];
+  const search = document.querySelector<HTMLInputElement>('[data-gl-search]');
+  const clearBtn = document.querySelector<HTMLElement>('[data-gl-clear]');
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-gl-cat]')];
+  const count = document.querySelector<HTMLElement>('[data-gl-count]');
+  const empty = document.querySelector<HTMLElement>('[data-gl-empty]');
+  const results = document.querySelector<HTMLElement>('[data-gl-results]');
+  const alpha = document.querySelector<HTMLElement>('.alpha-nav');
+  let cat = 'all';
+
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    cards.forEach((card) => {
+      const visible = (!q || (card.dataset.title || '').includes(q)) && (cat === 'all' || card.dataset.cat === cat);
+      card.hidden = !visible;
+      if (visible) shown++;
+    });
+    groups.forEach((group) => { group.hidden = ![...group.querySelectorAll<HTMLElement>('[data-gl-card]')].some((c) => !c.hidden); });
+    if (count) count.textContent = `${shown} terms`;
+    if (empty) empty.hidden = shown > 0;
+    if (results) results.hidden = shown === 0;
+    if (alpha) alpha.hidden = shown === 0;
+    if (clearBtn) clearBtn.hidden = !q;
+  }
+
+  catBtns.forEach((btn) => btn.addEventListener('click', () => {
+    cat = btn.dataset.glCat || 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  search?.addEventListener('input', apply);
+  clearBtn?.addEventListener('click', () => { if (search) { search.value = ''; search.focus(); } apply(); });
+  document.querySelector('[data-gl-reset]')?.addEventListener('click', () => {
+    if (search) search.value = '';
+    cat = 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.glCat === 'all'));
+    apply();
+  });
+</script>
+
+<style>
+  .glossary-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .6rem; align-items: flex-start; }
+  .glossary-hero > p:not(.micro) { color: var(--muted); font-size: .8rem; line-height: 1.7; }
+  .glossary-hero__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; width: 100%; }
+  .glossary-hero__stats div { padding: .5rem; border: 1px solid var(--line); border-radius: 6px; }
+  .glossary-hero__stats strong { display: block; font-family: var(--font-display); font-size: 1.05rem; font-weight: 500; line-height: 1.1; }
+  .glossary-hero__stats span { font-family: var(--font-mono); font-size: .43rem; letter-spacing: .06em; color: var(--faint); }
+
+  .glossary-controls { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+  .glossary-search { flex: 1 1 280px; max-width: 430px; display: flex; align-items: center; gap: .55rem; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .glossary-search:focus-within { border-color: var(--acid); }
+  .glossary-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: .82rem; }
+  .glossary-clear { border: 0; background: transparent; color: var(--faint); display: grid; place-items: center; }
+  .glossary-clear:hover { color: var(--text); }
+  .glossary-cats { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .glossary-controls > .mono { margin-left: auto; }
+
+  .alpha-nav { display: flex; gap: .25rem; flex-wrap: wrap; padding: 1rem 0 .2rem; }
+  .alpha-nav a { display: grid; place-items: center; min-width: 28px; height: 28px; padding: 0 .35rem; border-radius: 5px; color: var(--faint); font-family: var(--font-mono); font-size: .62rem; text-decoration: none; }
+  .alpha-nav a:hover { background: var(--acid-soft); color: var(--acid); }
+
+  .glossary-group { padding-top: 1.6rem; }
+  .glossary-group__letter { font-family: var(--font-mono); font-size: .8rem; color: var(--acid); letter-spacing: .1em; padding-bottom: .5rem; border-bottom: 1px solid var(--line); scroll-margin-top: calc(var(--header-h) + 24px); }
+  .glossary-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .7rem; margin-top: .8rem; }
+  .term-card { padding: .95rem 1rem; border-radius: var(--radius); scroll-margin-top: calc(var(--header-h) + 24px); }
+  .term-card:target { border-color: var(--acid); background: var(--acid-soft); }
+  .term-card__term { margin-top: .5rem; font-size: 1.02rem; }
+  .term-card__th { margin-top: .1rem; color: var(--acid); font-size: .72rem; }
+  .term-card__def { margin-top: .5rem; color: var(--muted); font-size: .79rem; line-height: 1.7; }
+
+  .glossary-tip { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; padding: 1.2rem; border-radius: var(--radius); }
+  .glossary-tip > p:not(.micro) { color: var(--muted); font-size: .78rem; max-width: 78ch; }
+  .glossary-tip .link-arrow { margin-left: auto; white-space: nowrap; }
+
+  @media (max-width: 800px) { .glossary-grid { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) {
+    .glossary-controls > .mono { margin-left: 0; }
+    .glossary-tip { flex-wrap: wrap; }
+    .glossary-tip .link-arrow { margin-left: 0; }
+  }
+</style>

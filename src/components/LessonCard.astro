@@ -1,0 +1,53 @@
+---
+import { ArrowUpRight, Clock } from '@lucide/astro';
+import type { Lesson } from '../data/theory';
+import { lessonMinutes } from '../data/theory';
+import { lessonBySlug } from '../data/theory';
+
+interface Props { lesson: Lesson; }
+const { lesson } = Astro.props;
+const minutes = lessonMinutes(lesson);
+const prereq = lesson.prereqLessons.map((slug) => lessonBySlug[slug]).filter(Boolean);
+---
+<a href={`/theory/${lesson.slug}`} class="lesson-card panel panel--hover" data-lesson-card>
+  <div class="lesson-card__top">
+    <span class="mono lesson-card__num">{lesson.number}</span>
+    <span class="lesson-card__time mono"><Clock size={11} /> {minutes} นาที</span>
+    <ArrowUpRight size={16} class="lesson-card__arrow" />
+  </div>
+  <div class="lesson-card__body">
+    <p class="mono lesson-card__en">{lesson.en}</p>
+    <h3>{lesson.title}</h3>
+    <p class="lesson-card__summary">{lesson.summary}</p>
+  </div>
+  {prereq.length > 0 && (
+    <div class="lesson-card__prereq">
+      <span class="mono micro">อ่านก่อน: </span>
+      <span class="mono">{prereq.map((p) => p.number).join(', ')}</span>
+    </div>
+  )}
+</a>
+
+<style>
+  .lesson-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.15rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    transition: border-color 0.18s, transform 0.18s;
+  }
+  .lesson-card:hover { border-color: var(--acid); transform: translateY(-2px); }
+  .lesson-card__top { display: flex; align-items: center; gap: 0.5rem; }
+  .lesson-card__num { color: var(--acid); font-size: 0.62rem; letter-spacing: 0.05em; }
+  .lesson-card__time { margin-left: 8px; font-size: 0.56rem; color: var(--faint); display: inline-flex; align-items: center; gap: 0.25rem; }
+  .lesson-card__arrow { margin-left: auto; color: var(--faint); transition: transform 0.2s, color 0.2s; }
+  .lesson-card:hover .lesson-card__arrow { color: var(--acid); transform: translate(2px, -2px); }
+  .lesson-card__body { margin-top: 1.1rem; flex: 1; }
+  .lesson-card__en { color: var(--faint); font-size: 0.58rem; text-transform: uppercase; letter-spacing: 0.07em; }
+  .lesson-card h3 { margin-top: 0.45rem; font-size: 1.22rem; line-height: 1.3; }
+  .lesson-card__summary { margin-top: 0.6rem; color: var(--muted); font-size: 0.82rem; line-height: 1.65; }
+  .lesson-card__prereq { display: flex; align-items: center; gap: 0.4rem; margin-top: 1.1rem; padding-top: 0.75rem; border-top: 1px solid var(--line); }
+  .lesson-card__prereq .micro { color: var(--faint); }
+  .lesson-card__prereq span { font-size: 0.58rem; color: var(--acid); }
+</style>

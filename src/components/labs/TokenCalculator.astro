@@ -1,0 +1,143 @@
+---
+import { Calculator } from '@lucide/astro';
+---
+
+<section class="lab" data-cost-lab>
+  <div class="lab__bar">
+    <span>TOKEN COST SIMULATOR</span>
+    <strong data-ctl-status>—</strong>
+  </div>
+  <div class="lab__body">
+    <div class="lab__grid lab__grid--side">
+      <div class="lab__grid">
+        <div class="lab__grid lab__grid--2">
+          <div class="lab__field">
+            <label for="ct-users">ผู้ใช้ต่อเดือน</label>
+            <input id="ct-users" class="input" type="number" min="0" step="100" value="1000" data-ct="users" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-req">คำขอ / ผู้ใช้ / เดือน</label>
+            <input id="ct-req" class="input" type="number" min="0" step="1" value="20" data-ct="req" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-in">Input tokens / คำขอ</label>
+            <input id="ct-in" class="input" type="number" min="0" step="50" value="1800" data-ct="input" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-out">Output tokens / คำขอ</label>
+            <input id="ct-out" class="input" type="number" min="0" step="50" value="450" data-ct="output" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-pin">ราคา input / 1M tokens ($)</label>
+            <input id="ct-pin" class="input" type="number" min="0" step="0.01" value="2.5" data-ct="priceIn" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-pout">ราคา output / 1M tokens ($)</label>
+            <input id="ct-pout" class="input" type="number" min="0" step="0.01" value="10" data-ct="priceOut" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-cache">Cache hit rate (%)</label>
+            <input id="ct-cache" class="input" type="number" min="0" max="100" step="5" value="0" data-ct="cache" />
+          </div>
+          <div class="lab__field">
+            <label for="ct-disc">ส่วนลด cached input (%)</label>
+            <input id="ct-disc" class="input" type="number" min="0" max="100" step="5" value="50" data-ct="discount" />
+          </div>
+        </div>
+        <div class="lab__actions">
+          <button type="button" class="btn btn--primary btn--small" data-ct-run><Calculator size={13} /> คำนวณ</button>
+          <button type="button" class="btn btn--ghost btn--small" data-ct-reset>คืนค่าเดิม</button>
+        </div>
+        <p class="lab__hint">ตัวเลขราคาเป็นตัวอย่าง ปรับตามโมเดลที่คุณใช้จริง อย่าลืมต้นทุน embedding, retrieval และ observability ด้วย</p>
+      </div>
+
+      <div>
+        <div class="lab__result">
+          <p class="mono tiny faint">ESTIMATED MONTHLY COST</p>
+          <p class="lab__score" data-ct-total>$0<small>/mo</small></p>
+          <div class="lab__stat-grid" style="margin-top:.9rem">
+            <div class="lab__stat"><span>Requests / เดือน</span><strong data-ct-requests>0</strong></div>
+            <div class="lab__stat"><span>ต่อ request</span><strong data-ct-perreq>$0</strong></div>
+            <div class="lab__stat"><span>ต่อผู้ใช้</span><strong data-ct-peruser>$0</strong></div>
+            <div class="lab__stat"><span>Input / Output</span><strong data-ct-split>—</strong></div>
+          </div>
+          <div class="lab__warning" data-ct-warn hidden><span>!</span><p data-ct-warn-text></p></div>
+        </div>
+        <div class="table-wrap" style="margin-top:.9rem">
+          <table class="data">
+            <thead><tr><th>ผู้ใช้</th><th>ต้นทุน / เดือน</th></tr></thead>
+            <tbody data-ct-table></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-cost-lab]')!;
+  if (root) {
+    const inputs = [...root.querySelectorAll<HTMLInputElement>('[data-ct]')];
+    const total = root.querySelector<HTMLElement>('[data-ct-total]');
+    const requests = root.querySelector<HTMLElement>('[data-ct-requests]');
+    const perReq = root.querySelector<HTMLElement>('[data-ct-perreq]');
+    const perUser = root.querySelector<HTMLElement>('[data-ct-peruser]');
+    const split = root.querySelector<HTMLElement>('[data-ct-split]');
+    const table = root.querySelector<HTMLElement>('[data-ct-table]');
+    const warn = root.querySelector<HTMLElement>('[data-ct-warn]');
+    const warnText = root.querySelector<HTMLElement>('[data-ct-warn-text]');
+    const status = root.querySelector<HTMLElement>('[data-ctl-status]');
+    const defaults: Record<string, string> = {};
+    inputs.forEach((i) => { defaults[i.dataset.ct || ''] = i.value; });
+
+    const money = (n: number) => '$' + (n >= 1000 ? n.toLocaleString('en-US', { maximumFractionDigits: 0 }) : n.toFixed(2));
+    const num = (n: number) => n.toLocaleString('en-US', { maximumFractionDigits: 0 });
+
+    function calculate(users: number) {
+      const req = Number((root.querySelector<HTMLInputElement>('[data-ct="req"]')?.value) || 0);
+      const tokensIn = Number((root.querySelector<HTMLInputElement>('[data-ct="input"]')?.value) || 0);
+      const tokensOut = Number((root.querySelector<HTMLInputElement>('[data-ct="output"]')?.value) || 0);
+      const priceIn = Number((root.querySelector<HTMLInputElement>('[data-ct="priceIn"]')?.value) || 0);
+      const priceOut = Number((root.querySelector<HTMLInputElement>('[data-ct="priceOut"]')?.value) || 0);
+      const cache = Math.min(100, Math.max(0, Number((root.querySelector<HTMLInputElement>('[data-ct="cache"]')?.value) || 0))) / 100;
+      const discount = Math.min(100, Math.max(0, Number((root.querySelector<HTMLInputElement>('[data-ct="discount"]')?.value) || 0))) / 100;
+
+      const totalRequests = users * req;
+      const inputTokens = totalRequests * tokensIn;
+      const outputTokens = totalRequests * tokensOut;
+      const effectiveInputPrice = priceIn * ((1 - cache) + cache * (1 - discount));
+      const inputCost = (inputTokens / 1_000_000) * effectiveInputPrice;
+      const outputCost = (outputTokens / 1_000_000) * priceOut;
+      return { requests: totalRequests, inputTokens, outputTokens, inputCost, outputCost, cost: inputCost + outputCost };
+    }
+
+    function render() {
+      const users = Number((root.querySelector<HTMLInputElement>('[data-ct="users"]')?.value) || 0);
+      const r = calculate(users);
+      if (total) total.innerHTML = `${money(r.cost)}<small>/mo</small>`;
+      if (requests) requests.textContent = num(r.requests);
+      if (perReq) perReq.textContent = money(r.requests ? r.cost / r.requests : 0);
+      if (perUser) perUser.textContent = money(users ? r.cost / users : 0);
+      if (split) split.textContent = `${money(r.inputCost)} / ${money(r.outputCost)}`;
+      if (status) status.textContent = `${num(r.requests)} requests`;
+      if (table) {
+        table.innerHTML = [100, 1000, 10000, 100000].map((u) => `<tr><td class="mono">${num(u)}</td><td class="mono">${money(calculate(u).cost)}</td></tr>`).join('');
+      }
+      const issues: string[] = [];
+      const cache = Number((root.querySelector<HTMLInputElement>('[data-ct="cache"]')?.value) || 0);
+      const tokensIn = Number((root.querySelector<HTMLInputElement>('[data-ct="input"]')?.value) || 0);
+      if (cache > 0 && cache < 20) issues.push('Cache hit ต่ำกว่า 20% อาจยังไม่คุ้มความซับซ้อน — วัดอัตราจริงก่อนลงทุน');
+      if (tokensIn > 6000) issues.push('Input tokens สูงมาก ลองตัด context ที่ไม่จำเป็นหรือใช้ retrieval ที่แม่นขึ้น');
+      if (r.cost > 1000) issues.push('ต้นทุนเกิน $1,000/เดือน ควรมี budget alert และเพดานการใช้ต่อผู้ใช้');
+      if (warn && warnText) { warn.hidden = issues.length === 0; warnText.textContent = issues.join(' · '); }
+    }
+
+    root.querySelector('[data-ct-run]')?.addEventListener('click', render);
+    root.querySelector('[data-ct-reset]')?.addEventListener('click', () => {
+      inputs.forEach((i) => { i.value = defaults[i.dataset.ct || ''] || i.value; });
+      render();
+    });
+    inputs.forEach((i) => i.addEventListener('input', render));
+    render();
+  }
+</script>

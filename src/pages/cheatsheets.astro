@@ -1,0 +1,162 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Search, Printer, Braces, ArrowRight, Copy } from '@lucide/astro';
+import { cheatsheets } from '../data/cheatsheets';
+
+const totalItems = cheatsheets.reduce((sum, g) => sum + g.items.length, 0);
+---
+
+<BaseLayout title="Cheatsheets" description="สรุป quick reference สำหรับ AI Engineer: metric, RAG checklist, prompt patterns, evaluation, system design, Python snippets และ production">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">QUICK REFERENCE / {cheatsheets.length} SHEETS</p>
+        <h1 class="reveal">เปิดดูตอนติด<br />ไม่ใช่ตอน<span class="text-acid">ว่าง</span></h1>
+        <p class="lead reveal">สรุปสั้นที่ใช้ได้จริงระหว่างทำงาน — metric, checklist, สูตรต้นทุน และโครงคำตอบสำหรับสัมภาษณ์</p>
+        <div class="hero-actions reveal">
+          <button type="button" class="btn btn--primary" data-cs-print><Printer size={14} /> พิมพ์ทั้งหมด</button>
+          <a href="/glossary" class="btn btn--ghost">เปิด glossary</a>
+        </div>
+      </div>
+      <div class="cs-hero panel reveal">
+        <Braces size={20} class="text-acid" />
+        <p class="mono micro">HOW TO USE</p>
+        <p>อ่านหนึ่ง sheet แล้วเลือกหนึ่งข้อไปใช้ในงานวันนี้ อย่าพยายามจำทั้งหมดในครั้งเดียว</p>
+        <div class="cs-hero__stats"><strong>{cheatsheets.length}</strong><span>SHEETS</span><strong>{totalItems}</strong><span>ITEMS</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="cs-controls">
+        <div class="cs-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหา metric, checklist, snippet..." aria-label="ค้นหา cheatsheet" data-cs-search />
+        </div>
+        <div class="cs-nav" role="group" aria-label="กระโดดไปยัง sheet">
+          {cheatsheets.map((g) => <a href={`#${g.id}`} class="chip">{g.en}</a>)}
+        </div>
+      </div>
+
+      <div class="cs-list">
+        {cheatsheets.map((group) => (
+          <section class="cs-sheet panel" id={group.id} data-cs-sheet>
+            <div class="cs-sheet__head">
+              <div>
+                <p class="mono micro">{group.en.toUpperCase()}</p>
+                <h2>{group.title}</h2>
+                <p>{group.intro}</p>
+              </div>
+              <span class="mono tiny faint">{group.items.length} items</span>
+            </div>
+            <div class="cs-items">
+              {group.items.map((item) => (
+                <div class="cs-item" data-cs-item data-title={`${item.title} ${item.detail || ''} ${item.code || ''}`.toLowerCase()}>
+                  <h3>{item.title}</h3>
+                  {item.detail && <p>{item.detail}</p>}
+                  {item.code && (
+                    <div class="cs-code">
+                      <button type="button" class="cs-copy" data-cs-copy aria-label={`คัดลอก ${item.title}`}><Copy size={12} /></button>
+                      <pre><code>{item.code}</code></pre>
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </section>
+        ))}
+      </div>
+
+      <div class="empty-state" data-cs-empty hidden><p>ไม่พบเนื้อหาที่ตรงกับคำค้นหา</p></div>
+
+      <aside class="cs-note panel">
+        <p class="mono micro">DOWNLOAD & PRINT</p>
+        <p>กดพิมพ์เพื่อบันทึกเป็น PDF เก็บไว้อ่าน offline — cheatsheet ไม่แทนการลงมือทำ แต่ช่วยให้คุณไม่ลืมสิ่งที่สำคัญระหว่างทำงาน</p>
+        <a href="/exercises" class="link-arrow">ไปทำ lab <ArrowRight size={12} /></a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>('[data-cs-search]');
+  const sheets = [...document.querySelectorAll<HTMLElement>('[data-cs-sheet]')];
+  const items = [...document.querySelectorAll<HTMLElement>('[data-cs-item]')];
+  const empty = document.querySelector<HTMLElement>('[data-cs-empty]');
+
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    items.forEach((item) => {
+      const visible = !q || (item.dataset.title || '').includes(q);
+      item.hidden = !visible;
+      if (visible) shown++;
+    });
+    sheets.forEach((sheet) => {
+      sheet.hidden = ![...sheet.querySelectorAll<HTMLElement>('[data-cs-item]')].some((i) => !i.hidden);
+    });
+    if (empty) empty.hidden = shown > 0;
+  }
+  search?.addEventListener('input', apply);
+
+  document.querySelector('[data-cs-print]')?.addEventListener('click', () => window.print());
+
+  document.querySelectorAll<HTMLButtonElement>('[data-cs-copy]').forEach((btn) => {
+    btn.addEventListener('click', async () => {
+      const code = btn.closest('.cs-code')?.querySelector('code')?.textContent || '';
+      try {
+        await navigator.clipboard.writeText(code);
+        (window as any).AIE?.toast('คัดลอกโค้ดแล้ว');
+      } catch {
+        (window as any).AIE?.toast('คัดลอกไม่สำเร็จ');
+      }
+    });
+  });
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .cs-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .55rem; align-items: flex-start; }
+  .cs-hero > p:not(.micro) { color: var(--muted); font-size: .8rem; line-height: 1.7; }
+  .cs-hero__stats { display: flex; align-items: baseline; gap: .35rem; padding-top: .6rem; border-top: 1px solid var(--line); width: 100%; }
+  .cs-hero__stats strong { font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; }
+  .cs-hero__stats span { font-family: var(--font-mono); font-size: .52rem; color: var(--faint); margin-right: .7rem; }
+
+  .cs-controls { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+  .cs-search { flex: 1 1 260px; max-width: 380px; display: flex; align-items: center; gap: .55rem; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .cs-search:focus-within { border-color: var(--acid); }
+  .cs-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: .8rem; }
+  .cs-nav { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .cs-nav a { text-decoration: none; }
+
+  .cs-list { display: flex; flex-direction: column; gap: .8rem; margin-top: 1.2rem; }
+  .cs-sheet { padding: 1.2rem; border-radius: var(--radius); scroll-margin-top: calc(var(--header-h) + 24px); }
+  .cs-sheet__head { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; padding-bottom: .9rem; border-bottom: 1px solid var(--line); }
+  .cs-sheet__head h2 { margin-top: .35rem; font-size: 1.35rem; }
+  .cs-sheet__head p:not(.micro) { margin-top: .35rem; color: var(--muted); font-size: .8rem; max-width: 80ch; }
+  .cs-items { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; margin-top: .9rem; }
+  .cs-item { padding: .7rem .8rem; border: 1px solid var(--line); border-radius: 7px; background: var(--bg-soft); }
+  .cs-item h3 { font-family: var(--font-sans); font-size: .8rem; font-weight: 600; letter-spacing: 0; color: var(--text); }
+  .cs-item p { margin-top: .25rem; color: var(--muted); font-size: .75rem; line-height: 1.6; }
+  .cs-item:has(.cs-code) { grid-column: 1 / -1; }
+  .cs-code { position: relative; margin-top: .5rem; }
+  .cs-code pre { margin: 0; font-size: .72rem; padding: .7rem .8rem; }
+  .cs-copy { position: absolute; top: .45rem; right: .45rem; display: grid; place-items: center; width: 26px; height: 26px; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); color: var(--faint); }
+  .cs-copy:hover { color: var(--acid); border-color: var(--acid); }
+
+  .cs-note { display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1.2rem; border-radius: var(--radius); }
+  .cs-note > p:not(.micro) { color: var(--muted); font-size: .78rem; max-width: 80ch; }
+  .cs-note .link-arrow { margin-left: auto; white-space: nowrap; }
+
+  @media (max-width: 760px) {
+    .cs-items { grid-template-columns: 1fr; }
+    .cs-note { flex-wrap: wrap; }
+    .cs-note .link-arrow { margin-left: 0; }
+  }
+  @media print {
+    .cs-controls, .hero-actions, .cs-note { display: none !important; }
+    .cs-sheet { break-inside: avoid; border-color: #ccc; }
+    .cs-copy { display: none; }
+  }
+</style>

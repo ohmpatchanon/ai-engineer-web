@@ -1,0 +1,214 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { Search, MessageSquareQuote, ArrowRight, ChevronDown, Shuffle, Lightbulb } from '@lucide/astro';
+import { interviewQuestions, interviewCategories } from '../data/interview';
+
+const levels = ['เริ่มต้น', 'กลาง', 'สูง'];
+const categoryCount = interviewCategories.map((cat) => ({ cat, count: interviewQuestions.filter((q) => q.category === cat).length }));
+---
+
+<BaseLayout title="Interview Bank" description={`${interviewQuestions.length} คำถามสัมภาษณ์ AI Engineer พร้อมแนวทางตอบ ครอบคลุม Python, ML, LLM, RAG, agents, system design และ behavioral`}>
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">INTERVIEW BANK / {interviewQuestions.length} QUESTIONS</p>
+        <h1 class="reveal">ตอบได้<br />เพราะ<span class="text-acid">เข้าใจ</span><br />ไม่ใช่ท่องจำ</h1>
+        <p class="lead reveal">คำถามที่เจอจริงในสัมภาษณ์ AI Engineer พร้อมแนวทางตอบที่เน้นเหตุผลและ trade-off — ใช้ทบทวนคนเดียวหรือซ้อมกับเพื่อนก็ได้</p>
+        <div class="hero-actions reveal">
+          <button type="button" class="btn btn--primary" data-random-question><Shuffle size={14} /> สุ่มคำถาม</button>
+          <a href="/guides/interview-playbook" class="btn btn--ghost">อ่าน playbook</a>
+        </div>
+      </div>
+      <div class="interview-hero panel reveal">
+        <MessageSquareQuote size={20} class="text-acid" />
+        <p class="mono micro">COVERAGE</p>
+        <div class="interview-hero__cats">
+          {categoryCount.map((c) => (
+            <div><span>{c.cat}</span><strong class="mono">{c.count}</strong></div>
+          ))}
+        </div>
+        <p class="interview-hero__note">แนวทางตอบเป็นตัวอย่าง ไม่ใช่คำตอบเดียวที่ถูก — ปรับให้เข้ากับประสบการณ์ของคุณ</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="interview-controls">
+        <div class="interview-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหาคำถาม หัวข้อ หรือ tag..." aria-label="ค้นหาคำถามสัมภาษณ์" data-iq-search />
+        </div>
+        <div class="level-filter" role="group" aria-label="กรองตามระดับ">
+          <button class="chip is-active" data-iq-level="all">ทุกระดับ</button>
+          {levels.map((level) => <button class="chip" data-iq-level={level}>{level}</button>)}
+        </div>
+        <span class="mono tiny faint" data-iq-count>{interviewQuestions.length} questions</span>
+      </div>
+
+      <div class="category-bar" role="group" aria-label="กรองตามหมวด">
+        <button class="chip is-active" data-iq-cat="all">ทั้งหมด</button>
+        {interviewCategories.map((cat) => <button class="chip" data-iq-cat={cat}>{cat}</button>)}
+      </div>
+
+      <div class="interview-list" data-iq-list>
+        {interviewQuestions.map((q, i) => (
+          <article class="iq-card panel" id={q.id} data-iq-card data-cat={q.category} data-level={q.level} data-title={`${q.q} ${q.a} ${q.tags.join(' ')} ${q.category}`.toLowerCase()}>
+            <div class="iq-card__top">
+              <span class="mono iq-card__id">{q.id.toUpperCase()}</span>
+              <span class="tag">{q.category}</span>
+              <span class:list={['tag', q.level === 'เริ่มต้น' ? 'tag--sky' : q.level === 'กลาง' ? 'tag--amber' : 'tag--coral']}>{q.level}</span>
+              <span class="mono iq-card__num">{String(i + 1).padStart(2, '0')}</span>
+            </div>
+            <h2 class="iq-card__q">{q.q}</h2>
+            <div class="iq-card__tags">{q.tags.map((t) => <span class="mono">#{t}</span>)}</div>
+            <button type="button" class="iq-reveal" data-iq-reveal aria-expanded="false" aria-controls={`answer-${q.id}`}>
+              <span>ดูแนวทางตอบ</span><ChevronDown size={15} />
+            </button>
+            <div class="iq-card__answer" id={`answer-${q.id}`} hidden>
+              <div class="iq-card__answer-head"><Lightbulb size={14} /><span class="mono micro">แนวทางตอบ</span></div>
+              <p>{q.a}</p>
+              <div class="iq-card__followup">
+                <span class="mono micro">คำถามต่อที่ควรเตรียม</span>
+                <p>“ช่วยยกตัวอย่างจากงานจริงที่คุณเจอเคสแบบนี้ และคุณตัดสินใจอย่างไร?”</p>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <div class="empty-state" data-iq-empty hidden><p>ไม่พบคำถามที่ตรงกับตัวกรอง</p><button class="chip" data-iq-clear>ล้างตัวกรอง</button></div>
+
+      <aside class="interview-note panel">
+        <div class="interview-note__icon"><Lightbulb size={18} /></div>
+        <div><h2>วิธีซ้อมที่ได้ผล</h2><p>ตอบออกเสียงภายใน 90 วินาที แล้วบันทึกฟังตัวเอง หาจุดที่วกวนหรือขาดเหตุผล จากนั้นเขียนโครง 3 จุดใหม่แล้วลองอีกครั้ง</p></div>
+        <a href="/guides/resume-ai-engineer" class="link-arrow">เขียน resume <ArrowRight size={12} /></a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-iq-card]')];
+  const search = document.querySelector<HTMLInputElement>('[data-iq-search]');
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-iq-cat]')];
+  const levelBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-iq-level]')];
+  const count = document.querySelector<HTMLElement>('[data-iq-count]');
+  const empty = document.querySelector<HTMLElement>('[data-iq-empty]');
+  const list = document.querySelector<HTMLElement>('[data-iq-list]');
+  let cat = 'all';
+  let level = 'all';
+
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    cards.forEach((card) => {
+      const visible = (!q || (card.dataset.title || '').includes(q))
+        && (cat === 'all' || card.dataset.cat === cat)
+        && (level === 'all' || card.dataset.level === level);
+      card.hidden = !visible;
+      if (visible) shown++;
+    });
+    if (count) count.textContent = `${shown} questions`;
+    if (empty) empty.hidden = shown > 0;
+    if (list) list.hidden = shown === 0;
+  }
+
+  catBtns.forEach((btn) => btn.addEventListener('click', () => {
+    cat = btn.dataset.iqCat || 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  levelBtns.forEach((btn) => btn.addEventListener('click', () => {
+    level = btn.dataset.iqLevel || 'all';
+    levelBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  search?.addEventListener('input', apply);
+
+  document.querySelector('[data-iq-clear]')?.addEventListener('click', () => {
+    if (search) search.value = '';
+    cat = 'all'; level = 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.iqCat === 'all'));
+    levelBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.iqLevel === 'all'));
+    apply();
+  });
+
+  document.querySelectorAll<HTMLButtonElement>('[data-iq-reveal]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const card = btn.closest<HTMLElement>('[data-iq-card]');
+      const answer = card?.querySelector<HTMLElement>('.iq-card__answer');
+      if (!answer) return;
+      const open = answer.hidden === true;
+      answer.hidden = !open;
+      btn.setAttribute('aria-expanded', String(open));
+      btn.querySelector('span')!.textContent = open ? 'ซ่อนแนวทางตอบ' : 'ดูแนวทางตอบ';
+      btn.classList.toggle('is-open', open);
+    });
+  });
+
+  document.querySelector('[data-random-question]')?.addEventListener('click', () => {
+    const visible = cards.filter((c) => !c.hidden);
+    const pool = visible.length ? visible : cards;
+    const pick = pool[Math.floor(Math.random() * pool.length)];
+    if (pick) {
+      pick.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      pick.classList.remove('is-flash');
+      void pick.offsetWidth;
+      pick.classList.add('is-flash');
+      const answer = pick.querySelector<HTMLElement>('.iq-card__answer');
+      const btn = pick.querySelector<HTMLButtonElement>('[data-iq-reveal]');
+      if (answer && answer.hidden) btn?.click();
+    }
+  });
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .interview-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .6rem; align-items: flex-start; }
+  .interview-hero__cats { display: flex; flex-direction: column; width: 100%; }
+  .interview-hero__cats div { display: flex; justify-content: space-between; gap: .6rem; padding: .32rem 0; border-bottom: 1px solid var(--line); }
+  .interview-hero__cats span { color: var(--muted); font-size: .7rem; }
+  .interview-hero__cats strong { color: var(--acid); font-size: .58rem; font-weight: 400; }
+  .interview-hero__note { color: var(--faint); font-size: .68rem; line-height: 1.55; }
+
+  .interview-controls { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding-bottom: .9rem; }
+  .interview-search { flex: 1 1 280px; max-width: 420px; display: flex; align-items: center; gap: .55rem; padding: .55rem .8rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .interview-search:focus-within { border-color: var(--acid); }
+  .interview-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: .82rem; }
+  .level-filter { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .interview-controls > .mono { margin-left: auto; }
+  .category-bar { display: flex; gap: .3rem; flex-wrap: wrap; padding: 0 0 1.1rem; border-bottom: 1px solid var(--line); }
+
+  .interview-list { display: flex; flex-direction: column; gap: .6rem; margin-top: 1.2rem; }
+  .iq-card { padding: 1.1rem 1.2rem; border-radius: var(--radius); scroll-margin-top: calc(var(--header-h) + 24px); }
+  .iq-card.is-flash { animation: flash 1.1s ease; }
+  @keyframes flash { 0%, 100% { border-color: var(--line); } 25% { border-color: var(--acid); background: var(--acid-soft); } }
+  .iq-card__top { display: flex; align-items: center; gap: .4rem; flex-wrap: wrap; }
+  .iq-card__id { color: var(--faint); font-size: .54rem; letter-spacing: .06em; }
+  .iq-card__num { margin-left: auto; color: var(--faint); font-size: .55rem; }
+  .iq-card__q { margin-top: .65rem; font-family: var(--font-sans); font-size: 1rem; font-weight: 600; line-height: 1.55; letter-spacing: 0; }
+  .iq-card__tags { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: .45rem; color: var(--faint); font-size: .54rem; }
+  .iq-reveal { display: inline-flex; align-items: center; gap: .4rem; margin-top: .8rem; padding: .38rem .7rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: .65rem; transition: all .18s; }
+  .iq-reveal:hover { color: var(--text); border-color: var(--line-strong); }
+  .iq-reveal.is-open { color: var(--acid-ink); background: var(--acid); border-color: var(--acid); }
+  .iq-reveal.is-open svg { transform: rotate(180deg); }
+  .iq-reveal svg { transition: transform .2s; }
+  .iq-card__answer { margin-top: .8rem; padding: .9rem 1rem; border: 1px solid rgba(211, 250, 124, .2); border-radius: 8px; background: var(--bg-soft); }
+  .iq-card__answer-head { display: flex; align-items: center; gap: .4rem; color: var(--acid); }
+  .iq-card__answer > p { margin-top: .5rem; color: var(--muted); font-size: .84rem; line-height: 1.8; }
+  .iq-card__followup { margin-top: .8rem; padding-top: .7rem; border-top: 1px dashed var(--line); }
+  .iq-card__followup p { margin-top: .3rem; color: var(--faint); font-size: .76rem; font-style: italic; line-height: 1.6; }
+
+  .interview-note { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; padding: 1.2rem; border-radius: var(--radius); }
+  .interview-note__icon { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 50%; background: var(--acid-soft); color: var(--acid); }
+  .interview-note h2 { font-size: 1.02rem; }
+  .interview-note p { margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+  .interview-note .link-arrow { margin-left: auto; white-space: nowrap; }
+
+  @media (max-width: 720px) {
+    .interview-controls > .mono { margin-left: 0; }
+    .interview-note { flex-wrap: wrap; }
+    .interview-note .link-arrow { margin-left: 0; }
+  }
+</style>

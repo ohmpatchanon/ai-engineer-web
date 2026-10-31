@@ -1,0 +1,979 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowRight, ArrowUpRight, Terminal, Layers, ShieldCheck, Gauge, Compass, BookOpen, MessageSquareQuote, Route, Braces } from '@lucide/astro';
+import { modules, moduleBySlug } from '../data/modules';
+import { phases } from '../data/phases';
+import { paths } from '../data/paths';
+import { guides } from '../data/guides';
+import { projects } from '../data/projects';
+import { exercises } from '../data/exercises';
+import { interviewQuestions } from '../data/interview';
+import { glossary } from '../data/glossary';
+import { resources } from '../data/resources';
+import { lessons, lessonSequence } from '../data/theory';
+import ModuleCard from '../components/ModuleCard.astro';
+import PathCard from '../components/PathCard.astro';
+import GuideCard from '../components/GuideCard.astro';
+import LessonCard from '../components/LessonCard.astro';
+
+const featuredLessons = lessonSequence().slice(0, 3);
+
+const featuredModules = ['python-for-ai', 'ml-foundations', 'transformers', 'rag-systems', 'agents-tool-use', 'ai-system-design'].map((slug) => moduleBySlug[slug]);
+const featuredGuides = ['start-ai-engineering', 'rag-production-checklist', 'portfolio-that-gets-hired'].map((slug) => guides.find((g) => g.slug === slug)!).filter(Boolean);
+const featuredProjects = projects.slice(0, 3);
+const totalQuizQuestions = modules.reduce((sum, m) => sum + m.quiz.length, 0) + interviewQuestions.length;
+---
+<BaseLayout title="Road to AI Engineer" description="Field manual ภาษาไทยสำหรับสร้างระบบ AI ตั้งแต่ Python, ML, LLM ไปจนถึง RAG, agents และ production — 28 modules, 6 phases, labs และโจทย์ portfolio จริง">
+  <section class="hero">
+    <div class="hero__orbit" aria-hidden="true">
+      <svg viewBox="0 0 800 800" fill="none">
+        <circle cx="400" cy="400" r="360" stroke="currentColor" stroke-opacity=".12" stroke-dasharray="2 8"/>
+        <circle cx="400" cy="400" r="280" stroke="currentColor" stroke-opacity=".12"/>
+        <circle cx="400" cy="400" r="180" stroke="currentColor" stroke-opacity=".09" stroke-dasharray="1 6"/>
+        <circle cx="400" cy="120" r="4" fill="currentColor"/>
+        <circle cx="128" cy="535" r="2.5" fill="currentColor"/>
+        <circle cx="690" cy="545" r="3" fill="currentColor"/>
+        <path d="M400 120C520 190 580 310 550 430" stroke="currentColor" stroke-opacity=".2" stroke-dasharray="3 7"/>
+      </svg>
+    </div>
+
+    <div class="container hero__grid">
+      <div class="hero__copy">
+        <div class="hero__meta mono reveal">
+          <span class="hero__edition"><span class="live-dot"></span> FIELD MANUAL · 2026 EDITION</span>
+          <span class="hero__meta-sep">/</span>
+          <span>26 WEEKS · 6 PHASES</span>
+        </div>
+
+        <p class="hero__kicker reveal">Road to AI Engineer</p>
+
+        <h1 class="hero__title reveal">
+          จากศูนย์<br />
+          สู่ <span class="outline">AI</span> Engineer<br />
+          <span class="hero__accent">ที่สร้างของจริง</span>
+        </h1>
+
+        <p class="hero__lead reveal">
+          ไม่ใช่คอร์สที่สอนให้ท่อง prompt แต่เป็นสนามฝึกสำหรับสร้างระบบ AI ตั้งแต่บรรทัดแรกของ Python ไปจนถึง RAG, agents และ production ที่วัดผลได้
+        </p>
+
+        <div class="hero__actions reveal">
+          <a href="/start" class="btn btn--primary">หาจุดเริ่มต้นของฉัน <ArrowRight size={15} /></a>
+          <a href="/roadmap" class="btn btn--ghost"><Route size={14} /> ดู Roadmap ทั้งหมด</a>
+        </div>
+
+        <div class="hero__proof reveal">
+          <div class="hero__avatars" aria-hidden="true">
+            <span>01</span><span>02</span><span>03</span>
+          </div>
+          <p><strong>ไม่ต้องรอพร้อม</strong><br /><span class="muted">เริ่มจากบทที่ใช่สำหรับคุณ</span></p>
+        </div>
+      </div>
+
+      <aside class="mission panel reveal" aria-label="แดชบอร์ดภารกิจ">
+        <div class="mission__top">
+          <span class="mission__status mono"><span class="live-dot"></span> LIVE / MISSION CONTROL</span>
+          <span class="mono faint">v2.6</span>
+        </div>
+
+        <div class="mission__orbit">
+          <div class="mission__ring" data-hero-ring style="--pct: 0">
+            <div class="mission__ring-inner">
+              <span class="mission__big mono"><span data-hero-done>0</span><small>/{modules.length}</small></span>
+              <span class="mono micro">MODULES</span>
+            </div>
+          </div>
+          <div class="mission__ring-labels mono">
+            <span>BEGIN</span>
+            <span>SHIP</span>
+          </div>
+        </div>
+
+        <div class="mission__next">
+          <p class="mono micro">NEXT MISSION · PHASE 01</p>
+          <a href="/modules/python-for-ai" class="mission__next-link">
+            <span class="mission__next-num">01</span>
+            <span>
+              <strong>Python สำหรับงาน AI</strong>
+              <small>1–2 สัปดาห์ · เริ่มต้น</small>
+            </span>
+            <ArrowUpRight size={17} />
+          </a>
+        </div>
+
+        <div class="mission__grid">
+          <div><strong>06</strong><span>PHASES</span></div>
+          <div><strong>{exercises.length}</strong><span>LABS</span></div>
+          <div><strong>{projects.length}</strong><span>PROJECTS</span></div>
+          <div><strong>{glossary.length}</strong><span>TERMS</span></div>
+        </div>
+
+        <a href="/roadmap" class="btn btn--primary btn--block mission__cta">เข้าสู่ Mission Control <ArrowRight size={14} /></a>
+        <p class="mission__foot mono">LOCAL PROGRESS · ไม่ต้องสมัครสมาชิก</p>
+      </aside>
+    </div>
+
+    <div class="hero__ticker" aria-hidden="true">
+      <div class="ticker__track">
+        {['PYTHON', 'MACHINE LEARNING', 'TRANSFORMERS', 'LLM', 'RAG', 'EVALUATION', 'AGENTS', 'MLOPS', 'SECURITY', 'PRODUCT'].map((item) => (
+          <span>{item} <i>✦</i></span>
+        ))}
+        {['PYTHON', 'MACHINE LEARNING', 'TRANSFORMERS', 'LLM', 'RAG', 'EVALUATION', 'AGENTS', 'MLOPS', 'SECURITY', 'PRODUCT'].map((item) => (
+          <span>{item} <i>✦</i></span>
+        ))}
+      </div>
+    </div>
+  </section>
+
+  <section class="stats section--tight">
+    <div class="container">
+      <div class="stats__grid">
+        <div class="stat reveal"><span class="stat__num">{modules.length}</span><span class="stat__label">modules<br />จากฐานถึง production</span></div>
+        <div class="stat reveal"><span class="stat__num">{phases.length}</span><span class="stat__label">phases<br />เรียงตามลำดับที่ควรรู้</span></div>
+        <div class="stat reveal"><span class="stat__num">{exercises.length}</span><span class="stat__label">interactive labs<br />ฝึกคิด ไม่ใช่ดูเฉลย</span></div>
+        <div class="stat reveal"><span class="stat__num">{totalQuizQuestions}<sup>+</sup></span><span class="stat__label">questions<br />quiz และสัมภาษณ์</span></div>
+        <div class="stat reveal"><span class="stat__num">{resources.length}</span><span class="stat__label">curated resources<br />คัดแล้ว ไม่ยัด affiliate</span></div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--line manifesto">
+    <div class="container">
+      <div class="manifesto__grid">
+        <div class="manifesto__label reveal">
+          <span class="mono">00 / WHY THIS EXISTS</span>
+          <span class="manifesto__line"></span>
+        </div>
+        <div class="manifesto__body">
+          <h2 class="reveal">ตลาดเต็มไปด้วย “เรียน AI”<br />แต่ขาดแผนที่ที่<span class="text-acid">พาไปถึงงานจริง</span></h2>
+          <p class="lead reveal">คลิปมีเป็นพัน คอร์สมีเป็นร้อย แต่สิ่งที่หายากคือลำดับการเรียนรู้ที่ถูกต้อง การวัดผลที่ซื่อสัตย์ และคนที่บอกคุณตรง ๆ ว่าอะไรคือพื้นฐาน อะไรคือของจอแจ</p>
+          <div class="principles">
+            <article class="principle reveal">
+              <span class="principle__num mono">A</span>
+              <h3>ลึกพอที่จะทำงาน</h3>
+              <p>ไม่หยุดที่ “เรียก API เป็น” แต่เข้าใจ data, retrieval, evaluation, latency, cost และ failure modes ของระบบจริง</p>
+            </article>
+            <article class="principle reveal">
+              <span class="principle__num mono">B</span>
+              <h3>กว้างพอที่จะเลือกทาง</h3>
+              <p>มีทั้งสาย LLM, ML, Product และ MLOps ให้เลือกตามพื้นเดิมและเป้าหมาย ไม่ใช่บังคับทุกคนให้เดินเส้นเดียว</p>
+            </article>
+            <article class="principle reveal">
+              <span class="principle__num mono">C</span>
+              <h3>จริงพอที่จะวัดผล</h3>
+              <p>ทุก module มี lab, checkpoint และคำถามที่ผิดได้ พร้อมโจทย์ portfolio ที่มีเกณฑ์ประเมิน ไม่ใช่แค่ tutorial สวย ๆ</p>
+            </article>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section paths-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow reveal">CHOOSE YOUR TRAJECTORY</p>
+          <h2 class="reveal">สี่เส้นทาง<br />ที่พาไปอาชีพต่างกัน</h2>
+        </div>
+        <p class="section-head__aside reveal">ทุกเส้นทางใช้ฐานร่วมกัน แต่ให้น้ำหนักต่างกัน เลือกจากสิ่งที่คุณอยากสร้าง ไม่ใช่แค่ตำแหน่งที่ตลาดพูดถึง</p>
+      </div>
+      <div class="grid grid-4 paths-grid">
+        {paths.map((path) => <div class="reveal"><PathCard path={path} /></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--line curriculum">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow reveal">THE CURRICULUM</p>
+          <h2 class="reveal">6 phase.<br />เรียงตามลำดับที่สมองรับได้</h2>
+        </div>
+        <p class="section-head__aside reveal">ไม่มีทางลัดที่ข้ามพื้นฐานได้จริง แต่มีเส้นทางที่ลดการอ้อมได้ นี่คือลำดับที่เราใช้จริงในงาน</p>
+      </div>
+
+      <div class="phase-map reveal">
+        {phases.map((phase) => (
+          <a href={`/roadmap#${phase.id}`} class:list={['phase-step', `phase-step--${phase.color}`]}>
+            <span class="phase-step__num mono">{phase.number}</span>
+            <span class="phase-step__main">
+              <span class="phase-step__title">{phase.title}</span>
+              <span class="phase-step__en mono">{phase.en}</span>
+            </span>
+            <span class="phase-step__weeks mono">{phase.weeks.replace('สัปดาห์ ', 'W')}</span>
+            <ArrowUpRight size={15} class="phase-step__arrow" />
+          </a>
+        ))}
+      </div>
+
+      <div class="featured-head">
+        <p class="mono small muted">ตัวอย่าง 6 modules ที่เป็นแกนของหลักสูตร</p>
+        <a href="/modules" class="link-arrow">ดูทั้ง {modules.length} modules <ArrowRight size={13} /></a>
+      </div>
+      <div class="grid grid-3 module-grid">
+        {featuredModules.map((module) => <div class="reveal"><ModuleCard module={module} /></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section theory-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow reveal">UNDERSTAND FIRST</p>
+          <h2 class="reveal">รู้สึกว่าอ่านแล้ว<br /><span class="text-acid">"เข้าใจ"</span></h2>
+        </div>
+        <p class="section-head__aside reveal">ชั้นความรู้แบบตำรา {lessons.length} บท — อธิบายหลักการละเอียด มีลำดับและ prerequisite ชัดเจน ตั้งแต่คณิตที่ AI ใช้ ไปจนถึง Transformer, RAG, agents และ production</p>
+      </div>
+
+      <div class="grid grid-3 lesson-grid-home">
+        {featuredLessons.map((lesson) => <div class="reveal"><LessonCard lesson={lesson} /></div>)}
+      </div>
+      <div class="theory-cta reveal">
+        <span class="mono tiny faint">เรียงลำดับ T.01 → T.{String(lessons.length).padStart(2, '0')} พร้อม prereq ทุกบท</span>
+        <a href="/theory" class="btn btn--ghost btn--small">เปิดห้องทฤษฎีทั้งหมด <ArrowRight size={13} /></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section lab-callout">
+    <div class="container">
+      <div class="lab-callout__inner panel reveal">
+        <div class="lab-callout__copy">
+          <p class="eyebrow">INTERACTIVE LAB / 01</p>
+          <h2>prompt ของคุณ<br />สื่อสารรู้เรื่องแค่ไหน?</h2>
+          <p>ลองวาง prompt ที่ใช้อยู่ แล้วให้ Lab ตรวจ 8 องค์ประกอบสำคัญ ตั้งแต่ role, context, constraints ไปจนถึงเกณฑ์สำเร็จที่วัดได้</p>
+          <div class="lab-callout__actions">
+            <a href="/exercises/prompt-lab" class="btn btn--primary">ลอง Prompt Lab <ArrowRight size={14} /></a>
+            <span class="mono tiny muted">ใช้เวลา 3 นาที · บันทึกในเครื่องคุณ</span>
+          </div>
+        </div>
+        <div class="prompt-preview" aria-hidden="true">
+          <div class="prompt-preview__bar mono"><span>prompt_audit.md</span><span class="text-acid">● LIVE</span></div>
+          <pre><span class="code-dim"># Task</span>
+สกัดข้อมูลใบเสร็จเป็น JSON
+
+<span class="code-dim"># Constraints</span>
+- ห้ามเดาค่าที่ไม่ปรากฏ
+- วันที่ต้องเป็น ISO 8601
+
+<span class="code-dim"># Output</span>
+&#123;
+  "vendor": string,
+  "total": number,
+  "date": string
+&#125;</pre>
+          <div class="score-bars">
+            <div><span>Context</span><i style="--w: 92%"></i><b>92</b></div>
+            <div><span>Format</span><i style="--w: 96%"></i><b>96</b></div>
+            <div><span>Criteria</span><i style="--w: 74%"></i><b>74</b></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--line projects-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow reveal">PROOF OF WORK</p>
+          <h2 class="reveal">portfolio ที่ดี<br />ไม่ใช่ gallery</h2>
+        </div>
+        <p class="section-head__aside reveal">มันคือชุดข้อโต้แย้งว่าคุณแก้ปัญหาประเภทนี้ได้ เริ่มจากโจทย์ที่มีผู้ใช้จริง ข้อจำกัดจริง และตัวเลขที่วัดได้</p>
+      </div>
+      <div class="projects-grid">
+        {featuredProjects.map((project, i) => (
+          <a href={`/projects/${project.slug}`} class="project-row panel panel--hover reveal">
+            <span class="project-row__num mono">0{i + 1}</span>
+            <div class="project-row__main">
+              <div class="project-row__meta mono"><span>{project.category}</span><span>·</span><span>{project.time}</span></div>
+              <h3>{project.title}</h3>
+              <p>{project.summary}</p>
+            </div>
+            <div class="project-row__skills">
+              {project.skills.slice(0, 3).map((skill) => <span class="tag">{skill}</span>)}
+            </div>
+            <ArrowUpRight size={18} class="project-row__arrow" />
+          </a>
+        ))}
+      </div>
+      <div class="projects-foot reveal">
+        <a href="/projects" class="link-arrow">ดูโจทย์ทั้ง {projects.length} โปรเจกต์พร้อม rubric <ArrowRight size={13} /></a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section roles-section">
+    <div class="container">
+      <div class="roles-grid">
+        <div class="roles-copy">
+          <p class="eyebrow reveal">THE REAL WORK</p>
+          <h2 class="reveal">งานนี้ไม่ใช่<br />“เขียน prompt เก่ง”</h2>
+          <p class="lead reveal">AI Engineer คือวิศวกรที่ทำให้ความสามารถของโมเดลกลายเป็นระบบที่คนใช้ได้จริง — และนั่นหมายถึงงานที่ไม่ได้ glamorous เสมอไป</p>
+          <div class="roles-list">
+            <div class="role-item reveal"><span class="mono">01</span><div><h3>Data & Evaluation</h3><p>ทำความสะอาดข้อมูล สร้าง eval set วัด quality และหา failure mode ก่อนใครจะเห็นปัญหา</p></div></div>
+            <div class="role-item reveal"><span class="mono">02</span><div><h3>Systems Engineering</h3><p>ออกแบบ API, retrieval, caching, fallback, observability และทำให้ต้นทุนกับ latency อยู่ในกรอบ</p></div></div>
+            <div class="role-item reveal"><span class="mono">03</span><div><h3>Product Judgment</h3><p>ตัดสินใจว่าควรใช้ AI หรือไม่ วัดคุณค่าที่ผู้ใช้ได้รับ และออกแบบให้ความไม่แน่นอนไม่ทำร้ายใคร</p></div></div>
+          </div>
+        </div>
+        <div class="reality-card panel reveal">
+          <div class="reality-card__top mono"><span>FIELD NOTE</span><span class="text-acid">READ BEFORE STARTING</span></div>
+          <blockquote>“โมเดลที่ดีที่สุด ไม่ใช่โมเดลที่คะแนน benchmark สูงที่สุด แต่คือโมเดลที่ทำให้งานของผู้ใช้สำเร็จได้ด้วยต้นทุนที่องค์กรรับไหว”</blockquote>
+          <div class="reality-card__foot">
+            <span class="mono tiny">THE OPERATING PRINCIPLE</span>
+            <span class="reality-card__stamp">RTAE / 001</span>
+          </div>
+          <div class="reality-card__grid mono">
+            <div><span class="faint">TOOLS</span><strong>เปลี่ยนได้</strong></div>
+            <div><span class="faint">FOUNDATIONS</span><strong>อยู่ยาว</strong></div>
+            <div><span class="faint">EVIDENCE</span><strong>ต้องวัด</strong></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--line guides-section">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow reveal">FIELD GUIDES</p>
+          <h2 class="reveal">คำแนะนำที่ไม่ทำให้<br />คุณเสียเวลาเปล่า</h2>
+        </div>
+        <a href="/guides" class="link-arrow reveal">guides ทั้งหมด <ArrowRight size={13} /></a>
+      </div>
+      <div class="grid grid-3 guides-grid">
+        {featuredGuides.map((guide) => <div class="reveal"><GuideCard guide={guide} /></div>)}
+      </div>
+
+      <div class="knowledge-bento">
+        <a href="/interview" class="bento bento--large panel panel--hover reveal">
+          <MessageSquareQuote size={22} class="bento__icon" />
+          <div><span class="mono micro">INTERVIEW BANK</span><h3>{interviewQuestions.length} คำถาม<br />พร้อมแนวทางตอบ</h3></div>
+          <p>ครอบคลุม Python, ML, LLM, RAG, agents, system design และ behavioral</p>
+          <ArrowUpRight size={18} class="bento__arrow" />
+        </a>
+        <a href="/glossary" class="bento panel panel--hover reveal">
+          <BookOpen size={20} class="bento__icon" />
+          <div><span class="mono micro">GLOSSARY</span><h3>{glossary.length} คำ</h3></div>
+          <p>ภาษาไทย–อังกฤษ พร้อมคำอธิบายที่ใช้จริง</p>
+          <ArrowUpRight size={18} class="bento__arrow" />
+        </a>
+        <a href="/resources" class="bento panel panel--hover reveal">
+          <Layers size={20} class="bento__icon" />
+          <div><span class="mono micro">RESOURCES</span><h3>{resources.length} แหล่ง</h3></div>
+          <p>คอร์ส หนังสือ เอกสาร และเครื่องมือที่คัดแล้ว</p>
+          <ArrowUpRight size={18} class="bento__arrow" />
+        </a>
+        <a href="/cheatsheets" class="bento panel panel--hover reveal">
+          <Braces size={20} class="bento__icon" />
+          <div><span class="mono micro">CHEATSHEETS</span><h3>Quick ref</h3></div>
+          <p>สรุป metric, RAG, prompt และ system design</p>
+          <ArrowUpRight size={18} class="bento__arrow" />
+        </a>
+      </div>
+    </div>
+  </section>
+
+  <section class="section os-section">
+    <div class="container">
+      <div class="os-head">
+        <p class="eyebrow reveal">THE LEARNING OS</p>
+        <h2 class="reveal">ไม่ต้องมีวินัยมหาศาล<br />แค่มีระบบที่ดีพอ</h2>
+      </div>
+      <div class="os-grid">
+        <div class="os-item reveal">
+          <span class="os-item__icon"><Terminal size={18} /></span>
+          <span class="mono micro">01 / BUILD FIRST</span>
+          <h3>ลงมือก่อนเข้าใจทั้งหมด</h3>
+          <p>เริ่มจากงานเล็กที่รันได้ แล้วค่อยเจาะทฤษฎีเมื่อเจอปัญหาจริง ความเข้าใจจะติดแน่นกว่าการดูวิดีโออย่างเดียว</p>
+        </div>
+        <div class="os-item reveal">
+          <span class="os-item__icon"><Gauge size={18} /></span>
+          <span class="mono micro">02 / MEASURE</span>
+          <h3>ทุกอย่างต้องมีตัวเลข</h3>
+          <p>ความคืบหน้าไม่ใช่จำนวนชั่วโมงที่ดู แต่คือสิ่งที่คุณสร้างได้และหลักฐานว่ามันดีขึ้นจริง</p>
+        </div>
+        <div class="os-item reveal">
+          <span class="os-item__icon"><ShieldCheck size={18} /></span>
+          <span class="mono micro">03 / THINK RISK</span>
+          <h3>ออกแบบจากความล้มเหลว</h3>
+          <p>ถามก่อนว่าอะไรจะพัง ใครได้รับผลกระทบ และจะรู้ได้อย่างไร ก่อนจะเพิ่มฟีเจอร์ใหม่</p>
+        </div>
+        <div class="os-item reveal">
+          <span class="os-item__icon"><Compass size={18} /></span>
+          <span class="mono micro">04 / STAY CURIOUS</span>
+          <h3>ตามหลัก ไม่ตามกระแส</h3>
+          <p>เครื่องมือเปลี่ยนทุกเดือน แต่หลักการของ data, evaluation และระบบยังอยู่ ลงทุนกับสิ่งที่โอนย้ายได้</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="final-cta">
+    <div class="container">
+      <div class="final-cta__inner reveal">
+        <span class="final-cta__orbit" aria-hidden="true"></span>
+        <p class="eyebrow">YOUR NEXT MOVE</p>
+        <h2>อนาคตไม่ได้รอ<br />ให้คุณ<span class="text-acid">พร้อม</span></h2>
+        <p>เริ่มจาก 6 คำถามเพื่อดูว่าคุณควรเริ่มที่ไหน — ไม่ต้องสมัคร ไม่ต้องผูกบัตร</p>
+        <div class="final-cta__actions">
+          <a href="/start" class="btn btn--primary">เริ่มทำแบบประเมิน <ArrowRight size={15} /></a>
+          <a href="/roadmap" class="btn btn--ghost">เปิด Roadmap <ArrowUpRight size={14} /></a>
+        </div>
+        <div class="final-cta__meta mono">
+          <span>28 MODULES</span><span>·</span><span>10 LABS</span><span>·</span><span>POSITIVE-SUM LEARNING</span>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const getDone = (): string[] => {
+    try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
+  };
+  function syncHero() {
+    const done = getDone().length;
+    document.querySelectorAll<HTMLElement>('[data-hero-done]').forEach((el) => { el.textContent = String(done); });
+    document.querySelectorAll<HTMLElement>('[data-hero-ring]').forEach((el) => {
+      el.style.setProperty('--pct', String(Math.min(100, (done / 28) * 100)));
+    });
+  }
+  syncHero();
+  window.addEventListener('aie:progress', syncHero);
+  window.addEventListener('storage', (e) => { if (e.key === 'aie:modules') syncHero(); });
+</script>
+
+<style>
+  /* Hero ------------------------------------------------------------------ */
+  .hero {
+    position: relative;
+    padding-top: calc(var(--header-h) + clamp(3.5rem, 8vw, 7rem));
+    overflow: hidden;
+  }
+
+  .hero__orbit {
+    position: absolute;
+    width: min(920px, 90vw);
+    height: min(920px, 90vw);
+    right: -16%;
+    top: -20%;
+    color: var(--acid);
+    opacity: 0.55;
+    pointer-events: none;
+    animation: slow-spin 90s linear infinite;
+  }
+
+  @keyframes slow-spin { to { transform: rotate(360deg); } }
+
+  .hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.4fr) minmax(320px, 0.6fr);
+    gap: clamp(2.5rem, 5vw, 5rem);
+    align-items: center;
+    position: relative;
+    z-index: 1;
+  }
+
+  .hero__meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.7rem;
+    align-items: center;
+    font-size: 0.62rem;
+    color: var(--faint);
+    letter-spacing: 0.06em;
+  }
+
+  .hero__edition { display: inline-flex; align-items: center; gap: 0.45rem; color: var(--muted); }
+  .live-dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--acid);
+    box-shadow: 0 0 0 4px var(--acid-soft);
+    animation: pulse 2.6s ease infinite;
+  }
+  @keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(211, 250, 124, 0); } }
+  .hero__meta-sep { color: var(--line-strong); }
+
+  .hero__kicker {
+    margin-top: 2rem;
+    font-family: var(--font-mono);
+    font-size: 0.72rem;
+    letter-spacing: 0.22em;
+    text-transform: uppercase;
+    color: var(--acid);
+  }
+
+  .hero__title {
+    margin-top: 0.9rem;
+    font-size: clamp(3.2rem, 7.6vw, 7.1rem);
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+    max-width: 12ch;
+  }
+
+  .hero__title .outline {
+    color: transparent;
+    -webkit-text-stroke: 1.5px var(--text);
+    opacity: 0.85;
+  }
+
+  .hero__accent { color: var(--acid); }
+
+  .hero__lead {
+    margin-top: 1.8rem;
+    max-width: 53ch;
+    color: var(--muted);
+    font-size: clamp(0.98rem, 1.4vw, 1.08rem);
+    line-height: 1.8;
+  }
+
+  .hero__actions { display: flex; flex-wrap: wrap; gap: 0.7rem; margin-top: 2rem; }
+
+  .hero__proof {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    margin-top: 2.2rem;
+    color: var(--muted);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+
+  .hero__proof strong { color: var(--text); font-weight: 500; }
+
+  .hero__avatars { display: flex; }
+  .hero__avatars span {
+    display: grid; place-items: center;
+    width: 30px; height: 30px;
+    border-radius: 50%;
+    border: 1px solid var(--panel);
+    background: var(--panel-2);
+    font-family: var(--font-mono); font-size: 0.5rem; color: var(--faint);
+    margin-left: -7px;
+  }
+  .hero__avatars span:first-child { margin-left: 0; background: var(--acid); color: var(--acid-ink); }
+  .hero__avatars span:nth-child(2) { background: var(--panel-3); }
+
+  /* Mission control ------------------------------------------------------- */
+  .mission {
+    padding: 1.25rem;
+    border-radius: 20px;
+    background:
+      radial-gradient(circle at 80% 0%, rgba(211, 250, 124, 0.08), transparent 16rem),
+      linear-gradient(150deg, rgba(255, 255, 255, 0.035), transparent 50%),
+      var(--panel);
+    box-shadow: var(--shadow);
+    position: relative;
+  }
+
+  .mission::before {
+    content: '';
+    position: absolute;
+    inset: 8px;
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    pointer-events: none;
+    opacity: 0.45;
+  }
+
+  .mission__top {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    gap: 1rem;
+    padding-bottom: 1rem;
+    border-bottom: 1px solid var(--line);
+    font-size: 0.58rem;
+    letter-spacing: 0.06em;
+  }
+
+  .mission__status { display: inline-flex; align-items: center; gap: 0.4rem; color: var(--muted); }
+
+  .mission__orbit {
+    position: relative;
+    display: grid;
+    place-items: center;
+    padding: 1.6rem 0 1.1rem;
+  }
+
+  .mission__ring {
+    --pct: 0;
+    width: 168px;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    background: conic-gradient(var(--acid) calc(var(--pct) * 1%), var(--panel-3) 0);
+    position: relative;
+    transition: background 0.6s ease;
+  }
+
+  .mission__ring::before {
+    content: '';
+    position: absolute;
+    inset: 5px;
+    border-radius: 50%;
+    background: var(--panel);
+  }
+
+  .mission__ring::after {
+    content: '';
+    position: absolute;
+    inset: 14px;
+    border-radius: 50%;
+    border: 1px dashed var(--line);
+  }
+
+  .mission__ring-inner { position: relative; z-index: 1; text-align: center; }
+  .mission__big { display: flex; align-items: baseline; justify-content: center; font-family: var(--font-display); font-size: 2.7rem; line-height: 1; letter-spacing: -0.06em; color: var(--text); }
+  .mission__big small { font-size: 0.85rem; color: var(--faint); letter-spacing: 0; margin-left: 0.15rem; }
+  .mission__ring-inner .micro { display: block; margin-top: 0.35rem; }
+
+  .micro { font-family: var(--font-mono); font-size: 0.54rem; letter-spacing: 0.1em; color: var(--faint); text-transform: uppercase; }
+
+  .mission__ring-labels {
+    position: absolute;
+    inset: auto 0 0;
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.5rem;
+    color: var(--faint);
+    letter-spacing: 0.1em;
+    padding-inline: 0.4rem;
+  }
+
+  .mission__next { border-top: 1px solid var(--line); padding-top: 0.95rem; }
+  .mission__next-link {
+    display: flex; align-items: center; gap: 0.7rem;
+    margin-top: 0.55rem; padding: 0.65rem;
+    border: 1px solid var(--line); border-radius: 10px;
+    text-decoration: none; background: var(--bg-soft);
+    transition: border-color 0.2s;
+  }
+  .mission__next-link:hover { border-color: var(--line-strong); }
+  .mission__next-num { font-family: var(--font-mono); font-size: 0.7rem; color: var(--acid); }
+  .mission__next-link > span:nth-child(2) { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; }
+  .mission__next-link strong { font-size: 0.82rem; font-weight: 500; }
+  .mission__next-link small { font-family: var(--font-mono); font-size: 0.55rem; color: var(--faint); }
+  .mission__next-link svg { color: var(--faint); }
+
+  .mission__grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 1px;
+    margin-top: 1rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: var(--line);
+    overflow: hidden;
+  }
+
+  .mission__grid div { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.55rem; background: var(--panel); text-align: center; }
+  .mission__grid strong { font-family: var(--font-display); font-size: 1rem; font-weight: 500; }
+  .mission__grid span { font-family: var(--font-mono); font-size: 0.48rem; letter-spacing: 0.08em; color: var(--faint); }
+  .mission__cta { margin-top: 1rem; }
+  .mission__foot { margin-top: 0.7rem; text-align: center; font-size: 0.47rem; letter-spacing: 0.06em; }
+
+  /* Ticker ---------------------------------------------------------------- */
+  .hero__ticker {
+    margin-top: clamp(3rem, 6vw, 5rem);
+    border-block: 1px solid var(--line);
+    overflow: hidden;
+    padding-block: 0.65rem;
+    mask-image: linear-gradient(90deg, transparent, #000 5%, #000 95%, transparent);
+  }
+
+  .ticker__track {
+    display: flex;
+    gap: 1.6rem;
+    width: max-content;
+    animation: ticker 34s linear infinite;
+  }
+
+  .ticker__track span {
+    display: inline-flex;
+    align-items: center;
+    gap: 1.6rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+
+  .ticker__track i { color: var(--acid); font-style: normal; font-size: 0.5rem; opacity: 0.7; }
+  @keyframes ticker { to { transform: translateX(-50%); } }
+
+  /* Stats ----------------------------------------------------------------- */
+  .stats { padding-top: 0; }
+  .stats__grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    border-top: 1px solid var(--line);
+    border-bottom: 1px solid var(--line);
+  }
+  .stat { padding: 1.35rem 1.1rem; border-right: 1px solid var(--line); display: flex; align-items: baseline; gap: 0.7rem; }
+  .stat:last-child { border-right: 0; }
+  .stat__num { font-family: var(--font-display); font-size: clamp(1.8rem, 3vw, 2.6rem); line-height: 1; letter-spacing: -0.05em; color: var(--text); }
+  .stat__num sup { font-size: 0.7rem; color: var(--acid); margin-left: 0.1rem; }
+  .stat__label { font-family: var(--font-mono); font-size: 0.56rem; color: var(--faint); line-height: 1.55; }
+
+  @media (max-width: 960px) {
+    .hero__grid { grid-template-columns: 1fr; }
+    .mission { max-width: 440px; }
+    .hero__title { max-width: 13ch; }
+    .stats__grid { grid-template-columns: repeat(3, 1fr); }
+    .stat:nth-child(3) { border-right: 0; }
+    .stat:nth-child(n + 4) { border-top: 1px solid var(--line); }
+  }
+
+  @media (max-width: 620px) {
+    .hero { padding-top: calc(var(--header-h) + 3rem); }
+    .hero__title { font-size: clamp(2.8rem, 14vw, 4.2rem); }
+    .hero__orbit { right: -45%; top: -5%; opacity: 0.35; }
+    .hero__actions .btn { width: 100%; }
+    .stats__grid { grid-template-columns: repeat(2, 1fr); }
+    .stat { border-right: 0; border-bottom: 1px solid var(--line); }
+    .stat:nth-child(odd) { border-right: 1px solid var(--line); }
+    .stat:last-child { grid-column: 1 / -1; border-bottom: 0; }
+    .mission { padding: 1rem; }
+    .mission__ring { width: 145px; }
+  }
+
+  /* Manifesto ------------------------------------------------------------- */
+  .manifesto__grid { display: grid; grid-template-columns: 140px 1fr; gap: clamp(2rem, 6vw, 6rem); }
+  .manifesto__label { display: flex; flex-direction: column; gap: 1rem; padding-top: 0.4rem; }
+  .manifesto__label .mono { font-size: 0.6rem; color: var(--faint); letter-spacing: 0.1em; }
+  .manifesto__line { width: 1px; height: 120px; background: linear-gradient(var(--acid), transparent); }
+  .manifesto__body h2 { font-size: clamp(2rem, 4.3vw, 3.8rem); line-height: 1.12; max-width: 18ch; }
+  .manifesto__body .lead { margin-top: 1.5rem; }
+  .principles { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1.5rem; margin-top: 3.5rem; }
+  .principle { padding-top: 1.2rem; border-top: 1px solid var(--line-strong); }
+  .principle__num { color: var(--acid); font-size: 0.65rem; }
+  .principle h3 { margin-top: 1rem; font-size: 1.15rem; }
+  .principle p { margin-top: 0.55rem; color: var(--muted); font-size: 0.83rem; line-height: 1.7; }
+
+  @media (max-width: 800px) {
+    .manifesto__grid { grid-template-columns: 1fr; gap: 1.5rem; }
+    .manifesto__label { flex-direction: row; align-items: center; }
+    .manifesto__line { flex: 1; width: auto; height: 1px; background: linear-gradient(90deg, var(--acid), transparent); }
+    .principles { grid-template-columns: 1fr; gap: 1.8rem; }
+  }
+
+  /* Paths/cards ----------------------------------------------------------- */
+  .paths-section { padding-top: 1rem; }
+  .paths-grid { align-items: stretch; }
+  .paths-grid > div { display: flex; }
+  .paths-grid > div > :global(*) { width: 100%; }
+
+  .phase-map { border-top: 1px solid var(--line); margin-bottom: 3rem; }
+  .phase-step {
+    display: grid;
+    grid-template-columns: 48px 1fr auto auto;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.95rem 0.2rem;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    transition: padding 0.25s, background 0.25s;
+  }
+  .phase-step:hover { padding-left: 0.75rem; background: var(--panel); }
+  .phase-step__num { font-size: 0.7rem; color: var(--faint); }
+  .phase-step__main { display: flex; align-items: baseline; gap: 0.8rem; flex-wrap: wrap; }
+  .phase-step__title { font-weight: 500; font-size: 0.95rem; }
+  .phase-step__en { font-size: 0.56rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.08em; }
+  .phase-step__weeks { font-size: 0.58rem; color: var(--faint); letter-spacing: 0.05em; }
+  .phase-step__arrow { color: var(--faint); }
+  .phase-step--acid .phase-step__num { color: var(--acid); }
+  .phase-step--amber .phase-step__num { color: var(--amber); }
+  .phase-step--sky .phase-step__num { color: var(--sky); }
+  .phase-step--violet .phase-step__num { color: var(--violet); }
+  .phase-step--coral .phase-step__num { color: var(--coral); }
+  .phase-step--sand .phase-step__num { color: var(--sand); }
+
+  .featured-head { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: 1.2rem; }
+  .module-grid > div { display: flex; }
+  .module-grid > div > :global(*) { width: 100%; }
+
+  @media (max-width: 600px) {
+    .phase-step { grid-template-columns: 34px 1fr auto; }
+    .phase-step__weeks { display: none; }
+    .featured-head { align-items: flex-start; flex-direction: column; }
+  }
+
+  /* Lab callout ----------------------------------------------------------- */
+  .lab-callout__inner {
+    display: grid;
+    grid-template-columns: 1.1fr 0.9fr;
+    gap: clamp(2rem, 5vw, 4rem);
+    padding: clamp(1.5rem, 4vw, 3.5rem);
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 85% 10%, rgba(211, 250, 124, 0.09), transparent 22rem),
+      var(--panel);
+  }
+  .lab-callout__copy h2 { margin-top: 0.8rem; font-size: clamp(2rem, 3.7vw, 3.2rem); line-height: 1.1; }
+  .lab-callout__copy > p { margin-top: 1rem; color: var(--muted); max-width: 48ch; font-size: 0.95rem; }
+  .lab-callout__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 1rem; margin-top: 1.7rem; }
+  .prompt-preview {
+    border: 1px solid var(--line-strong);
+    border-radius: 12px;
+    background: var(--bg-soft);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    box-shadow: 0 24px 60px rgba(0, 0, 0, 0.25);
+  }
+  .prompt-preview__bar { display: flex; justify-content: space-between; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--line); font-size: 0.58rem; color: var(--faint); }
+  .prompt-preview pre { border: 0; border-radius: 0; background: transparent; padding: 1rem; font-size: 0.67rem; line-height: 1.7; color: var(--text); }
+  .code-dim { color: var(--faint); }
+  .score-bars { padding: 0.8rem 1rem 1rem; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 0.6rem; }
+  .score-bars div { display: grid; grid-template-columns: 64px 1fr 24px; align-items: center; gap: 0.6rem; font-size: 0.58rem; color: var(--muted); }
+  .score-bars i { height: 4px; border-radius: 2px; background: linear-gradient(90deg, var(--acid) var(--w), var(--panel-3) var(--w)); }
+  .score-bars b { color: var(--acid); font-weight: 500; text-align: right; }
+
+  @media (max-width: 820px) {
+    .lab-callout__inner { grid-template-columns: 1fr; }
+    .prompt-preview { max-width: 100%; }
+  }
+
+  /* Projects -------------------------------------------------------------- */
+  .projects-grid { display: flex; flex-direction: column; border-top: 1px solid var(--line); }
+  .project-row {
+    display: grid;
+    grid-template-columns: 52px 1fr auto 24px;
+    gap: 1.4rem;
+    align-items: center;
+    padding: 1.4rem 1.1rem;
+    border: 0;
+    border-bottom: 1px solid var(--line);
+    border-radius: 0;
+    text-decoration: none;
+  }
+  .project-row:hover { background: var(--panel); }
+  .project-row__num { color: var(--faint); font-size: 0.65rem; align-self: start; padding-top: 0.15rem; }
+  .project-row__meta { display: flex; gap: 0.45rem; font-size: 0.56rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; }
+  .project-row h3 { margin-top: 0.35rem; font-size: 1.2rem; }
+  .project-row p { margin-top: 0.3rem; color: var(--muted); font-size: 0.8rem; max-width: 60ch; }
+  .project-row__skills { display: flex; gap: 0.35rem; flex-wrap: wrap; justify-content: flex-end; max-width: 230px; }
+  .project-row__arrow { color: var(--faint); transition: transform 0.2s, color 0.2s; }
+  .project-row:hover .project-row__arrow { color: var(--acid); transform: translate(2px, -2px); }
+  .projects-foot { margin-top: 1.5rem; }
+
+  @media (max-width: 900px) {
+    .project-row { grid-template-columns: 34px 1fr 20px; gap: 1rem; }
+    .project-row__skills { display: none; }
+  }
+
+  /* Roles ----------------------------------------------------------------- */
+  .roles-grid { display: grid; grid-template-columns: 1fr 0.8fr; gap: clamp(2rem, 6vw, 6rem); align-items: center; }
+  .roles-copy h2 { margin-top: 0.8rem; font-size: clamp(2rem, 4vw, 3.6rem); }
+  .roles-copy .lead { margin-top: 1.3rem; }
+  .roles-list { margin-top: 2.2rem; display: flex; flex-direction: column; }
+  .role-item { display: grid; grid-template-columns: 40px 1fr; gap: 0.9rem; padding: 1.1rem 0; border-top: 1px solid var(--line); }
+  .role-item .mono { color: var(--acid); font-size: 0.62rem; padding-top: 0.2rem; }
+  .role-item h3 { font-size: 1.05rem; }
+  .role-item p { margin-top: 0.3rem; color: var(--muted); font-size: 0.82rem; }
+
+  .reality-card {
+    padding: 1.5rem;
+    border-radius: var(--radius-lg);
+    background:
+      linear-gradient(160deg, rgba(211, 250, 124, 0.06), transparent 45%),
+      var(--panel);
+    transform: rotate(1.2deg);
+  }
+  .reality-card__top { display: flex; justify-content: space-between; gap: 0.75rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); font-size: 0.54rem; letter-spacing: 0.06em; color: var(--faint); }
+  .reality-card blockquote { margin: 2rem 0; font-family: var(--font-display); font-size: clamp(1.35rem, 2.3vw, 1.85rem); line-height: 1.35; letter-spacing: -0.025em; color: var(--text); }
+  .reality-card__foot { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+  .reality-card__stamp { font-family: var(--font-mono); font-size: 0.52rem; border: 1px solid var(--line-strong); border-radius: 4px; padding: 0.2rem 0.4rem; color: var(--faint); }
+  .reality-card__grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.4rem; padding-top: 1rem; }
+  .reality-card__grid div { display: flex; flex-direction: column; gap: 0.15rem; }
+  .reality-card__grid span { font-size: 0.48rem; letter-spacing: 0.08em; }
+  .reality-card__grid strong { font-family: var(--font-sans); font-size: 0.72rem; font-weight: 500; }
+
+  @media (max-width: 860px) {
+    .roles-grid { grid-template-columns: 1fr; }
+    .reality-card { transform: none; }
+  }
+
+  /* Guides bento ---------------------------------------------------------- */
+  .guides-grid > div { display: flex; }
+  .guides-grid > div > :global(*) { width: 100%; }
+  .knowledge-bento {
+    display: grid;
+    grid-template-columns: 1.5fr 1fr 1fr 1fr;
+    gap: 0.8rem;
+    margin-top: 2rem;
+  }
+  .bento {
+    display: flex;
+    flex-direction: column;
+    min-height: 210px;
+    padding: 1.2rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+    position: relative;
+  }
+  .bento__icon { color: var(--acid); margin-bottom: auto; }
+  .bento .micro { display: block; margin-top: 1.2rem; }
+  .bento h3 { margin-top: 0.35rem; font-size: 1.15rem; line-height: 1.3; }
+  .bento p { margin-top: 0.4rem; color: var(--muted); font-size: 0.75rem; line-height: 1.55; }
+  .bento__arrow { position: absolute; top: 1.1rem; right: 1.1rem; color: var(--faint); }
+  .bento--large { background: linear-gradient(150deg, rgba(211, 250, 124, 0.06), transparent), var(--panel); }
+  @media (max-width: 960px) { .knowledge-bento { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 560px) { .knowledge-bento { grid-template-columns: 1fr; } .bento { min-height: 170px; } }
+
+  /* OS -------------------------------------------------------------------- */
+  .os-section { border-top: 1px solid var(--line); }
+  .os-head { display: flex; justify-content: space-between; align-items: end; gap: 2rem; margin-bottom: 3rem; }
+  .os-head h2 { font-size: clamp(2rem, 4vw, 3.5rem); }
+  .os-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.5rem; }
+  .os-item { border-top: 1px solid var(--line-strong); padding-top: 1.1rem; }
+  .os-item__icon { display: grid; place-items: center; width: 38px; height: 38px; border: 1px solid var(--line); border-radius: 9px; color: var(--acid); margin-bottom: 1.4rem; }
+  .os-item .micro { display: block; }
+  .os-item h3 { margin-top: 1rem; font-size: 1.04rem; }
+  .os-item p { margin-top: 0.5rem; color: var(--muted); font-size: 0.8rem; line-height: 1.7; }
+  @media (max-width: 860px) { .os-grid { grid-template-columns: repeat(2, 1fr); } .os-head { flex-direction: column; align-items: start; } }
+  @media (max-width: 520px) { .os-grid { grid-template-columns: 1fr; } }
+
+  /* Final CTA ------------------------------------------------------------- */
+  .final-cta { padding-block: clamp(3rem, 6vw, 6rem); }
+  .final-cta__inner {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(3rem, 8vw, 7rem) clamp(1.5rem, 5vw, 5rem);
+    border: 1px solid var(--line);
+    border-radius: 26px;
+    background:
+      radial-gradient(ellipse at 70% 20%, rgba(211, 250, 124, 0.1), transparent 28rem),
+      var(--panel);
+    text-align: center;
+  }
+  .final-cta__orbit {
+    position: absolute;
+    width: 500px; aspect-ratio: 1;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    top: -55%; right: -10%;
+    opacity: 0.6;
+    pointer-events: none;
+  }
+  .final-cta__orbit::before, .final-cta__orbit::after { content: ''; position: absolute; border: 1px solid var(--line); border-radius: 50%; }
+  .final-cta__orbit::before { inset: 50px; }
+  .final-cta__orbit::after { inset: 100px; }
+  .final-cta h2 { margin-top: 1rem; font-size: clamp(2.5rem, 6vw, 5.3rem); line-height: 1.02; }
+  .final-cta p:not(.eyebrow) { margin: 1.2rem auto 0; max-width: 52ch; color: var(--muted); }
+  .final-cta__actions { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.7rem; margin-top: 2rem; }
+  .final-cta__meta { display: flex; justify-content: center; flex-wrap: wrap; gap: 0.6rem; margin-top: 2.5rem; color: var(--faint); font-size: 0.5rem; letter-spacing: 0.1em; }
+
+  /* Theory home section --------------------------------------------------- */
+  .theory-section { border-top: 1px solid var(--line); }
+  .lesson-grid-home { margin-top: 0.4rem; }
+  .theory-cta { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.2rem; }
+</style>

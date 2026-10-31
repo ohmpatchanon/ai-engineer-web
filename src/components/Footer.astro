@@ -1,0 +1,193 @@
+---
+import { ArrowUp, Search } from '@lucide/astro';
+import Logo from './Logo.astro';
+
+const year = new Date().getFullYear();
+---
+<footer class="site-footer">
+  <div class="container">
+    <div class="footer-top">
+      <div class="footer-intro">
+        <Logo />
+        <p>สนามฝึกสำหรับคนที่อยากสร้างระบบ AI ตั้งแต่พื้นฐานจนถึง production — เนื้อหาภาษาไทยที่เน้นความเข้าใจและการลงมือทำจริง</p>
+        <button class="footer-search" type="button" data-search-open>
+          <Search size={14} />
+          <span>ค้นหาทั้งเว็บ</span>
+          <kbd>⌘K</kbd>
+        </button>
+      </div>
+
+      <nav class="footer-col" aria-label="เมนูเรียน">
+        <p class="footer-label">เรียน</p>
+        <a href="/roadmap">Roadmap</a>
+        <a href="/modules">หลักสูตร 28 modules</a>
+        <a href="/theory">ทฤษฎี — ความรู้เชิงลึก</a>
+        <a href="/paths">เลือกสายอาชีพ</a>
+        <a href="/exercises">Interactive labs</a>
+        <a href="/projects">Portfolio projects</a>
+        <a href="/plan">แผน 12 สัปดาห์</a>
+      </nav>
+
+      <nav class="footer-col" aria-label="เมนูคลังความรู้">
+        <p class="footer-label">คลังความรู้</p>
+        <a href="/guides">Guides & playbooks</a>
+        <a href="/interview">Interview bank</a>
+        <a href="/glossary">Glossary 105 คำ</a>
+        <a href="/resources">Resources</a>
+        <a href="/cheatsheets">Cheatsheets</a>
+        <a href="/progress">ความคืบหน้าของฉัน</a>
+      </nav>
+
+      <nav class="footer-col" aria-label="เมนูเกี่ยวกับ">
+        <p class="footer-label">เกี่ยวกับ</p>
+        <a href="/start">เริ่มตรงนี้</a>
+        <a href="/about">แนวทางของเรา</a>
+        <a href="/about#method">วิธีการคัดเนื้อหา</a>
+        <a href="/about#contribute">ร่วมพัฒนา</a>
+        <a href="/about#license">การใช้งานเนื้อหา</a>
+      </nav>
+    </div>
+
+    <div class="footer-wordmark" aria-hidden="true">
+      <span>ROAD</span><span class="slash">/</span><span>TO</span><span class="slash">/</span><span>AI</span>
+      <em>ENGINEER</em>
+    </div>
+
+    <div class="footer-bottom">
+      <p>© {year} Road to AI Engineer · เนื้อหาเพื่อการเรียนรู้ ไม่ใช่คำแนะนำทางกฎหมายหรือการรับประกันผลลัพธ์</p>
+      <div class="footer-bottom__links">
+        <a href="/about#privacy">ความเป็นส่วนตัว</a>
+        <a href="/about#license">สัญญาอนุญาต</a>
+        <a href="#top" class="back-top">กลับขึ้นด้านบน <ArrowUp size={13} /></a>
+      </div>
+    </div>
+  </div>
+</footer>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-search-open]').forEach((btn) => {
+    btn.addEventListener('click', () => window.dispatchEvent(new CustomEvent('aie:opensearch')));
+  });
+</script>
+
+<style>
+  .site-footer {
+    margin-top: clamp(4rem, 8vw, 8rem);
+    border-top: 1px solid var(--line);
+    background: linear-gradient(to bottom, transparent, var(--bg-soft));
+    overflow: hidden;
+  }
+
+  .footer-top {
+    display: grid;
+    grid-template-columns: 1.6fr repeat(3, 0.8fr);
+    gap: clamp(2rem, 4vw, 4rem);
+    padding-block: clamp(3rem, 6vw, 5rem) 2.5rem;
+  }
+
+  .footer-intro p {
+    margin-top: 1.2rem;
+    max-width: 38ch;
+    color: var(--muted);
+    font-size: 0.9rem;
+    line-height: 1.75;
+  }
+
+  .footer-search {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-top: 1.4rem;
+    padding: 0.55rem 0.75rem;
+    border: 1px solid var(--line);
+    border-radius: 8px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+  }
+
+  .footer-search:hover { border-color: var(--line-strong); color: var(--text); }
+  .footer-search kbd {
+    margin-left: 0.6rem;
+    padding: 0.08rem 0.3rem;
+    border: 1px solid var(--line);
+    border-radius: 3px;
+    font-size: 0.58rem;
+  }
+
+  .footer-col { display: flex; flex-direction: column; align-items: flex-start; gap: 0.6rem; }
+
+  .footer-label {
+    margin-bottom: 0.5rem;
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    color: var(--faint);
+  }
+
+  .footer-col a {
+    color: var(--muted);
+    font-size: 0.83rem;
+    text-decoration: none;
+  }
+
+  .footer-col a:hover { color: var(--acid); }
+
+  .footer-wordmark {
+    display: flex;
+    align-items: baseline;
+    gap: 0.4rem;
+    padding-block: 1.2rem 1.5rem;
+    border-top: 1px solid var(--line);
+    color: var(--panel-3);
+    font-family: var(--font-display);
+    font-weight: 600;
+    font-size: clamp(3rem, 11.5vw, 10.5rem);
+    letter-spacing: -0.07em;
+    line-height: 0.8;
+    white-space: nowrap;
+    user-select: none;
+  }
+
+  html[data-theme='light'] .footer-wordmark { color: #e1e0d4; }
+  .footer-wordmark .slash { color: var(--acid); opacity: 0.55; }
+  .footer-wordmark em {
+    font-style: normal;
+    font-family: var(--font-mono);
+    font-size: clamp(0.5rem, 1vw, 0.9rem);
+    letter-spacing: 0.18em;
+    color: var(--faint);
+    margin-left: auto;
+  }
+
+  .footer-bottom {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.25rem;
+    padding-block: 1.2rem 1.8rem;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-size: 0.66rem;
+    font-family: var(--font-mono);
+  }
+
+  .footer-bottom__links { display: flex; gap: 1.25rem; flex-wrap: wrap; }
+  .footer-bottom a { color: var(--faint); text-decoration: none; }
+  .footer-bottom a:hover { color: var(--text); }
+  .back-top { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+  @media (max-width: 900px) {
+    .footer-top { grid-template-columns: 1fr 1fr; }
+    .footer-intro { grid-column: 1 / -1; }
+  }
+
+  @media (max-width: 560px) {
+    .footer-top { grid-template-columns: 1fr; gap: 2rem; }
+    .footer-bottom { flex-direction: column; align-items: flex-start; }
+    .footer-wordmark em { display: none; }
+    .footer-wordmark { font-size: clamp(2.6rem, 13vw, 4.5rem); gap: 0.2rem; }
+  }
+</style>

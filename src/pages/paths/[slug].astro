@@ -1,0 +1,245 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowRight, ArrowUpRight, Check, Route, Flag, Sparkles } from '@lucide/astro';
+import { paths } from '../../data/paths';
+import { moduleBySlug } from '../../data/modules';
+import { phases } from '../../data/phases';
+import { phaseColor } from '../../lib/ui';
+
+export function getStaticPaths() {
+  return paths.map((path) => ({ params: { slug: path.slug }, props: { path } }));
+}
+const { path } = Astro.props;
+const pathModules = path.moduleSlugs.map((slug) => moduleBySlug[slug]).filter(Boolean);
+const grouped = phases.map((phase) => ({
+  phase,
+  items: pathModules.filter((module) => module.phase === phase.id)
+})).filter((group) => group.items.length > 0);
+const first = pathModules[0];
+---
+<BaseLayout title={path.title} description={`${path.description} · ${path.weeks} · ${pathModules.length} modules`}>
+  <article class:list={['path-page', `path-page--${path.color}`]} style={`--path-color: var(--${path.color})`}>
+    <header class="path-hero">
+      <div class="container">
+        <nav class="breadcrumbs"><a href="/">หน้าแรก</a><span>/</span><a href="/paths">สายอาชีพ</a><span>/</span><span>{path.title}</span></nav>
+        <div class="path-hero__grid">
+          <div>
+            <div class="path-hero__top reveal">
+              <span class="tag path-tag">LEARNING PATH</span>
+              <span class="mono tiny faint">{path.weeks} · {pathModules.length} modules</span>
+            </div>
+            <p class="path-hero__tagline mono reveal">{path.tagline}</p>
+            <h1 class="reveal">{path.title}</h1>
+            <p class="path-hero__desc reveal">{path.description}</p>
+            <div class="path-hero__actions reveal">
+              <a href={`/modules/${first.slug}`} class="btn btn--primary">เริ่ม module แรก <ArrowRight size={14} /></a>
+              <button class="btn btn--ghost" data-path-copy>คัดลอกลิงก์เส้นทาง</button>
+            </div>
+            <div class="path-hero__stats reveal">
+              <div><span class="mono">DURATION</span><strong>{path.weeks}</strong></div>
+              <div><span class="mono">LEVEL</span><strong>{path.level}</strong></div>
+              <div><span class="mono">MODULES</span><strong>{pathModules.length}</strong></div>
+              <div><span class="mono">CAPSTONE</span><strong>1</strong></div>
+            </div>
+          </div>
+
+          <aside class="path-progress panel reveal">
+            <div class="path-progress__top mono"><span>PATH PROGRESS</span><span class="text-acid" data-path-pct>0%</span></div>
+            <div class="path-progress__ring" data-path-ring style="--pct: 0">
+              <div><strong data-path-done>0</strong><span>/{pathModules.length}</span></div>
+            </div>
+            <div class="progress-track"><span data-path-bar></span></div>
+            <p data-path-next class="path-progress__next">เริ่มจาก {first.title}</p>
+            <a href={`/modules/${first.slug}`} class="btn btn--ghost btn--small">ไปยังบทถัดไป <ArrowRight size={12} /></a>
+          </aside>
+        </div>
+      </div>
+    </header>
+
+    <div class="container path-layout">
+      <div class="path-main">
+        <section class="path-block">
+          <div class="content-label"><Route size={15} /><span>หลักสูตรในเส้นทางนี้</span><span class="mono count">{pathModules.length} modules</span></div>
+          <div class="path-phases">
+            {grouped.map((group) => (
+              <section class="path-phase">
+                <div class="path-phase__head">
+                  <span class:list={['tag', `tag--${phaseColor(group.phase.id)}`]}>{group.phase.number} · {group.phase.title}</span>
+                  <span class="mono tiny faint">{group.items.length} modules</span>
+                </div>
+                <div class="path-module-list">
+                  {group.items.map((module) => (
+                    <div class="path-module" data-path-check-row data-id={module.id}>
+                      <button class="path-check" type="button" data-path-check aria-pressed="false" aria-label={`ทำเครื่องหมาย ${module.title}`}><Check size={11} stroke-width={3} /></button>
+                      <a href={`/modules/${module.slug}`} class="path-module__link">
+                        <span class="path-module__num mono">{module.number}</span>
+                        <span class="path-module__copy">
+                          <strong>{module.title}</strong>
+                          <small class="mono">{module.duration} · {module.level} · {module.keywords.slice(0, 2).join(' / ')}</small>
+                        </span>
+                        <ArrowUpRight size={14} />
+                      </a>
+                    </div>
+                  ))}
+                </div>
+              </section>
+            ))}
+          </div>
+        </section>
+
+        <section class="capstone panel">
+          <div class="capstone__top mono"><span>FINAL CAPSTONE</span><Flag size={14} /></div>
+          <h2>พิสูจน์ว่าคุณทำได้ทั้งระบบ</h2>
+          <p>{path.capstone}</p>
+          <div class="capstone__actions">
+            <a href="/projects" class="btn btn--primary btn--small">ดูโจทย์โปรเจกต์ <ArrowRight size={12} /></a>
+            <a href="/guides/portfolio-that-gets-hired" class="btn btn--ghost btn--small">วิธีเขียน case study</a>
+          </div>
+        </section>
+      </div>
+
+      <aside class="path-side">
+        <div class="side-sticky">
+          <div class="side-card panel">
+            <p class="mono micro">เหมาะกับใคร</p>
+            <ul class="best-for">
+              {path.bestFor.map((item) => <li><Check size={12} /> {item}</li>)}
+            </ul>
+          </div>
+          <div class="side-card panel">
+            <p class="mono micro">คุณจะทำได้</p>
+            <ul class="outcomes">
+              {path.outcomes.map((item) => <li>{item}</li>)}
+            </ul>
+          </div>
+          <div class="side-cta panel">
+            <Sparkles size={16} class="text-acid" />
+            <p>ไม่แน่ใจว่าเส้นทางนี้เหมาะกับคุณ?</p>
+            <a href="/start" class="link-arrow">ทำแบบประเมิน 2 นาที <ArrowRight size={12} /></a>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <script type="application/json" data-path-ids set:html={JSON.stringify(pathModules.map((m) => m.id))}></script>
+  </article>
+</BaseLayout>
+
+<script>
+  const ids: string[] = JSON.parse(document.querySelector<HTMLScriptElement>('[data-path-ids]')?.textContent || '[]');
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-path-check-row]')];
+  const checks = [...document.querySelectorAll<HTMLButtonElement>('[data-path-check]')];
+  const getDone = (): string[] => {
+    try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
+  };
+  function sync() {
+    const done = getDone();
+    const count = ids.filter((id) => done.includes(id)).length;
+    const pct = ids.length ? Math.round((count / ids.length) * 100) : 0;
+    document.querySelectorAll<HTMLElement>('[data-path-done]').forEach((el) => { el.textContent = String(count); });
+    document.querySelectorAll<HTMLElement>('[data-path-pct]').forEach((el) => { el.textContent = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-path-bar]').forEach((el) => { el.style.width = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-path-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); });
+    rows.forEach((row) => {
+      const active = done.includes(row.dataset.id || '');
+      row.classList.toggle('is-done', active);
+      row.querySelector('[data-path-check]')?.setAttribute('aria-pressed', String(active));
+    });
+  }
+  checks.forEach((check) => {
+    check.addEventListener('click', () => {
+      const row = check.closest<HTMLElement>('[data-path-check-row]');
+      const api = (window as any).AIE;
+      if (!row || !api) return;
+      const active = api.toggleModule(row.dataset.id);
+      api.toast(active ? 'บันทึกความคืบหน้าแล้ว ✓' : 'ยกเลิกเครื่องหมายแล้ว');
+      sync();
+    });
+  });
+  document.querySelector('[data-path-copy]')?.addEventListener('click', async () => {
+    try {
+      await navigator.clipboard.writeText(location.href);
+      (window as any).AIE?.toast('คัดลอกลิงก์แล้ว');
+    } catch { (window as any).AIE?.toast('คัดลอกไม่สำเร็จ'); }
+  });
+  sync();
+  window.addEventListener('aie:progress', sync);
+</script>
+
+<style>
+  .path-page { --path-color: var(--acid); }
+  .path-page--amber { --path-color: var(--amber); }
+  .path-page--violet { --path-color: var(--violet); }
+  .path-page--sky { --path-color: var(--sky); }
+
+  .path-hero { padding-top: calc(var(--header-h) + 2.5rem); padding-bottom: 3.5rem; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+  .path-hero::before { content: ''; position: absolute; width: 60vw; height: 60vw; max-width: 800px; max-height: 800px; right: -10%; top: -40%; background: radial-gradient(circle, color-mix(in srgb, var(--path-color) 11%, transparent), transparent 65%); pointer-events: none; }
+  .path-hero__grid { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(280px, 0.5fr); gap: clamp(2rem, 6vw, 6rem); margin-top: 2.5rem; align-items: center; position: relative; }
+  .path-hero__top { display: flex; align-items: center; gap: 0.8rem; }
+  .path-tag { color: var(--path-color); border-color: color-mix(in srgb, var(--path-color) 35%, transparent); }
+  .path-hero__tagline { margin-top: 2rem; color: var(--path-color); font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.07em; }
+  .path-hero h1 { margin-top: 0.6rem; font-size: clamp(2.8rem, 6.4vw, 5.7rem); max-width: 12ch; }
+  .path-hero__desc { margin-top: 1.2rem; max-width: 60ch; color: var(--muted); font-size: 1rem; line-height: 1.8; }
+  .path-hero__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.7rem; }
+  .path-hero__stats { display: flex; flex-wrap: wrap; gap: 2rem; margin-top: 2.2rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .path-hero__stats div { display: flex; flex-direction: column; gap: 0.2rem; }
+  .path-hero__stats span { font-size: 0.5rem; color: var(--faint); letter-spacing: 0.08em; }
+  .path-hero__stats strong { font-family: var(--font-display); font-size: 0.92rem; font-weight: 500; }
+
+  .path-progress { padding: 1.2rem; border-radius: var(--radius); }
+  .path-progress__top { display: flex; justify-content: space-between; padding-bottom: 0.8rem; border-bottom: 1px solid var(--line); font-size: 0.55rem; letter-spacing: 0.07em; color: var(--faint); }
+  .path-progress__ring { --pct: 0; width: 130px; aspect-ratio: 1; margin: 1.2rem auto; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--path-color) calc(var(--pct) * 1%), var(--panel-3) 0); }
+  .path-progress__ring div { width: calc(100% - 9px); aspect-ratio: 1; border-radius: 50%; background: var(--panel); display: flex; align-items: baseline; justify-content: center; }
+  .path-progress__ring strong { font-family: var(--font-display); font-size: 2rem; line-height: 2.6; letter-spacing: -0.04em; }
+  .path-progress__ring span { font-family: var(--font-mono); font-size: 0.65rem; color: var(--faint); }
+  .path-progress p { margin-top: 0.7rem; color: var(--muted); font-size: 0.72rem; line-height: 1.5; }
+  .path-progress .btn { margin-top: 0.8rem; width: 100%; }
+
+  .path-layout { display: grid; grid-template-columns: minmax(0, 1fr) 280px; gap: clamp(2rem, 5vw, 4rem); padding-top: 3rem; }
+  .path-block { padding-bottom: 2.5rem; }
+  .content-label { display: flex; align-items: center; gap: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); }
+  .content-label svg { color: var(--path-color); }
+  .content-label .count { margin-left: auto; color: var(--faint); font-size: 0.56rem; }
+  .path-phases { display: flex; flex-direction: column; gap: 1.6rem; margin-top: 1.4rem; }
+  .path-phase__head { display: flex; align-items: center; justify-content: space-between; gap: 0.7rem; margin-bottom: 0.5rem; }
+  .path-module-list { display: flex; flex-direction: column; gap: 0.35rem; }
+  .path-module { display: flex; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; }
+  .path-module:hover { border-color: var(--line-strong); }
+  .path-module.is-done { border-color: rgba(211, 250, 124, 0.25); }
+  .path-check { width: 36px; flex: none; display: grid; place-items: center; border: 0; border-right: 1px solid var(--line); background: transparent; color: transparent; }
+  .path-check:hover { color: var(--faint); background: var(--acid-soft); }
+  .path-module.is-done .path-check { background: var(--acid); color: var(--acid-ink); }
+  .path-module__link { flex: 1; display: flex; align-items: center; gap: 0.7rem; padding: 0.7rem 0.8rem; text-decoration: none; }
+  .path-module__num { color: var(--faint); font-size: 0.58rem; }
+  .path-module__copy { display: flex; flex-direction: column; gap: 0.1rem; flex: 1; }
+  .path-module__copy strong { font-size: 0.8rem; font-weight: 500; }
+  .path-module__copy small { color: var(--faint); font-size: 0.48rem; }
+  .path-module.is-done .path-module__copy strong { color: var(--muted); }
+  .path-module__link > svg { color: var(--faint); }
+
+  .capstone { padding: 1.5rem; border-radius: var(--radius); }
+  .capstone__top { display: flex; justify-content: space-between; align-items: center; color: var(--faint); font-size: 0.55rem; letter-spacing: 0.08em; }
+  .capstone h2 { margin-top: 1rem; font-size: 1.5rem; }
+  .capstone p { margin-top: 0.5rem; color: var(--muted); font-size: 0.84rem; line-height: 1.75; }
+  .capstone__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.2rem; }
+
+  .path-side .side-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); display: flex; flex-direction: column; gap: 0.7rem; }
+  .side-card { padding: 1rem; border-radius: var(--radius); }
+  .best-for, .outcomes { list-style: none; margin-top: 0.7rem; display: flex; flex-direction: column; gap: 0.55rem; }
+  .best-for li { display: flex; gap: 0.45rem; align-items: flex-start; color: var(--muted); font-size: 0.74rem; line-height: 1.55; }
+  .best-for svg { color: var(--acid); flex: none; margin-top: 0.15rem; }
+  .outcomes li { padding-left: 0.8rem; border-left: 1px solid var(--line-strong); color: var(--muted); font-size: 0.74rem; line-height: 1.55; }
+  .side-cta { padding: 1rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+  .side-cta p { color: var(--muted); font-size: 0.75rem; }
+
+  @media (max-width: 950px) {
+    .path-hero__grid { grid-template-columns: 1fr; }
+    .path-progress { max-width: 360px; }
+    .path-layout { grid-template-columns: 1fr; }
+    .path-side { display: none; }
+  }
+  @media (max-width: 560px) {
+    .path-hero__stats { gap: 1rem; }
+    .path-hero__actions .btn { width: 100%; }
+  }
+</style>

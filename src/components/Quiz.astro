@@ -1,0 +1,305 @@
+---
+import type { QuizQuestion } from '../data/types';
+import { ArrowRight, RotateCcw } from '@lucide/astro';
+
+interface Props {
+  questions: QuizQuestion[];
+  id: string;
+  title?: string;
+}
+const { questions, id, title = 'Knowledge check' } = Astro.props;
+const letters = ['A', 'B', 'C', 'D', 'E'];
+---
+<section class="quiz panel" data-quiz data-key={`aie:quiz:${id}`} data-total={questions.length} aria-label={title}>
+  <header class="quiz__header">
+    <div>
+      <p class="eyebrow eyebrow--plain">Interactive check</p>
+      <p class="quiz__title">{title}</p>
+    </div>
+    <div class="quiz__stats mono">
+      <span data-quiz-count>0/{questions.length}</span>
+      <span class="quiz__score"><span data-quiz-score>0</span> คะแนน</span>
+    </div>
+  </header>
+
+  <div class="quiz__progress progress-track"><span data-quiz-progress></span></div>
+
+  <div class="quiz__stage">
+    {questions.map((q, qi) => (
+      <div class="quiz-q" data-q data-index={qi} hidden={qi !== 0}>
+        <div class="quiz-q__meta mono">QUESTION {String(qi + 1).padStart(2, '0')} / {String(questions.length).padStart(2, '0')}</div>
+        <h3 class="quiz-q__question">{q.question}</h3>
+        <div class="quiz-q__options" role="group" aria-label={`ตัวเลือกข้อ ${qi + 1}`}>
+          {q.options.map((opt, oi) => (
+            <button type="button" class="quiz-option" data-option data-index={oi}>
+              <span class="quiz-option__letter mono">{letters[oi]}</span>
+              <span class="quiz-option__text">{opt}</span>
+              <span class="quiz-option__mark" aria-hidden="true"></span>
+            </button>
+          ))}
+        </div>
+        <div class="quiz-q__explain" data-explain hidden>
+          <div class="quiz-explain__icon" data-explain-icon></div>
+          <p data-explain-text></p>
+        </div>
+      </div>
+    ))}
+  </div>
+
+  <footer class="quiz__footer">
+    <button type="button" class="btn btn--ghost btn--small" data-quiz-prev disabled>ก่อนหน้า</button>
+    <span class="mono quiz__hint" data-quiz-hint>เลือกคำตอบเพื่อดูคำอธิบาย</span>
+    <button type="button" class="btn btn--primary btn--small" data-quiz-next disabled>ข้อถัดไป <ArrowRight size={13} /></button>
+  </footer>
+
+  <div class="quiz__summary" data-quiz-summary hidden>
+    <div class="quiz-summary__score">
+      <span data-quiz-final>0</span>
+      <small>/{questions.length}</small>
+    </div>
+    <div class="quiz-summary__copy">
+      <p class="eyebrow" data-quiz-verdict>ผลลัพธ์</p>
+      <h3 data-quiz-message>ทำได้ดี</h3>
+      <p class="muted small" data-quiz-detail></p>
+    </div>
+    <button type="button" class="btn btn--ghost btn--small" data-quiz-reset><RotateCcw size={13} /> เริ่มใหม่</button>
+  </div>
+
+<!-- Correct answers are injected into a JSON island at build time. -->
+<script type="application/json" data-answer-key set:html={JSON.stringify(questions.map((q) => q.answer))}></script>
+<script type="application/json" data-data set:html={JSON.stringify(questions.map((q) => ({ explanation: q.explanation })))}></script>
+
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-quiz]')!;
+  if (root) {
+    const key = root.dataset.key || 'aie:quiz';
+    const questions = [...root.querySelectorAll<HTMLElement>('[data-q]')];
+    const total = Number(root.dataset.total || questions.length);
+    const options = [...root.querySelectorAll<HTMLButtonElement>('[data-option]')];
+    const prev = root.querySelector<HTMLButtonElement>('[data-quiz-prev]');
+    const next = root.querySelector<HTMLButtonElement>('[data-quiz-next]');
+    const count = root.querySelector<HTMLElement>('[data-quiz-count]');
+    const scoreEl = root.querySelector<HTMLElement>('[data-quiz-score]');
+    const progress = root.querySelector<HTMLElement>('[data-quiz-progress]');
+    const hint = root.querySelector<HTMLElement>('[data-quiz-hint]');
+    const summary = root.querySelector<HTMLElement>('[data-quiz-summary]');
+    const stage = root.querySelector<HTMLElement>('.quiz__stage');
+    const footer = root.querySelector<HTMLElement>('.quiz__footer');
+    const answers: number[] = Array(total).fill(-1);
+    let index = 0;
+
+    // Data helpers ---------------------------------------------------------
+    function load() {
+      try {
+        const saved = JSON.parse(localStorage.getItem(key) || '[]');
+        if (Array.isArray(saved)) {
+          saved.forEach((v: number, i: number) => {
+            if (typeof v === 'number' && v >= 0 && v < 4 && i < total) answers[i] = v;
+          });
+        }
+      } catch {}
+    }
+
+    function persist() {
+      try { localStorage.setItem(key, JSON.stringify(answers)); } catch {}
+    }
+
+    const answerKey: number[] = JSON.parse(root.querySelector<HTMLScriptElement>('[data-answer-key]')?.textContent || '[]');
+    const payload: { explanation: string }[] = JSON.parse(root.querySelector<HTMLScriptElement>('[data-data]')?.textContent || '[]');
+
+    function score() {
+      return answers.reduce((sum, a, i) => sum + (a === answerKey[i] ? 1 : 0), 0);
+    }
+
+    function answeredCount() {
+      return answers.filter((a) => a >= 0).length;
+    }
+
+    function applyQuestionState(qi: number) {
+      const q = questions[qi];
+      const selected = answers[qi];
+      q.querySelectorAll<HTMLButtonElement>('[data-option]').forEach((btn) => {
+        const oi = Number(btn.dataset.index);
+        btn.classList.remove('is-correct', 'is-wrong', 'is-dim');
+        btn.disabled = false;
+        const mark = btn.querySelector<HTMLElement>('.quiz-option__mark');
+        if (mark) mark.innerHTML = '';
+        if (selected < 0) return;
+        btn.disabled = true;
+        if (oi === answerKey[qi]) {
+          btn.classList.add('is-correct');
+          if (mark) mark.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg>';
+        } else if (oi === selected) {
+          btn.classList.add('is-wrong');
+          if (mark) mark.innerHTML = '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M18 6 6 18M6 6l12 12"/></svg>';
+        } else {
+          btn.classList.add('is-dim');
+        }
+      });
+      const explain = q.querySelector<HTMLElement>('[data-explain]');
+      const explainText = q.querySelector<HTMLElement>('[data-explain-text]');
+      const explainIcon = q.querySelector<HTMLElement>('[data-explain-icon]');
+      if (selected >= 0) {
+        const isCorrect = selected === answerKey[qi];
+        if (explain) explain.hidden = false;
+        explain?.classList.toggle('is-correct', isCorrect);
+        if (explainText) explainText.textContent = payload[qi]?.explanation || '';
+        if (explainIcon) explainIcon.innerHTML = isCorrect
+          ? '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><path d="m5 12 5 5L20 7"/></svg>'
+          : '<svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="9"/><path d="M12 8v5M12 16.5v.01"/></svg>';
+      } else {
+        if (explain) explain.hidden = true;
+      }
+    }
+
+    function updateChrome() {
+      if (count) count.textContent = `${answeredCount()}/${total}`;
+      if (scoreEl) scoreEl.textContent = String(score());
+      if (progress) progress.style.width = `${(answeredCount() / total) * 100}%`;
+      if (prev) prev.disabled = index === 0;
+      if (next) {
+        next.disabled = answers[index] < 0;
+        next.innerHTML = index === total - 1
+          ? 'ดูผลลัพธ์ <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="m5 12 5 5L20 7"/></svg>'
+          : 'ข้อถัดไป <svg viewBox="0 0 24 24" width="13" height="13" fill="none" stroke="currentColor" stroke-width="2"><path d="M5 12h14M12 5l7 7-7 7"/></svg>';
+      }
+      if (hint) hint.textContent = answers[index] >= 0 ? 'อ่านคำอธิบาย แล้วไปข้อถัดไป' : 'เลือกคำตอบเพื่อดูคำอธิบาย';
+    }
+
+    function show(i: number) {
+      index = Math.max(0, Math.min(i, total - 1));
+      questions.forEach((q, qi) => { q.hidden = qi !== index; });
+      updateChrome();
+    }
+
+    function showSummary() {
+      if (!summary || !stage || !footer) return;
+      const s = score();
+      const pct = Math.round((s / total) * 100);
+      stage.hidden = true;
+      footer.hidden = true;
+      summary.hidden = false;
+      const finalEl = root.querySelector<HTMLElement>('[data-quiz-final]');
+      const verdict = root.querySelector<HTMLElement>('[data-quiz-verdict]');
+      const message = root.querySelector<HTMLElement>('[data-quiz-message]');
+      const detail = root.querySelector<HTMLElement>('[data-quiz-detail]');
+      if (finalEl) finalEl.textContent = String(s);
+      const tier = pct >= 85 ? 'พร้อมใช้งาน' : pct >= 60 ? 'เกือบแล้ว' : 'ควรทบทวน';
+      if (verdict) verdict.textContent = `${tier} · ${pct}%`;
+      if (message) message.textContent = pct >= 85 ? 'พื้นฐานแน่นมาก' : pct >= 60 ? 'เข้าใจหลัก แต่ยังมีจุดพลาด' : 'กลับไปอ่านคำอธิบายแล้วลองใหม่';
+      if (detail) detail.textContent = pct >= 85
+        ? 'ลองอธิบายเหตุผลของคำตอบให้คนอื่นฟังได้ ถ้าทำได้แปลว่าคุณเข้าใจจริง ไม่ใช่แค่จำ'
+        : 'อ่านคำอธิบายของข้อที่ผิด แล้วเชื่อมกับ module ที่เกี่ยวข้อง จากนั้นลองอีกครั้ง';
+    }
+
+    function reset() {
+      answers.fill(-1);
+      persist();
+      summary?.setAttribute('hidden', '');
+      stage?.removeAttribute('hidden');
+      footer?.removeAttribute('hidden');
+      questions.forEach((_, qi) => applyQuestionState(qi));
+      show(0);
+    }
+
+    // Boot ----------------------------------------------------------------
+    load();
+    questions.forEach((_, qi) => applyQuestionState(qi));
+    if (answers.every((a) => a >= 0)) {
+      showSummary();
+    } else {
+      const firstUnanswered = answers.findIndex((a) => a < 0);
+      show(firstUnanswered >= 0 ? firstUnanswered : 0);
+    }
+
+    options.forEach((btn) => {
+      btn.addEventListener('click', () => {
+        const q = btn.closest<HTMLElement>('[data-q]');
+        if (!q) return;
+        const qi = Number(q.dataset.index);
+        if (answers[qi] >= 0) return;
+        answers[qi] = Number(btn.dataset.index);
+        persist();
+        applyQuestionState(qi);
+        updateChrome();
+      });
+    });
+
+    prev?.addEventListener('click', () => show(index - 1));
+    next?.addEventListener('click', () => {
+      if (answers[index] < 0) return;
+      if (index === total - 1) showSummary();
+      else show(index + 1);
+    });
+    root.querySelector('[data-quiz-reset]')?.addEventListener('click', reset);
+  }
+</script>
+
+<style>
+  .quiz { padding: clamp(1.1rem, 2.5vw, 1.75rem); border-radius: var(--radius-lg); }
+  .quiz__header { display: flex; align-items: center; justify-content: space-between; gap: 1rem; }
+  .quiz__title { margin-top: 0.25rem; font-family: var(--font-display); font-size: 1.25rem; font-weight: 600; }
+  .quiz__stats { display: flex; gap: 0.9rem; color: var(--faint); font-size: 0.66rem; }
+  .quiz__score { color: var(--acid); }
+  .quiz__progress { margin-top: 1.2rem; }
+  .quiz__stage { min-height: 300px; margin-top: 1.4rem; }
+  .quiz-q__meta { color: var(--faint); font-size: 0.6rem; letter-spacing: 0.1em; }
+  .quiz-q__question { margin-top: 0.65rem; font-size: clamp(1.05rem, 2vw, 1.3rem); line-height: 1.5; white-space: pre-line; }
+  .quiz-q__options { display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1.1rem; }
+  .quiz-option {
+    display: flex; align-items: center; gap: 0.75rem;
+    width: 100%; padding: 0.7rem 0.85rem;
+    border: 1px solid var(--line); border-radius: 9px;
+    background: var(--bg-soft); color: var(--muted);
+    text-align: left; font-size: 0.86rem; line-height: 1.55;
+    transition: all 0.18s ease;
+  }
+  .quiz-option:hover:not(:disabled) { border-color: var(--line-strong); background: var(--panel-2); color: var(--text); }
+  .quiz-option:disabled { cursor: default; }
+  .quiz-option__letter {
+    display: grid; place-items: center; width: 24px; height: 24px; flex: none;
+    border: 1px solid var(--line); border-radius: 5px; font-size: 0.63rem; color: var(--faint);
+  }
+  .quiz-option__text { flex: 1; }
+  .quiz-option__mark { width: 18px; height: 18px; display: grid; place-items: center; flex: none; }
+  .quiz-option.is-correct { border-color: rgba(211, 250, 124, 0.45); background: var(--acid-soft); color: var(--text); }
+  .quiz-option.is-correct .quiz-option__letter { border-color: var(--acid); color: var(--acid); }
+  .quiz-option.is-wrong { border-color: rgba(255, 137, 122, 0.4); background: rgba(255, 137, 122, 0.07); color: var(--text); }
+  .quiz-option.is-wrong .quiz-option__letter { border-color: var(--danger); color: var(--danger); }
+  .quiz-option.is-dim { opacity: 0.45; }
+  .quiz-q__explain {
+    display: flex; align-items: flex-start; gap: 0.6rem;
+    margin-top: 1rem; padding: 0.8rem 0.9rem;
+    border: 1px solid var(--line); border-radius: 8px;
+    color: var(--muted); font-size: 0.82rem; line-height: 1.65;
+    background: var(--panel-2);
+  }
+  .quiz-q__explain.is-correct { border-color: rgba(211, 250, 124, 0.22); }
+  .quiz-explain__icon { color: var(--acid); flex: none; margin-top: 0.15rem; }
+  .quiz-q__explain:not(.is-correct) .quiz-explain__icon { color: var(--danger); }
+  .quiz__footer {
+    display: flex; align-items: center; justify-content: space-between; gap: 0.75rem;
+    margin-top: 1.3rem; padding-top: 1rem; border-top: 1px solid var(--line);
+  }
+  .quiz__hint { color: var(--faint); font-size: 0.6rem; text-align: center; }
+  .quiz__footer .btn { gap: 0.35rem; }
+  .quiz__summary {
+    display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1.4rem;
+    margin-top: 1.4rem; padding-top: 1.5rem; border-top: 1px solid var(--line);
+  }
+  .quiz-summary__score {
+    display: flex; align-items: baseline; gap: 0.2rem;
+    font-family: var(--font-display); font-size: 3.8rem; line-height: 1; color: var(--acid);
+    letter-spacing: -0.06em;
+  }
+  .quiz-summary__score small { font-size: 1rem; color: var(--faint); letter-spacing: 0; }
+  .quiz__summary h3 { margin-top: 0.25rem; }
+  .quiz__summary p { margin-top: 0.35rem; }
+  @media (max-width: 620px) {
+    .quiz__summary { grid-template-columns: 1fr; }
+    .quiz__hint { display: none; }
+    .quiz__stats { flex-direction: column; gap: 0.1rem; text-align: right; }
+  }
+</style>

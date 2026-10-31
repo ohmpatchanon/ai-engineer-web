@@ -1,0 +1,66 @@
+---
+import { ArrowUpRight, Route } from '@lucide/astro';
+import type { LearningPath } from '../data/paths';
+
+interface Props { path: LearningPath; large?: boolean; }
+const { path, large = false } = Astro.props;
+---
+<a href={`/paths/${path.slug}`} class:list={['path-card', 'panel', 'panel--hover', `path-card--${path.color}`, { 'path-card--large': large }]} style={`--path-color: var(--${path.color})`}>
+  <div class="path-card__top">
+    <span class="path-card__icon"><Route size={18} stroke-width={1.6} /></span>
+    <span class="mono path-card__weeks">{path.weeks}</span>
+    <ArrowUpRight size={16} class="path-card__arrow" />
+  </div>
+  <p class="path-card__tagline mono">{path.tagline}</p>
+  <h3>{path.title}</h3>
+  <p class="path-card__desc">{path.description}</p>
+  <div class="path-card__foot">
+    <span class="tag">{path.level}</span>
+    <span class="mono tiny faint">{path.moduleSlugs.length} modules</span>
+    <span class="path-card__line"></span>
+  </div>
+</a>
+
+<style>
+  .path-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.4rem;
+    text-decoration: none;
+    border-radius: var(--radius-lg);
+    min-height: 310px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .path-card::before {
+    content: '';
+    position: absolute;
+    left: -30%;
+    top: -60%;
+    width: 75%;
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: var(--path-color);
+    opacity: 0.06;
+    filter: blur(20px);
+    pointer-events: none;
+  }
+
+  .path-card--large { min-height: 380px; padding: 1.7rem; }
+  .path-card__top { display: flex; align-items: center; gap: 0.6rem; }
+  .path-card__icon {
+    display: grid; place-items: center; width: 36px; height: 36px;
+    border: 1px solid color-mix(in srgb, var(--path-color) 35%, transparent);
+    border-radius: 8px; color: var(--path-color);
+    background: color-mix(in srgb, var(--path-color) 9%, transparent);
+  }
+  .path-card__weeks { margin-left: auto; color: var(--faint); font-size: 0.64rem; }
+  .path-card__arrow { color: var(--faint); transition: transform 0.2s, color 0.2s; }
+  .path-card:hover .path-card__arrow { color: var(--path-color); transform: translate(2px, -2px); }
+  .path-card__tagline { margin-top: 1.3rem; color: var(--path-color); font-size: 0.65rem; letter-spacing: 0.04em; text-transform: uppercase; }
+  .path-card h3 { margin-top: 0.45rem; font-size: clamp(1.35rem, 2.2vw, 1.7rem); }
+  .path-card__desc { margin-top: 0.65rem; color: var(--muted); font-size: 0.85rem; line-height: 1.7; flex: 1; }
+  .path-card__foot { display: flex; align-items: center; gap: 0.65rem; margin-top: 1.3rem; }
+  .path-card__line { flex: 1; height: 1px; background: linear-gradient(to right, var(--line), transparent); }
+</style>

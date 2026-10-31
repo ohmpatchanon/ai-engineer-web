@@ -1,0 +1,50 @@
+---
+import { ArrowUpRight } from '@lucide/astro';
+import type { Guide } from '../data/types';
+import { readingTime } from '../lib/ui';
+
+interface Props { guide: Guide; featured?: boolean; }
+const { guide, featured = false } = Astro.props;
+const minutes = readingTime(guide.sections);
+---
+<a href={`/guides/${guide.slug}`} class:list={['guide-card', 'panel', 'panel--hover', { 'guide-card--featured': featured }]}>
+  <div class="guide-card__top">
+    <span class="tag">{guide.category}</span>
+    <span class="guide-card__time mono">{minutes} นาที</span>
+    <ArrowUpRight size={16} class="guide-card__arrow" />
+  </div>
+  <div class="guide-card__body">
+    <h3>{guide.title}</h3>
+    <p>{guide.dek}</p>
+  </div>
+  <div class="guide-card__tags">
+    {guide.tags.slice(0, 3).map((tag) => <span class="mono">#{tag}</span>)}
+  </div>
+</a>
+
+<style>
+  .guide-card {
+    display: flex;
+    flex-direction: column;
+    padding: 1.15rem;
+    text-decoration: none;
+    min-height: 210px;
+    border-radius: var(--radius);
+  }
+
+  .guide-card--featured { min-height: 280px; padding: 1.5rem; }
+  .guide-card__top { display: flex; align-items: center; gap: 0.5rem; }
+  .guide-card__time { margin-left: auto; font-size: 0.61rem; color: var(--faint); }
+  .guide-card__arrow { color: var(--faint); transition: transform 0.2s, color 0.2s; }
+  .guide-card:hover .guide-card__arrow { color: var(--acid); transform: translate(2px, -2px); }
+  .guide-card__body { margin-top: 1.1rem; flex: 1; }
+  .guide-card h3 { font-size: 1.22rem; line-height: 1.3; }
+  .guide-card--featured h3 { font-size: clamp(1.5rem, 2.5vw, 2rem); }
+  .guide-card p { margin-top: 0.6rem; color: var(--muted); font-size: 0.83rem; line-height: 1.65; }
+  .guide-card__tags {
+    display: flex; flex-wrap: wrap; gap: 0.65rem;
+    margin-top: 1.1rem; padding-top: 0.75rem;
+    border-top: 1px solid var(--line);
+    color: var(--faint); font-size: 0.58rem;
+  }
+</style>

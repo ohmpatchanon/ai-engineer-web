@@ -1,0 +1,153 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowRight, ArrowUpRight, FolderKanban, Search, Target } from '@lucide/astro';
+import { projects } from '../../data/projects';
+
+const categories = [...new Set(projects.map((p) => p.category))];
+const levels = [...new Set(projects.map((p) => p.level))];
+---
+
+<BaseLayout title="Portfolio Projects" description="9 โจทย์โปรเจกต์ AI Engineer พร้อม requirement, milestone, rubric และ stack ที่แนะนำสำหรับสร้าง portfolio">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">PROOF OF WORK / {projects.length} BRIEFS</p>
+        <h1 class="reveal">portfolio ที่ดี<br />คือชุด<span class="text-acid">ข้อโต้แย้ง</span></h1>
+        <p class="lead reveal">ไม่ใช่ gallery ของโปรเจกต์สวย ๆ แต่คือหลักฐานว่าคุณแก้ปัญหาประเภทนี้ได้ ภายใต้ข้อจำกัดจริง และวัดผลได้</p>
+        <div class="hero-actions reveal">
+          <a href="/guides/portfolio-that-gets-hired" class="btn btn--primary">วิธีทำ portfolio <ArrowRight size={14} /></a>
+          <a href="/paths" class="btn btn--ghost">เลือกสายอาชีพ</a>
+        </div>
+      </div>
+      <div class="project-hero panel reveal">
+        <FolderKanban size={20} class="text-acid" />
+        <p class="mono micro">HOW TO PICK</p>
+        <p>เลือก 2–3 โปรเจกต์ที่ต่อกันเป็นเรื่องเดียว หนึ่งชิ้นควรมีผู้ใช้จริงหรือข้อมูลจริง อย่าทำ 9 ชิ้นแบบผิวเผิน</p>
+        <div class="project-hero__stats">
+          <div><strong>{projects.length}</strong><span>BRIEFS</span></div>
+          <div><strong>{categories.length}</strong><span>TRACKS</span></div>
+          <div><strong>1</strong><span>CAPSTONE</span></div>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="project-controls">
+        <div class="project-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหาโปรเจกต์หรือทักษะ..." aria-label="ค้นหาโปรเจกต์" data-project-search />
+        </div>
+        <div class="filter-row" role="group" aria-label="กรองตามหมวด">
+          <button class="chip is-active" data-project-cat="all">ทั้งหมด</button>
+          {categories.map((cat) => <button class="chip" data-project-cat={cat}>{cat}</button>)}
+        </div>
+        <div class="filter-row" role="group" aria-label="กรองตามระดับ">
+          {levels.map((level) => <button class="chip" data-project-level={level}>{level}</button>)}
+        </div>
+        <span class="mono tiny faint" data-project-count>{projects.length} projects</span>
+      </div>
+
+      <div class="project-list" data-project-list>
+        {projects.map((project, i) => (
+          <a href={`/projects/${project.slug}`} class="project-card panel panel--hover reveal" data-project-card data-cat={project.category} data-level={project.level} data-title={`${project.title} ${project.en} ${project.summary} ${project.skills.join(' ')}`.toLowerCase()}>
+            <span class="project-card__num mono">{String(i + 1).padStart(2, '0')}</span>
+            <div class="project-card__main">
+              <div class="project-card__meta mono"><span>{project.category}</span><span>·</span><span>{project.time}</span><span>·</span><span>{project.level}</span></div>
+              <h2>{project.title}</h2>
+              <p class="project-card__en mono">{project.en}</p>
+              <p class="project-card__summary">{project.summary}</p>
+              <div class="project-card__skills">{project.skills.slice(0, 4).map((s) => <span class="tag">{s}</span>)}</div>
+            </div>
+            <span class="project-card__arrow"><ArrowUpRight size={18} /></span>
+          </a>
+        ))}
+      </div>
+      <div class="empty-state" data-project-empty hidden><p>ไม่พบโปรเจกต์ที่ตรงกับตัวกรอง</p></div>
+
+      <div class="project-tip panel">
+        <Target size={18} class="text-acid" />
+        <div><h2>ทำไมต้องมี rubric</h2><p>ทุกโจทย์มีเกณฑ์ประเมินชัดเจน เพื่อให้คุณตรวจงานตัวเองได้ก่อนคนอื่นตรวจ และเพื่อให้เรียนรู้ว่าคุณภาพที่ดีหน้าตาเป็นอย่างไร</p></div>
+        <a href="/exercises/system-canvas" class="link-arrow">ลอง System Canvas <ArrowRight size={12} /></a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-project-card]')];
+  const search = document.querySelector<HTMLInputElement>('[data-project-search]');
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-project-cat]')];
+  const levelBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-project-level]')];
+  const count = document.querySelector<HTMLElement>('[data-project-count]');
+  const empty = document.querySelector<HTMLElement>('[data-project-empty]');
+  const list = document.querySelector<HTMLElement>('[data-project-list]');
+  let cat = 'all';
+  let level = 'all';
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    cards.forEach((card) => {
+      const visible = (!q || (card.dataset.title || '').includes(q))
+        && (cat === 'all' || card.dataset.cat === cat)
+        && (level === 'all' || card.dataset.level === level);
+      card.hidden = !visible;
+      if (visible) shown++;
+    });
+    if (count) count.textContent = `${shown} projects`;
+    if (empty) empty.hidden = shown > 0;
+    if (list) list.hidden = shown === 0;
+  }
+  catBtns.forEach((btn) => btn.addEventListener('click', () => {
+    cat = btn.dataset.projectCat || 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  levelBtns.forEach((btn) => btn.addEventListener('click', () => {
+    level = level === btn.dataset.projectLevel ? 'all' : (btn.dataset.projectLevel || 'all');
+    levelBtns.forEach((b) => b.classList.toggle('is-active', level !== 'all' && b.dataset.projectLevel === level));
+    apply();
+  }));
+  search?.addEventListener('input', apply);
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .project-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .6rem; align-items: flex-start; }
+  .project-hero > p:not(.micro) { color: var(--muted); font-size: .8rem; line-height: 1.7; }
+  .project-hero__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; width: 100%; margin-top: .3rem; }
+  .project-hero__stats div { padding: .5rem; border: 1px solid var(--line); border-radius: 6px; }
+  .project-hero__stats strong { display: block; font-family: var(--font-display); font-size: 1.2rem; font-weight: 500; line-height: 1.1; }
+  .project-hero__stats span { font-family: var(--font-mono); font-size: .44rem; letter-spacing: .07em; color: var(--faint); }
+
+  .project-controls { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding-bottom: 1.1rem; border-bottom: 1px solid var(--line); }
+  .project-search { flex: 1 1 240px; max-width: 340px; display: flex; align-items: center; gap: .55rem; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .project-search:focus-within { border-color: var(--acid); }
+  .project-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: .8rem; }
+  .filter-row { display: flex; gap: .3rem; flex-wrap: wrap; }
+  .project-controls > .mono { margin-left: auto; }
+
+  .project-list { display: flex; flex-direction: column; gap: .65rem; margin-top: 1.2rem; }
+  .project-card { display: grid; grid-template-columns: 52px 1fr 24px; gap: 1.2rem; padding: 1.3rem 1.2rem; text-decoration: none; border-radius: var(--radius); }
+  .project-card__num { color: var(--faint); font-size: .65rem; padding-top: .2rem; }
+  .project-card__meta { display: flex; gap: .4rem; flex-wrap: wrap; color: var(--faint); font-size: .56rem; text-transform: uppercase; letter-spacing: .06em; }
+  .project-card h2 { margin-top: .35rem; font-size: 1.35rem; }
+  .project-card__en { margin-top: .15rem; color: var(--acid); font-size: .58rem; text-transform: uppercase; letter-spacing: .06em; }
+  .project-card__summary { margin-top: .5rem; color: var(--muted); font-size: .83rem; line-height: 1.65; max-width: 78ch; }
+  .project-card__skills { display: flex; gap: .3rem; flex-wrap: wrap; margin-top: .8rem; }
+  .project-card__arrow { color: var(--faint); transition: transform .2s, color .2s; }
+  .project-card:hover .project-card__arrow { color: var(--acid); transform: translate(2px, -2px); }
+
+  .project-tip { display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1.2rem; border-radius: var(--radius); }
+  .project-tip h2 { font-size: 1.02rem; }
+  .project-tip p { margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+  .project-tip .link-arrow { margin-left: auto; white-space: nowrap; }
+
+  @media (max-width: 700px) {
+    .project-card { grid-template-columns: 32px 1fr 18px; gap: .8rem; padding: 1rem; }
+    .project-controls > .mono { margin-left: 0; }
+    .project-tip { flex-wrap: wrap; }
+    .project-tip .link-arrow { margin-left: 0; }
+  }
+</style>

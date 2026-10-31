@@ -1,0 +1,335 @@
+---
+import { Search, X, CornerDownLeft, Command } from '@lucide/astro';
+---
+<dialog class="search-dialog" data-search-dialog aria-label="ค้นหาเว็บไซต์">
+  <div class="search-box">
+    <div class="search-input-wrap">
+      <Search size={19} stroke-width={1.7} aria-hidden="true" />
+      <input
+        type="search"
+        name="q"
+        placeholder="ค้นหา module, guide, lab, glossary..."
+        autocomplete="off"
+        spellcheck="false"
+        aria-label="คำค้นหา"
+        data-search-input
+      />
+      <button type="button" class="search-close" aria-label="ปิดการค้นหา" data-search-close><X size={17} /></button>
+    </div>
+
+    <div class="search-body" data-search-body>
+      <div class="search-quick">
+        <p class="search-label">เริ่มต้นอย่างรวดเร็ว</p>
+        <div class="quick-grid">
+          <a href="/start"><span>เริ่มตรงนี้</span><small>Self assessment</small></a>
+          <a href="/roadmap"><span>Roadmap</span><small>6 phases · 26 สัปดาห์</small></a>
+          <a href="/modules"><span>หลักสูตร</span><small>28 modules</small></a>
+          <a href="/theory"><span>ทฤษฎี</span><small>ความเข้าใจเชิงลึก</small></a>
+          <a href="/exercises"><span>Interactive Labs</span><small>10 แบบฝึกหัด</small></a>
+          <a href="/projects"><span>Projects</span><small>Portfolio briefs</small></a>
+          <a href="/interview"><span>Interview Bank</span><small>คำถามพร้อมแนวตอบ</small></a>
+        </div>
+        <div class="search-tip"><Command size={13} /> <span>กด <kbd>⌘K</kbd> หรือ <kbd>/</kbd> เพื่อเปิดค้นหาได้ทุกหน้า</span></div>
+      </div>
+      <div class="search-results" data-search-results hidden></div>
+      <div class="search-empty" data-search-empty hidden>ไม่พบผลลัพธ์ — ลองคำที่สั้นลง หรือค้นหา “RAG”, “SQL”, “eval”</div>
+    </div>
+    <footer class="search-footer">
+      <span><kbd>↑</kbd><kbd>↓</kbd> เลือก</span>
+      <span><CornerDownLeft size={12} /> เปิด</span>
+      <span><kbd>Esc</kbd> ปิด</span>
+    </footer>
+  </div>
+</dialog>
+
+<script>
+  type Item = { title: string; subtitle: string; url: string; type: string; description: string; keywords: string };
+  const dialog = document.querySelector<HTMLDialogElement>('[data-search-dialog]');
+  const input = document.querySelector<HTMLInputElement>('[data-search-input]');
+  const results = document.querySelector<HTMLElement>('[data-search-results]');
+  const empty = document.querySelector<HTMLElement>('[data-search-empty]');
+  const quick = document.querySelector<HTMLElement>('.search-quick');
+  const closeBtn = document.querySelector<HTMLButtonElement>('[data-search-close]');
+  let data: Item[] = [];
+  let active = -1;
+  let loaded = false;
+
+  async function loadIndex() {
+    if (loaded) return;
+    loaded = true;
+    try {
+      const res = await fetch('/search.json');
+      data = await res.json();
+    } catch {
+      data = [];
+    }
+  }
+
+  function normalize(s: string) {
+    return s.toLowerCase().replace(/\s+/g, ' ').trim();
+  }
+
+  function score(item: Item, q: string) {
+    const title = normalize(item.title);
+    const sub = normalize(item.subtitle);
+    const desc = normalize(item.description);
+    const keys = normalize(item.keywords);
+    let s = 0;
+    if (title === q) s += 100;
+    if (title.startsWith(q)) s += 50;
+    if (title.includes(q)) s += 30;
+    if (sub.includes(q)) s += 14;
+    if (keys.includes(q)) s += 10;
+    if (desc.includes(q)) s += 6;
+    return s;
+  }
+
+  function escapeHtml(value: string) {
+    return value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' })[ch] || ch);
+  }
+
+  function render(q: string) {
+    if (!results || !empty || !quick) return;
+    active = -1;
+    if (!q) {
+      results.hidden = true;
+      empty.hidden = true;
+      quick.hidden = false;
+      return;
+    }
+    quick.hidden = true;
+    const qn = normalize(q);
+    const found = data
+      .map((item) => ({ item, s: score(item, qn) }))
+      .filter((x) => x.s > 0)
+      .sort((a, b) => b.s - a.s)
+      .slice(0, 9)
+      .map((x) => x.item);
+
+    results.hidden = false;
+    empty.hidden = found.length > 0;
+    results.innerHTML = found
+      .map((item, i) => `
+        <a href="${item.url}" class="search-result" data-search-item data-index="${i}">
+          <span class="search-result__type">${escapeHtml(item.type)}</span>
+          <span class="search-result__copy">
+            <strong>${escapeHtml(item.title)}</strong>
+            <small>${escapeHtml(item.description)}</small>
+          </span>
+          <span class="search-result__arrow">↗</span>
+        </a>`)
+      .join('');
+  }
+
+  function open() {
+    if (!dialog) return;
+    if (!dialog.open) dialog.showModal();
+    loadIndex();
+    setTimeout(() => input?.focus(), 30);
+    document.body.style.overflow = 'hidden';
+  }
+
+  function close() {
+    if (!dialog) return;
+    dialog.close();
+    document.body.style.overflow = '';
+    if (input) input.value = '';
+    render('');
+  }
+
+  window.addEventListener('aie:opensearch', open);
+  closeBtn?.addEventListener('click', close);
+
+  dialog?.addEventListener('click', (event) => {
+    if (event.target === dialog) close();
+  });
+
+  document.addEventListener('keydown', (e) => {
+    const isTyping = ['INPUT', 'TEXTAREA', 'SELECT'].includes((document.activeElement as HTMLElement)?.tagName);
+    if ((e.metaKey || e.ctrlKey) && e.key.toLowerCase() === 'k') {
+      e.preventDefault();
+      dialog?.open ? close() : open();
+    } else if (e.key === '/' && !isTyping && !dialog?.open) {
+      e.preventDefault();
+      open();
+    }
+  });
+
+  input?.addEventListener('input', () => render(input.value.trim()));
+  input?.addEventListener('keydown', (e) => {
+    const items = [...document.querySelectorAll<HTMLAnchorElement>('[data-search-item]')];
+    if (!items.length) return;
+    if (e.key === 'ArrowDown') {
+      e.preventDefault();
+      active = (active + 1) % items.length;
+      items[active].focus();
+    }
+    if (e.key === 'ArrowUp') {
+      e.preventDefault();
+      active = (active - 1 + items.length) % items.length;
+      items[active].focus();
+    }
+    if (e.key === 'Enter' && active >= 0) {
+      e.preventDefault();
+      items[active].click();
+    }
+  });
+</script>
+
+<style>
+  .search-dialog {
+    width: min(calc(100% - 32px), 680px);
+    max-height: min(82vh, 760px);
+    margin: 10vh auto auto;
+    padding: 0;
+    border: 1px solid var(--line-strong);
+    border-radius: 18px;
+    background: var(--panel);
+    color: var(--text);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.55);
+    overflow: hidden;
+  }
+
+  .search-dialog::backdrop {
+    background: rgba(2, 5, 3, 0.74);
+    backdrop-filter: blur(4px);
+  }
+
+  .search-box { display: flex; flex-direction: column; max-height: inherit; }
+
+  .search-input-wrap {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 1.1rem;
+    border-bottom: 1px solid var(--line);
+    color: var(--faint);
+  }
+
+  .search-input-wrap input {
+    flex: 1;
+    min-width: 0;
+    border: 0;
+    background: transparent;
+    color: var(--text);
+    font-size: 1rem;
+    outline: none;
+  }
+
+  .search-input-wrap input::placeholder { color: var(--faint); }
+
+  .search-close {
+    display: grid;
+    place-items: center;
+    width: 28px;
+    height: 28px;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--muted);
+  }
+
+  .search-close:hover { color: var(--text); border-color: var(--line-strong); }
+
+  .search-body {
+    overflow-y: auto;
+    padding: 1.1rem;
+    min-height: 240px;
+  }
+
+  .search-label {
+    font-family: var(--font-mono);
+    font-size: 0.62rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--faint);
+    margin-bottom: 0.7rem;
+  }
+
+  .quick-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.5rem; }
+
+  .quick-grid a {
+    display: flex;
+    flex-direction: column;
+    gap: 0.15rem;
+    padding: 0.8rem 0.9rem;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    text-decoration: none;
+    transition: border-color 0.18s, background 0.18s;
+  }
+
+  .quick-grid a:hover { border-color: var(--acid); background: var(--acid-soft); }
+  .quick-grid span { font-size: 0.86rem; font-weight: 500; }
+  .quick-grid small { font-family: var(--font-mono); font-size: 0.62rem; color: var(--faint); }
+
+  .search-tip {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+    margin-top: 0.9rem;
+    color: var(--faint);
+    font-size: 0.7rem;
+  }
+
+  kbd {
+    padding: 0.1rem 0.3rem;
+    border: 1px solid var(--line);
+    border-radius: 4px;
+    background: var(--panel-2);
+    font-size: 0.62rem;
+  }
+
+  .search-results { display: flex; flex-direction: column; gap: 0.25rem; }
+
+  .search-result {
+    display: grid;
+    grid-template-columns: 62px 1fr auto;
+    gap: 0.75rem;
+    align-items: start;
+    padding: 0.75rem;
+    border-radius: 9px;
+    text-decoration: none;
+  }
+
+  .search-result:hover,
+  .search-result:focus-visible { background: var(--acid-soft); }
+
+  .search-result__type {
+    padding-top: 0.15rem;
+    font-family: var(--font-mono);
+    font-size: 0.58rem;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--acid);
+  }
+
+  .search-result__copy { display: flex; flex-direction: column; gap: 0.2rem; }
+  .search-result__copy strong { font-size: 0.9rem; font-weight: 500; }
+  .search-result__copy small { color: var(--muted); font-size: 0.72rem; line-height: 1.5; display: -webkit-box; -webkit-line-clamp: 1; -webkit-box-orient: vertical; overflow: hidden; }
+  .search-result__arrow { color: var(--faint); }
+
+  .search-empty {
+    padding: 2rem;
+    text-align: center;
+    color: var(--muted);
+    font-size: 0.85rem;
+  }
+
+  .search-footer {
+    display: flex;
+    gap: 1.25rem;
+    padding: 0.6rem 1.1rem;
+    border-top: 1px solid var(--line);
+    color: var(--faint);
+    font-family: var(--font-mono);
+    font-size: 0.6rem;
+  }
+
+  .search-footer span { display: inline-flex; align-items: center; gap: 0.3rem; }
+
+  @media (max-width: 500px) {
+    .quick-grid { grid-template-columns: 1fr; }
+    .search-dialog { margin-top: 4vh; max-height: 88vh; }
+  }
+</style>

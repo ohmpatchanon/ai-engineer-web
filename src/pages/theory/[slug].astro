@@ -1,0 +1,289 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowLeft, ArrowRight, Clock, Copy, Check, Lightbulb, Sigma, FlaskConical, ListTree, ArrowUpRight } from '@lucide/astro';
+import { lessons, lessonBySlug, lessonSequence, lessonMinutes } from '../../data/theory';
+import { moduleBySlug } from '../../data/modules';
+import { phaseMap, phaseColor, levelTone } from '../../lib/ui';
+import LessonCard from '../../components/LessonCard.astro';
+
+export function getStaticPaths() {
+  return lessons.map((lesson) => ({ params: { slug: lesson.slug }, props: { lesson } }));
+}
+
+const { lesson } = Astro.props;
+const sequence = lessonSequence();
+const index = sequence.findIndex((l) => l.slug === lesson.slug);
+const prev = index > 0 ? sequence[index - 1] : null;
+const next = index < sequence.length - 1 ? sequence[index + 1] : null;
+const prereq = lesson.prereqLessons.map((slug) => lessonBySlug[slug]).filter(Boolean);
+const minutes = lessonMinutes(lesson);
+const phase = phaseMap[lesson.phase];
+const phaseTone = phaseColor(lesson.phase);
+const linkedModules = lesson.linkedModules.map((slug) => moduleBySlug[slug]).filter(Boolean);
+const related = sequence.filter((l) => l.slug !== lesson.slug && l.phase === lesson.phase && (prev?.slug !== l.slug && next?.slug !== l.slug)).slice(0, 2);
+const suggested = related.length ? related : sequence.filter((l) => l.slug !== lesson.slug).slice(-2);
+---
+<BaseLayout title={`${lesson.title} — ทฤษฎี`} description={lesson.summary} type="article" readingProgress>
+  <article class="lesson-page">
+    <header class="lesson-hero">
+      <div class="container">
+        <nav class="breadcrumbs"><a href="/">หน้าแรก</a><span>/</span><a href="/theory">ทฤษฎี</a><span>/</span><span>{phase?.title ?? lesson.phase}</span></nav>
+        <div class="lesson-hero__meta reveal">
+          <span class="tag tag--acid">{lesson.number}</span>
+          <span class:list={['tag', `tag--${levelTone[lesson.level]}`]}>{lesson.level}</span>
+          <span class="mono tiny faint"><Clock size={12} /> {minutes} นาที</span>
+          <span class="mono tiny faint">{lesson.updated}</span>
+        </div>
+        <h1 class="reveal">{lesson.title}</h1>
+        <p class="lesson-hero__en mono reveal">{lesson.en}</p>
+        <p class="lesson-hero__dek reveal">{lesson.summary}</p>
+
+        {prereq.length > 0 && (
+          <div class="lesson-prereq reveal">
+            <span class="mono micro">ควรอ่านก่อน</span>
+            <div class="lesson-prereq__links">
+              {prereq.map((p) => <a href={`/theory/${p.slug}`} class="prereq-chip">{p.number} · {p.title} <ArrowUpRight size={12} /></a>)}
+            </div>
+          </div>
+        )}
+
+        <div class="lesson-hero__foot reveal">
+          <span></span>
+          <button class="copy-link" type="button" data-copy-link><Copy size={13} /> คัดลอกลิงก์</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container lesson-layout">
+      <div class="lesson-content">
+        <section class="lesson-outcomes panel">
+          <div class="lesson-outcomes__head"><ListTree size={15} class="text-acid" /><span class="mono micro">เมื่ออ่านจบบทนี้ คุณจะ...</span></div>
+          <ul>
+            {lesson.teaches.map((t) => <li><Check size={13} stroke-width={2.6} /><span>{t}</span></li>)}
+          </ul>
+        </section>
+
+        {lesson.sections.map((section, i) => (
+          <section class="lesson-section" id={`section-${i + 1}`}>
+            <div class="lesson-section__head">
+              <span class="mono lesson-section__num">{String(i + 1).padStart(2, '0')}</span>
+              <h2>{section.heading}</h2>
+            </div>
+
+            {section.paragraphs?.map((paragraph) => <p class="lesson-p">{paragraph}</p>)}
+
+            {section.bullets && (
+              <ul class="lesson-bullets">
+                {section.bullets.map((b) => <li><span class="bullet-mark"></span><span>{b}</span></li>)}
+              </ul>
+            )}
+
+            {section.formula && (
+              <figure class="lesson-formula">
+                <figcaption class="mono micro"><Sigma size={13} /> {section.formula.title}</figcaption>
+                <pre class="lesson-formula__plain">{section.formula.plain}</pre>
+                <p class="lesson-formula__note">{section.formula.note}</p>
+              </figure>
+            )}
+
+            {section.code && (
+              <div class="code-block">
+                <div class="code-block__bar mono"><span>{section.code.lang}</span><span>example</span></div>
+                <pre><code>{section.code.content}</code></pre>
+              </div>
+            )}
+
+            {section.example && (
+              <aside class="lesson-example">
+                <div class="lesson-example__icon"><FlaskConical size={15} /></div>
+                <div><span class="mono micro">{section.example.title}</span><p>{section.example.body}</p></div>
+              </aside>
+            )}
+
+            {section.callout && (
+              <aside class="lesson-callout">
+                <div class="lesson-callout__icon"><Lightbulb size={16} /></div>
+                <div><span class="mono micro">{section.callout.label}</span><p>{section.callout.text}</p></div>
+              </aside>
+            )}
+          </section>
+        ))}
+
+        <div class="lesson-end">
+          <div class="lesson-end__mark"><Check size={16} /></div>
+          <div>
+            <p class="mono micro">READY TO PRACTICE</p>
+            <h3>ความเข้าใจติดจริงตอนลงมือทำ</h3>
+            <p>ไปทำ lab หรือเปิด module ที่กำกับไว้ข้างล่าง เพื่อลองใช้ทฤษฎีนี้กับงานจริง</p>
+          </div>
+          <div class="lesson-end__actions">
+            <a href="/exercises" class="btn btn--primary btn--small">ไปที่ Labs <ArrowRight size={12} /></a>
+            <a href="/modules" class="btn btn--ghost btn--small">ดู Modules</a>
+          </div>
+        </div>
+
+        {linkedModules.length > 0 && (
+          <section class="lesson-linked">
+            <p class="mono micro">MODULES ที่เกี่ยวข้อง</p>
+            <div class="lesson-linked__grid">
+              {linkedModules.map((mod) => (
+                <a href={`/modules/${mod.slug}`} class="linked-module">
+                  <span class="mono">{mod.number}</span>
+                  <strong>{mod.title}</strong>
+                  <span class="mono tiny faint">{mod.duration}</span>
+                  <ArrowUpRight size={14} />
+                </a>
+              ))}
+            </div>
+          </section>
+        )}
+
+        <nav class="lesson-nav">
+          {prev ? <a href={`/theory/${prev.slug}`}><span class="mono"><ArrowLeft size={12} /> บทก่อนหน้า</span><strong>{prev.number} · {prev.title}</strong></a> : <span></span>}
+          {next ? <a href={`/theory/${next.slug}`} class="lesson-nav--next"><span class="mono">บทถัดไป <ArrowRight size={12} /></span><strong>{next.number} · {next.title}</strong></a> : <span></span>}
+        </nav>
+      </div>
+
+      <aside class="lesson-side">
+        <div class="side-sticky">
+          <nav class="lesson-toc panel" aria-label="สารบัญบท">
+            <p class="mono micro">IN THIS LESSON</p>
+            {lesson.sections.map((section, i) => (
+              <a href={`#section-${i + 1}`}><span class="mono">{String(i + 1).padStart(2, '0')}</span>{section.heading}</a>
+            ))}
+          </nav>
+          <div class="side-phase panel">
+            <span class:list={['phase-chip', `phase-chip--${phaseTone}`]}>{phase?.number ?? '—'}</span>
+            <div><p class="mono micro">PHASE</p><strong>{phase?.title ?? lesson.phase}</strong><span class="mono tiny faint">{phase?.weeks ?? ''}</span></div>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="section section--tight related-section">
+      <div class="container">
+        <div class="related-head"><p class="eyebrow">READ NEXT</p><a href="/theory" class="link-arrow">บททั้งหมด <ArrowRight size={12} /></a></div>
+        <div class="grid grid-2">
+          {suggested.map((lesson) => <LessonCard lesson={lesson} />)}
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<script>
+  document.querySelector('[data-copy-link]')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    try {
+      await navigator.clipboard.writeText(location.href);
+      btn.innerHTML = 'คัดลอกแล้ว ✓';
+      setTimeout(() => { btn.innerHTML = 'คัดลอกลิงก์'; }, 1800);
+    } catch {}
+  });
+</script>
+
+<style>
+  .lesson-hero { padding-top: calc(var(--header-h) + 2.5rem); padding-bottom: 3rem; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+  .lesson-hero::after { content: ''; position: absolute; width: 620px; height: 620px; right: -15%; top: -55%; border-radius: 50%; border: 1px solid var(--line); opacity: 0.7; pointer-events: none; }
+  .lesson-hero__meta { display: flex; align-items: center; gap: 0.6rem; margin-top: 2.2rem; flex-wrap: wrap; }
+  .lesson-hero__meta .mono { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .lesson-hero h1 { margin-top: 1.1rem; max-width: 20ch; font-size: clamp(2.4rem, 5.4vw, 4.6rem); line-height: 1.1; }
+  .lesson-hero__en { margin-top: 0.7rem; color: var(--acid); font-size: 0.66rem; text-transform: uppercase; letter-spacing: 0.08em; }
+  .lesson-hero__dek { margin-top: 1.1rem; max-width: 60ch; color: var(--muted); font-size: 1.02rem; line-height: 1.8; }
+  .lesson-prereq { margin-top: 1.3rem; display: flex; align-items: flex-start; gap: 0.7rem; }
+  .lesson-prereq .micro { margin-top: 0.3rem; color: var(--faint); }
+  .lesson-prereq__links { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+  .prereq-chip { display: inline-flex; align-items: center; gap: 0.3rem; padding: 0.3rem 0.6rem; border: 1px solid var(--line-strong); border-radius: 999px; color: var(--muted); font-size: 0.65rem; text-decoration: none; }
+  .prereq-chip:hover { color: var(--acid); border-color: var(--acid); }
+  .lesson-hero__foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .copy-link { display: inline-flex; align-items: center; gap: 0.35rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: 0.63rem; padding: 0.4rem 0.7rem; }
+  .copy-link:hover { border-color: var(--line-strong); color: var(--text); }
+
+  .lesson-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: clamp(2rem, 6vw, 5rem); padding-top: 2.8rem; }
+  .lesson-content { max-width: 740px; padding-bottom: 1rem; }
+
+  .lesson-outcomes { padding: 1.1rem; border-radius: var(--radius); margin-bottom: 2.2rem; }
+  .lesson-outcomes__head { display: flex; align-items: center; gap: 0.5rem; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); }
+  .lesson-outcomes ul { list-style: none; display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.8rem; }
+  .lesson-outcomes li { display: flex; gap: 0.55rem; align-items: flex-start; color: var(--muted); font-size: 0.85rem; line-height: 1.6; }
+  .lesson-outcomes svg { color: var(--acid); flex: none; margin-top: 0.25rem; }
+
+  .lesson-section { padding-bottom: 2.6rem; scroll-margin-top: calc(var(--header-h) + 24px); }
+  .lesson-section__head { display: grid; grid-template-columns: 44px 1fr; gap: 0.8rem; align-items: baseline; margin-bottom: 1.1rem; }
+  .lesson-section__num { color: var(--acid); font-size: 0.65rem; }
+  .lesson-section h2 { font-size: clamp(1.45rem, 3vw, 1.9rem); line-height: 1.25; }
+  .lesson-p { color: var(--muted); font-size: 1rem; line-height: 1.92; margin-bottom: 1.1rem; max-width: 68ch; }
+  .lesson-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin: 1.2rem 0 1.4rem; }
+  .lesson-bullets li { display: flex; gap: 0.7rem; color: var(--muted); font-size: 0.92rem; line-height: 1.75; }
+  .bullet-mark { width: 5px; height: 5px; border-radius: 50%; background: var(--acid); flex: none; margin-top: 0.62rem; }
+
+  .lesson-formula { margin: 1.4rem 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); }
+  .lesson-formula figcaption { display: flex; align-items: center; gap: 0.4rem; padding: 0.5rem 0.85rem; border-bottom: 1px solid var(--line); color: var(--acid); }
+  .lesson-formula__plain { margin: 0; padding: 0.9rem 0.85rem; font-family: var(--font-mono); font-size: 0.8rem; color: var(--text); background: var(--bg); white-space: pre-wrap; }
+  .lesson-formula__note { padding: 0.55rem 0.85rem 0.7rem; color: var(--faint); font-size: 0.74rem; line-height: 1.6; }
+
+  .code-block { margin: 1.2rem 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .code-block__bar { display: flex; justify-content: space-between; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--line); background: var(--panel-2); color: var(--faint); font-size: 0.56rem; }
+  .code-block pre { border: 0; border-radius: 0; margin: 0; }
+  .code-block code { font-size: 0.78rem; }
+
+  .lesson-example { display: flex; gap: 0.75rem; margin: 1.4rem 0; padding: 1rem 1.1rem; border: 1px solid rgba(211, 250, 124, 0.22); border-radius: 10px; background: var(--bg-soft); }
+  .lesson-example__icon { color: var(--acid); flex: none; margin-top: 0.1rem; }
+  .lesson-example p { margin-top: 0.4rem; color: var(--text); font-size: 0.86rem; line-height: 1.75; }
+
+  .lesson-callout { display: flex; gap: 0.8rem; margin: 1.5rem 0; padding: 1rem 1.1rem; border: 1px solid var(--line); border-left: 2px solid var(--acid); border-radius: 4px 10px 10px 4px; background: var(--panel); }
+  .lesson-callout__icon { color: var(--acid); flex: none; margin-top: 0.15rem; }
+  .lesson-callout p { margin-top: 0.35rem; color: var(--text); font-size: 0.88rem; line-height: 1.7; }
+
+  .lesson-end { display: flex; gap: 1rem; align-items: flex-start; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); margin-block: 1rem 2rem; }
+  .lesson-end__mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--acid); color: var(--acid-ink); }
+  .lesson-end h3 { margin-top: 0.2rem; font-size: 1.1rem; }
+  .lesson-end p:not(.micro) { margin-top: 0.25rem; color: var(--muted); font-size: 0.78rem; }
+  .lesson-end__actions { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-left: auto; }
+
+  .lesson-linked { border-top: 1px solid var(--line); padding-top: 1.4rem; margin-bottom: 1.6rem; }
+  .lesson-linked__grid { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.8rem; }
+  .linked-module { display: grid; grid-template-columns: auto 1fr auto auto; gap: 0.45rem 0.6rem; align-items: center; padding: 0.7rem 0.8rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; }
+  .linked-module:hover { border-color: var(--acid); }
+  .linked-module .mono:first-child { color: var(--acid); font-size: 0.55rem; }
+  .linked-module strong { font-size: 0.8rem; font-weight: 500; }
+  .linked-module .tiny { font-size: 0.55rem; }
+  .linked-module svg { color: var(--faint); }
+
+  .lesson-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .lesson-nav a { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; }
+  .lesson-nav a:hover { border-color: var(--line-strong); background: var(--panel); }
+  .lesson-nav span { display: flex; align-items: center; gap: 0.3rem; color: var(--faint); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .lesson-nav strong { font-size: 0.78rem; font-weight: 500; }
+  .lesson-nav--next { text-align: right; align-items: flex-end; }
+
+  .side-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); display: flex; flex-direction: column; gap: 0.7rem; }
+  .lesson-toc { display: flex; flex-direction: column; padding: 1rem; border-radius: var(--radius); }
+  .lesson-toc .micro { padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); margin-bottom: 0.5rem; }
+  .lesson-toc a { display: grid; grid-template-columns: 22px 1fr; gap: 0.35rem; padding: 0.35rem 0; color: var(--muted); text-decoration: none; font-size: 0.7rem; line-height: 1.4; }
+  .lesson-toc a:hover { color: var(--acid); }
+  .lesson-toc a .mono { color: var(--faint); font-size: 0.52rem; }
+  .side-phase { display: flex; gap: 0.7rem; align-items: center; padding: 1rem; border-radius: var(--radius); }
+  .phase-chip { display: grid; place-items: center; width: 40px; height: 40px; flex: none; border-radius: 10px; background: var(--panel-2); font-family: var(--font-mono); font-size: 0.62rem; }
+  .phase-chip--amber { color: var(--amber); } .phase-chip--sky { color: var(--sky); } .phase-chip--violet { color: var(--violet); }
+  .phase-chip--coral { color: var(--coral); } .phase-chip--sand { color: var(--sand); }
+  .side-phase strong { display: block; margin-top: 0.2rem; font-size: 0.82rem; font-weight: 500; }
+  .side-phase .tiny { margin-top: 0.2rem; display: block; }
+
+  .related-section { border-top: 1px solid var(--line); }
+  .related-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.3rem; }
+
+  @media (max-width: 960px) {
+    .lesson-layout { grid-template-columns: 1fr; }
+    .lesson-side { display: none; }
+    .lesson-content { max-width: none; }
+  }
+  @media (max-width: 700px) {
+    .lesson-section__head { grid-template-columns: 28px 1fr; }
+    .lesson-end { flex-wrap: wrap; }
+    .lesson-end__actions { margin-left: 0; }
+    .lesson-nav { grid-template-columns: 1fr; }
+    .lesson-nav--next { text-align: left; align-items: flex-start; }
+    .lesson-linked__grid { grid-template-columns: 1fr; }
+  }
+</style>

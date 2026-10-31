@@ -1,0 +1,148 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowRight, FlaskConical, Search, SlidersHorizontal, Sparkles } from '@lucide/astro';
+import { exercises } from '../../data/exercises';
+import ExerciseCard from '../../components/ExerciseCard.astro';
+
+const categories = [...new Set(exercises.map((e) => e.category))];
+const interactive = exercises.filter((e) => e.kind !== 'quiz').length;
+const quizCount = exercises.reduce((sum, e) => sum + (e.questions?.length || 0), 0);
+---
+
+<BaseLayout title="Interactive Labs" description="แบบฝึกหัดแบบลงมือทำ 10 labs: Python, SQL, ML diagnosis, prompt, RAG chunking, evaluation, system design, agents, token cost และ debugging">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">INTERACTIVE LABS / {exercises.length}</p>
+        <h1 class="reveal">อ่านอย่างเดียว<br />ไม่ทำให้เก่งขึ้น</h1>
+        <p class="lead reveal">ทุก lab ออกแบบให้คุณต้องตัดสินใจ ตรวจงานตัวเอง และเห็นผลทันที — ไม่มีการส่งคะแนนไปที่ไหน ทุกอย่างทำงานในเบราว์เซอร์ของคุณ</p>
+        <div class="hero-actions reveal">
+          <a href="#lab-list" class="btn btn--primary">เลือก lab <ArrowRight size={14} /></a>
+          <a href="/roadmap" class="btn btn--ghost">ดู roadmap</a>
+        </div>
+      </div>
+      <div class="lab-hero panel reveal">
+        <FlaskConical size={20} class="text-acid" />
+        <div class="lab-hero__stats">
+          <div><strong>{exercises.length}</strong><span>LABS</span></div>
+          <div><strong>{interactive}</strong><span>INTERACTIVE</span></div>
+          <div><strong>{quizCount}</strong><span>QUESTIONS</span></div>
+        </div>
+        <p>ไม่มี backend ไม่มี account — ความคืบหน้าเก็บใน localStorage และล้างได้ทุกเมื่อ</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight" id="lab-list">
+    <div class="container">
+      <div class="lab-controls">
+        <div class="lab-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหา lab หรือทักษะ..." aria-label="ค้นหา lab" data-lab-search />
+        </div>
+        <div class="lab-filters" role="group" aria-label="กรองตามหมวด">
+          <button class="chip is-active" data-lab-cat="all">ทั้งหมด</button>
+          {categories.map((cat) => <button class="chip" data-lab-cat={cat}>{cat}</button>)}
+        </div>
+        <div class="lab-filters lab-filters--kind" role="group" aria-label="กรองตามประเภท">
+          <SlidersHorizontal size={13} class="faint" />
+          <button class="chip is-active" data-lab-kind="all">ทุกแบบ</button>
+          <button class="chip" data-lab-kind="quiz">Quiz</button>
+          <button class="chip" data-lab-kind="interactive">Interactive</button>
+        </div>
+      </div>
+
+      <div class="result-line mono"><span><span data-lab-count>{exercises.length}</span> labs</span><span class="faint">คลิกเพื่อเริ่ม</span></div>
+
+      <div class="lab-grid-list" data-lab-list>
+        {exercises.map((exercise) => (
+          <div class="lab-wrap reveal" data-lab-wrap data-cat={exercise.category} data-kind={exercise.kind === 'quiz' ? 'quiz' : 'interactive'} data-title={`${exercise.title} ${exercise.en} ${exercise.summary} ${exercise.skills.join(' ')}`.toLowerCase()}>
+            <ExerciseCard exercise={exercise} />
+          </div>
+        ))}
+      </div>
+      <div class="empty-state" data-lab-empty hidden><p>ไม่พบ lab ที่ตรงกับตัวกรอง</p><button class="chip" data-lab-clear>ล้างตัวกรอง</button></div>
+
+      <aside class="lab-note panel">
+        <Sparkles size={18} class="text-acid" />
+        <div>
+          <h2>วิธีใช้ labs ให้ได้ผล</h2>
+          <p>ทำก่อนดูคำอธิบาย เขียนสิ่งที่คาดว่าจะเกิดขึ้น แล้วเทียบกับผลจริง ถ้าผิดให้บันทึกว่าทำไม — นั่นคือส่วนที่ทำให้จำได้</p>
+        </div>
+        <a href="/guides/debug-ml-pipeline" class="link-arrow">อ่าน debug checklist <ArrowRight size={12} /></a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const wraps = [...document.querySelectorAll<HTMLElement>('[data-lab-wrap]')];
+  const search = document.querySelector<HTMLInputElement>('[data-lab-search]');
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-lab-cat]')];
+  const kindBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-lab-kind]')];
+  const count = document.querySelector<HTMLElement>('[data-lab-count]');
+  const empty = document.querySelector<HTMLElement>('[data-lab-empty]');
+  const list = document.querySelector<HTMLElement>('[data-lab-list]');
+  let cat = 'all';
+  let kind = 'all';
+
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    wraps.forEach((wrap) => {
+      const visible = (!q || (wrap.dataset.title || '').includes(q))
+        && (cat === 'all' || wrap.dataset.cat === cat)
+        && (kind === 'all' || wrap.dataset.kind === kind);
+      wrap.hidden = !visible;
+      if (visible) shown++;
+    });
+    if (count) count.textContent = String(shown);
+    if (empty) empty.hidden = shown > 0;
+    if (list) list.hidden = shown === 0;
+  }
+  catBtns.forEach((btn) => btn.addEventListener('click', () => {
+    cat = btn.dataset.labCat || 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  kindBtns.forEach((btn) => btn.addEventListener('click', () => {
+    kind = btn.dataset.labKind || 'all';
+    kindBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  search?.addEventListener('input', apply);
+  document.querySelector('[data-lab-clear]')?.addEventListener('click', () => {
+    if (search) search.value = '';
+    cat = 'all'; kind = 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.labCat === 'all'));
+    kindBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.labKind === 'all'));
+    apply();
+  });
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .lab-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .8rem; align-items: flex-start; }
+  .lab-hero__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; width: 100%; }
+  .lab-hero__stats div { display: flex; flex-direction: column; gap: .1rem; padding: .55rem; border: 1px solid var(--line); border-radius: 7px; }
+  .lab-hero__stats strong { font-family: var(--font-display); font-size: 1.35rem; font-weight: 500; line-height: 1.1; }
+  .lab-hero__stats span { font-family: var(--font-mono); font-size: .46rem; letter-spacing: .07em; color: var(--faint); }
+  .lab-hero > p { color: var(--muted); font-size: .78rem; line-height: 1.65; }
+
+  .lab-controls { display: flex; align-items: center; gap: .7rem; flex-wrap: wrap; padding-bottom: 1.1rem; border-bottom: 1px solid var(--line); }
+  .lab-search { flex: 1 1 260px; max-width: 380px; display: flex; align-items: center; gap: .55rem; padding: .5rem .75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .lab-search:focus-within { border-color: var(--acid); }
+  .lab-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: .8rem; }
+  .lab-filters { display: flex; align-items: center; gap: .3rem; flex-wrap: wrap; }
+  .lab-filters--kind { margin-left: auto; }
+  .result-line { display: flex; justify-content: space-between; padding: 1rem 0 .3rem; font-size: .62rem; color: var(--muted); }
+  .lab-grid-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .8rem; margin-top: .6rem; }
+  .lab-wrap { display: flex; }
+  .lab-wrap > :global(*) { width: 100%; }
+  .lab-note { display: flex; align-items: center; gap: 1rem; margin-top: 2rem; padding: 1.2rem; border-radius: var(--radius); }
+  .lab-note h2 { font-size: 1.05rem; }
+  .lab-note p { margin-top: .2rem; color: var(--muted); font-size: .78rem; max-width: 70ch; }
+  .lab-note .link-arrow { margin-left: auto; white-space: nowrap; }
+  @media (max-width: 900px) { .lab-grid-list { grid-template-columns: 1fr; } }
+  @media (max-width: 700px) { .lab-filters--kind { margin-left: 0; } .lab-note { flex-wrap: wrap; } .lab-note .link-arrow { margin-left: 0; } }
+</style>

@@ -1,0 +1,380 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Clock, ChartColumn, FlaskConical, Check, X, Lightbulb, Target, BookOpen, Terminal, ChevronRight } from '@lucide/astro';
+import { modules, modulesByPhase, moduleNeighbors } from '../../data/modules';
+import { phaseMap, phaseColor } from '../../lib/ui';
+import CompleteButton from '../../components/CompleteButton.astro';
+import Quiz from '../../components/Quiz.astro';
+
+export function getStaticPaths() {
+  return modules.map((module) => ({ params: { slug: module.slug }, props: { module } }));
+}
+
+const { module } = Astro.props;
+const phase = phaseMap[module.phase];
+const color = phaseColor(module.phase);
+const neighbors = moduleNeighbors(module.slug);
+const phaseModules = modulesByPhase(module.phase);
+
+---
+<BaseLayout title={`${module.number} · ${module.title}`} description={module.summary} type="article" readingProgress>
+  <article class:list={['module-page', `module-page--${color}`]}>
+    <header class="module-hero">
+      <div class="container">
+        <nav class="breadcrumbs" aria-label="เส้นทาง">
+          <a href="/">หน้าแรก</a><span>/</span><a href="/modules">หลักสูตร</a><span>/</span><span>Module {module.number}</span>
+        </nav>
+
+        <div class="module-hero__grid">
+          <div>
+            <div class="module-tags reveal">
+              <a href={`/roadmap#${phase.id}`} class:list={['tag', `tag--${color}`]}>{phase.number} · {phase.title}</a>
+              {module.tracks.map((track) => <span class="tag">{track.toUpperCase()}</span>)}
+              <span class:list={['tag', module.level === 'เริ่มต้น' ? 'tag--sky' : module.level === 'กลาง' ? 'tag--amber' : 'tag--coral']}>{module.level}</span>
+            </div>
+            <p class="module-hero__num mono reveal">MODULE / {module.number} OF {String(modules.length).padStart(2, '0')}</p>
+            <h1 class="reveal">{module.title}</h1>
+            <p class="module-hero__en mono reveal">{module.en}</p>
+            <p class="module-hero__summary reveal">{module.summary}</p>
+            <div class="module-hero__meta reveal">
+              <span><Clock size={14} /> {module.duration}</span>
+              <span><ChartColumn size={14} /> {module.level}</span>
+              <span><FlaskConical size={14} /> 1 hands-on lab</span>
+            </div>
+            <div class="module-hero__actions reveal">
+              <CompleteButton id={module.id} />
+              <a href="#lab" class="btn btn--ghost btn--small">ไปที่ Lab <ArrowRight size={13} /></a>
+            </div>
+          </div>
+
+          <aside class="module-brief panel reveal">
+            <div class="module-brief__top mono"><span>MISSION BRIEF</span><span class="text-acid">{module.number}</span></div>
+            <div class="module-brief__item">
+              <span class="mono micro">WHY IT MATTERS</span>
+              <p>{module.why}</p>
+            </div>
+            <div class="module-brief__item">
+              <span class="mono micro">MENTAL MODEL</span>
+              <p class="module-brief__model">“{module.mentalModel}”</p>
+            </div>
+            <div class="module-brief__foot">
+              <a href={`/exercises`} class="link-arrow">ฝึกเพิ่มใน Labs <ArrowUpRight size={12} /></a>
+            </div>
+          </aside>
+        </div>
+      </div>
+    </header>
+
+    <div class="container module-layout">
+      <div class="module-main">
+        <section id="outcomes" class="content-section">
+          <div class="content-label"><Target size={15} /><span>เมื่อจบบทนี้ คุณจะทำได้</span></div>
+          <div class="outcome-grid">
+            {module.outcomes.map((outcome) => (
+              <div class="outcome">
+                <span class="outcome__check"><Check size={13} stroke-width={3} /></span>
+                <p>{outcome}</p>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section id="topics" class="content-section">
+          <div class="content-label"><BookOpen size={15} /><span>แผนที่บทเรียน</span><span class="mono count">{module.topics.length} หัวข้อ</span></div>
+          <div class="topics">
+            {module.topics.map((topic, i) => (
+              <article class="topic">
+                <span class="topic__num mono">{String(i + 1).padStart(2, '0')}</span>
+                <div>
+                  <h2>{topic.title}</h2>
+                  <p>{topic.detail}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+          <div class="callout callout--model">
+            <Lightbulb size={18} />
+            <div>
+              <span class="mono micro">MENTAL MODEL</span>
+              <p>{module.mentalModel}</p>
+            </div>
+          </div>
+        </section>
+
+        <section id="lab" class="content-section">
+          <div class="content-label"><FlaskConical size={15} /><span>ลงมือทำ</span></div>
+          <div class="lab-panel corner">
+            <div class="lab-panel__top mono"><span>HANDS-ON / {module.number}</span><span class="text-acid">● REQUIRED</span></div>
+            <h2>{module.lab}</h2>
+            <div class="lab-panel__deliverable">
+              <Terminal size={16} />
+              <div><span class="mono micro">DELIVERABLE</span><p>{module.deliverable}</p></div>
+            </div>
+            <div class="lab-panel__actions">
+              <a href="/exercises" class="btn btn--primary btn--small">เปิด Labs <ArrowRight size={13} /></a>
+              <a href="/projects" class="btn btn--ghost btn--small">หาโจทย์ portfolio</a>
+            </div>
+          </div>
+        </section>
+
+        <div class="content-duo">
+          <section id="checkpoint" class="content-section">
+            <div class="content-label"><Target size={15} /><span>Checkpoint</span></div>
+            <ul class="check-list">
+              {module.checkpoint.map((item) => <li><span><Check size={12} stroke-width={3} /></span>{item}</li>)}
+            </ul>
+          </section>
+
+          <section id="mistakes" class="content-section">
+            <div class="content-label"><X size={15} /><span>ข้อผิดพลาดที่พบบ่อย</span></div>
+            <ul class="mistake-list">
+              {module.mistakes.map((item) => <li><span><X size={11} stroke-width={3} /></span>{item}</li>)}
+            </ul>
+          </section>
+        </div>
+
+        <section id="quiz" class="content-section">
+          <div class="content-label"><ChartColumn size={15} /><span>ตรวจความเข้าใจ</span></div>
+          <Quiz questions={module.quiz} id={`module-${module.slug}`} title={`Module ${module.number} · knowledge check`} />
+        </section>
+
+        <section id="resources" class="content-section">
+          <div class="content-label"><BookOpen size={15} /><span>แหล่งเรียนต่อ</span></div>
+          <div class="resource-list">
+            {module.resources.map((resource, i) => (
+              <a href={resource.url} target="_blank" rel="noopener noreferrer" class="resource-row">
+                <span class="mono resource-row__num">0{i + 1}</span>
+                <div><strong>{resource.title}</strong><span class="mono">{resource.kind}</span></div>
+                <ArrowUpRight size={16} />
+              </a>
+            ))}
+          </div>
+          <p class="resource-note">แหล่งข้อมูลภายนอกอาจมีเนื้อหาเปลี่ยน แนะนำตรวจวันที่อัปเดตก่อนใช้ตัดสินใจ</p>
+        </section>
+
+        <nav class="module-nav" aria-label="ไปยังบทอื่น">
+          {neighbors.prev ? (
+            <a href={`/modules/${neighbors.prev.slug}`} class="module-nav__link">
+              <span class="mono"><ArrowLeft size={13} /> ก่อนหน้า</span>
+              <strong>{neighbors.prev.title}</strong>
+            </a>
+          ) : <span></span>}
+          {neighbors.next ? (
+            <a href={`/modules/${neighbors.next.slug}`} class="module-nav__link module-nav__link--next">
+              <span class="mono">ถัดไป <ArrowRight size={13} /></span>
+              <strong>{neighbors.next.title}</strong>
+            </a>
+          ) : (
+            <a href="/paths" class="module-nav__link module-nav__link--next"><span class="mono">จบหลักสูตร <ArrowRight size={13} /></span><strong>เลือกเส้นทางอาชีพของคุณ</strong></a>
+          )}
+        </nav>
+      </div>
+
+      <aside class="module-side">
+        <div class="side-sticky">
+          <nav class="side-toc panel" aria-label="สารบัญบท">
+            <p class="mono micro">ON THIS PAGE</p>
+            <a href="#outcomes">ผลลัพธ์การเรียนรู้</a>
+            <a href="#topics">แผนที่บทเรียน</a>
+            <a href="#lab">ลงมือทำ</a>
+            <a href="#checkpoint">Checkpoint</a>
+            <a href="#mistakes">ข้อผิดพลาดที่พบบ่อย</a>
+            <a href="#quiz">ตรวจความเข้าใจ</a>
+            <a href="#resources">แหล่งเรียนต่อ</a>
+          </nav>
+
+          <div class="side-progress panel">
+            <div class="side-progress__top"><span class="mono micro">YOUR PROGRESS</span><span class="mono tiny text-acid" data-side-pct>0%</span></div>
+            <div class="progress-track"><span data-side-bar></span></div>
+            <p class="mono tiny faint"><span data-side-done>0</span> / {modules.length} modules completed</p>
+            <CompleteButton id={module.id} block />
+          </div>
+
+          <div class="side-phase panel">
+            <p class="mono micro">PHASE {phase.number} · {phase.en.toUpperCase()}</p>
+            <div class="side-phase__list">
+              {phaseModules.map((m) => (
+                <a href={`/modules/${m.slug}`} class:list={['side-phase__item', { 'is-current': m.slug === module.slug }]} aria-current={m.slug === module.slug ? 'page' : undefined}>
+                  <span class="mono">{m.number}</span>
+                  <span>{m.title}</span>
+                  {m.slug === module.slug ? <span class="current-dot"></span> : <ChevronRight size={12} />}
+                </a>
+              ))}
+            </div>
+          </div>
+        </div>
+      </aside>
+    </div>
+  </article>
+</BaseLayout>
+
+<script>
+  const getDone = (): string[] => {
+    try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
+  };
+  function syncSide() {
+    const done = getDone();
+    document.querySelectorAll<HTMLElement>('[data-side-done]').forEach((el) => { el.textContent = String(done.length); });
+    const pct = Math.round((done.length / 28) * 100);
+    document.querySelectorAll<HTMLElement>('[data-side-pct]').forEach((el) => { el.textContent = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-side-bar]').forEach((el) => { el.style.width = pct + '%'; });
+  }
+  syncSide();
+  window.addEventListener('aie:progress', syncSide);
+</script>
+
+<style>
+  .module-page { --module-color: var(--acid); }
+  .module-page--amber { --module-color: var(--amber); }
+  .module-page--sky { --module-color: var(--sky); }
+  .module-page--violet { --module-color: var(--violet); }
+  .module-page--coral { --module-color: var(--coral); }
+  .module-page--sand { --module-color: var(--sand); }
+
+  .module-hero {
+    padding-top: calc(var(--header-h) + 2.5rem);
+    padding-bottom: 3.5rem;
+    position: relative;
+    overflow: hidden;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .module-hero::before {
+    content: '';
+    position: absolute;
+    width: 50vw;
+    height: 50vw;
+    max-width: 700px;
+    max-height: 700px;
+    right: -10%;
+    top: -20%;
+    border-radius: 50%;
+    background: radial-gradient(circle, color-mix(in srgb, var(--module-color) 10%, transparent), transparent 65%);
+    pointer-events: none;
+  }
+
+  .module-hero__grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1.3fr) minmax(300px, 0.55fr);
+    gap: clamp(2rem, 6vw, 6rem);
+    margin-top: 2.8rem;
+    align-items: end;
+    position: relative;
+  }
+
+  .module-tags { display: flex; align-items: center; flex-wrap: wrap; gap: 0.4rem; }
+  .module-hero__num { margin-top: 2.4rem; color: var(--faint); font-size: 0.65rem; letter-spacing: 0.1em; }
+  .module-hero h1 { margin-top: 0.6rem; font-size: clamp(2.5rem, 5.7vw, 5.2rem); max-width: 14ch; }
+  .module-hero__en { margin-top: 0.8rem; color: var(--module-color); font-size: 0.68rem; letter-spacing: 0.08em; text-transform: uppercase; }
+  .module-hero__summary { margin-top: 1.2rem; max-width: 58ch; color: var(--muted); font-size: 1rem; line-height: 1.8; }
+  .module-hero__meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.4rem; color: var(--faint); font-family: var(--font-mono); font-size: 0.62rem; }
+  .module-hero__meta span { display: inline-flex; align-items: center; gap: 0.35rem; }
+  .module-hero__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 0.6rem; margin-top: 1.6rem; }
+
+  .module-brief { padding: 1.2rem; border-radius: var(--radius); }
+  .module-brief__top { display: flex; justify-content: space-between; padding-bottom: 0.8rem; border-bottom: 1px solid var(--line); font-size: 0.55rem; color: var(--faint); letter-spacing: 0.08em; }
+  .module-brief__item { padding: 1rem 0; border-bottom: 1px solid var(--line); }
+  .module-brief__item:last-of-type { border-bottom: 0; }
+  .module-brief__item p { margin-top: 0.5rem; color: var(--muted); font-size: 0.78rem; line-height: 1.7; }
+  .module-brief__model { color: var(--text) !important; font-family: var(--font-display); font-size: 0.98rem !important; line-height: 1.5 !important; }
+  .module-brief__foot { padding-top: 0.8rem; border-top: 1px solid var(--line); }
+
+  .module-layout {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 280px;
+    gap: clamp(2rem, 5vw, 4.5rem);
+    padding-top: 3.5rem;
+  }
+
+  .content-section { padding-bottom: 3.5rem; scroll-margin-top: calc(var(--header-h) + 30px); }
+  .content-label { display: flex; align-items: center; gap: 0.5rem; padding-bottom: 1rem; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: 0.65rem; text-transform: uppercase; letter-spacing: 0.09em; color: var(--muted); }
+  .content-label svg { color: var(--module-color); }
+  .content-label .count { margin-left: auto; color: var(--faint); font-size: 0.58rem; }
+
+  .outcome-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 0.75rem; margin-top: 1.3rem; }
+  .outcome { display: flex; gap: 0.65rem; padding: 0.9rem; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); }
+  .outcome__check { display: grid; place-items: center; width: 20px; height: 20px; flex: none; border-radius: 50%; background: var(--acid-soft); color: var(--acid); margin-top: 0.1rem; }
+  .outcome p { color: var(--muted); font-size: 0.8rem; line-height: 1.65; }
+
+  .topics { margin-top: 0.5rem; }
+  .topic { display: grid; grid-template-columns: 44px 1fr; gap: 1rem; padding: 1.5rem 0; border-bottom: 1px solid var(--line); }
+  .topic__num { color: var(--module-color); font-size: 0.65rem; padding-top: 0.25rem; }
+  .topic h2 { font-size: 1.15rem; letter-spacing: -0.02em; }
+  .topic p { margin-top: 0.5rem; color: var(--muted); font-size: 0.9rem; line-height: 1.8; }
+
+  .callout { display: flex; gap: 0.8rem; margin-top: 1.5rem; padding: 1rem 1.1rem; border: 1px solid var(--line); border-radius: 10px; background: var(--panel); color: var(--module-color); }
+  .callout p { margin-top: 0.4rem; color: var(--text); font-family: var(--font-display); font-size: 1.05rem; line-height: 1.5; }
+  .callout svg { flex: none; margin-top: 0.1rem; }
+
+  .lab-panel {
+    margin-top: 1.3rem;
+    padding: clamp(1.2rem, 3vw, 2rem);
+    border: 1px solid var(--line-strong);
+    border-radius: var(--radius);
+    background:
+      linear-gradient(145deg, color-mix(in srgb, var(--module-color) 7%, transparent), transparent 50%),
+      var(--panel);
+  }
+  .lab-panel__top { display: flex; justify-content: space-between; gap: 1rem; font-size: 0.56rem; color: var(--faint); letter-spacing: 0.07em; }
+  .lab-panel h2 { margin-top: 1.3rem; font-size: clamp(1.3rem, 2.5vw, 1.75rem); line-height: 1.35; max-width: 40ch; }
+  .lab-panel__deliverable { display: flex; gap: 0.6rem; margin-top: 1.2rem; padding-top: 1rem; border-top: 1px solid var(--line); color: var(--module-color); }
+  .lab-panel__deliverable p { margin-top: 0.25rem; color: var(--muted); font-size: 0.8rem; }
+  .lab-panel__actions { display: flex; gap: 0.5rem; flex-wrap: wrap; margin-top: 1.3rem; }
+
+  .content-duo { display: grid; grid-template-columns: 1fr 1fr; gap: 2rem; }
+  .check-list, .mistake-list { list-style: none; margin-top: 1.1rem; display: flex; flex-direction: column; gap: 0.65rem; }
+  .check-list li, .mistake-list li { display: flex; gap: 0.6rem; color: var(--muted); font-size: 0.82rem; line-height: 1.6; }
+  .check-list li span, .mistake-list li span { display: grid; place-items: center; width: 18px; height: 18px; flex: none; border-radius: 50%; margin-top: 0.1rem; }
+  .check-list li span { background: var(--acid-soft); color: var(--acid); }
+  .mistake-list li span { background: rgba(255, 137, 122, 0.1); color: var(--danger); }
+
+  .resource-list { display: flex; flex-direction: column; margin-top: 0.8rem; }
+  .resource-row { display: grid; grid-template-columns: 30px 1fr auto; align-items: center; gap: 0.8rem; padding: 0.9rem 0; border-bottom: 1px solid var(--line); text-decoration: none; }
+  .resource-row:hover strong { color: var(--module-color); }
+  .resource-row__num { color: var(--faint); font-size: 0.6rem; }
+  .resource-row div { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; }
+  .resource-row strong { font-size: 0.85rem; font-weight: 500; transition: color 0.2s; }
+  .resource-row div span { font-size: 0.53rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.07em; }
+  .resource-row > svg { color: var(--faint); }
+  .resource-note { margin-top: 0.8rem; color: var(--faint); font-size: 0.67rem; }
+
+  .module-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+  .module-nav__link { display: flex; flex-direction: column; gap: 0.35rem; padding: 1rem; border: 1px solid var(--line); border-radius: 9px; text-decoration: none; }
+  .module-nav__link:hover { border-color: var(--line-strong); background: var(--panel); }
+  .module-nav__link span { display: flex; align-items: center; gap: 0.35rem; color: var(--faint); font-size: 0.6rem; text-transform: uppercase; letter-spacing: 0.07em; }
+  .module-nav__link strong { font-size: 0.85rem; font-weight: 500; }
+  .module-nav__link--next { text-align: right; align-items: flex-end; }
+
+  .side-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); display: flex; flex-direction: column; gap: 0.75rem; }
+  .side-toc { padding: 1rem; border-radius: var(--radius); display: flex; flex-direction: column; }
+  .side-toc .micro { padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); margin-bottom: 0.5rem; }
+  .side-toc a { padding: 0.35rem 0; color: var(--muted); font-size: 0.73rem; text-decoration: none; }
+  .side-toc a:hover { color: var(--acid); }
+
+  .side-progress { padding: 1rem; border-radius: var(--radius); }
+  .side-progress__top { display: flex; justify-content: space-between; margin-bottom: 0.55rem; }
+  .side-progress p { margin-top: 0.55rem; margin-bottom: 0.8rem; }
+
+  .side-phase { padding: 1rem; border-radius: var(--radius); }
+  .side-phase__list { display: flex; flex-direction: column; margin-top: 0.6rem; }
+  .side-phase__item { display: grid; grid-template-columns: 22px 1fr auto; gap: 0.4rem; align-items: center; padding: 0.4rem 0.35rem; border-radius: 5px; text-decoration: none; color: var(--faint); font-size: 0.68rem; }
+  .side-phase__item:hover { color: var(--text); background: var(--panel-2); }
+  .side-phase__item.is-current { color: var(--acid); background: var(--acid-soft); }
+  .side-phase__item .mono { font-size: 0.55rem; }
+  .side-phase__item svg { opacity: 0.5; }
+  .current-dot { width: 5px; height: 5px; border-radius: 50%; background: var(--acid); }
+
+  @media (max-width: 1000px) {
+    .module-layout { grid-template-columns: 1fr; }
+    .module-side { display: none; }
+    .module-hero__grid { grid-template-columns: 1fr; }
+    .module-brief { max-width: 560px; }
+  }
+
+  @media (max-width: 640px) {
+    .outcome-grid, .content-duo, .module-nav { grid-template-columns: 1fr; }
+    .module-hero__actions .btn, .module-hero__actions :global(.complete-btn) { width: 100%; }
+    .module-nav__link--next { text-align: left; align-items: flex-start; }
+    .topic { grid-template-columns: 30px 1fr; }
+  }
+</style>

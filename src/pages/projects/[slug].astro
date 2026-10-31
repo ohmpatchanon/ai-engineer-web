@@ -1,0 +1,240 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Check, Clock, ChartColumn, Users, Target, ListChecks, Flag, Sparkles, Layers, ShieldCheck } from '@lucide/astro';
+import { projects } from '../../data/projects';
+
+export function getStaticPaths() {
+  return projects.map((project) => ({ params: { slug: project.slug }, props: { project } }));
+}
+const { project } = Astro.props;
+const index = projects.findIndex((p) => p.slug === project.slug);
+const prev = index > 0 ? projects[index - 1] : null;
+const next = index < projects.length - 1 ? projects[index + 1] : null;
+const related = projects.filter((p) => p.slug !== project.slug && p.category === project.category).slice(0, 2);
+const fallback = projects.filter((p) => p.slug !== project.slug).slice(0, 2);
+const suggested = related.length ? related : fallback;
+---
+
+<BaseLayout title={project.title} description={`${project.summary} · ${project.time} · ${project.level}`} type="article" readingProgress>
+  <article class="project-page">
+    <header class="project-hero-page">
+      <div class="container">
+        <nav class="breadcrumbs"><a href="/">หน้าแรก</a><span>/</span><a href="/projects">Projects</a><span>/</span><span>{project.category}</span></nav>
+        <div class="project-hero-page__grid">
+          <div>
+            <div class="project-tags reveal">
+              <span class="tag tag--acid">PROJECT {String(index + 1).padStart(2, '0')}</span>
+              <span class="tag">{project.category}</span>
+              <span class="tag">{project.level}</span>
+            </div>
+            <h1 class="reveal">{project.title}</h1>
+            <p class="project-hero-page__en mono reveal">{project.en}</p>
+            <p class="project-hero-page__summary reveal">{project.summary}</p>
+            <div class="project-hero-page__meta reveal">
+              <span><Clock size={14} /> {project.time}</span>
+              <span><ChartColumn size={14} /> {project.level}</span>
+              <span><Users size={14} /> มีผู้ใช้จริง</span>
+            </div>
+            <div class="project-hero-page__skills reveal">{project.skills.map((s) => <span class="tag">{s}</span>)}</div>
+          </div>
+          <aside class="project-why panel reveal">
+            <div class="project-why__top mono"><span>WHY THIS MATTERS</span><Target size={14} /></div>
+            <p>{project.why}</p>
+            <div class="project-why__user">
+              <span class="mono micro">USER</span>
+              <p>{project.user}</p>
+            </div>
+            <a href="#rubric" class="link-arrow">ดูเกณฑ์ประเมิน <ArrowRight size={12} /></a>
+          </aside>
+        </div>
+      </div>
+    </header>
+
+    <div class="container project-layout">
+      <div class="project-main">
+        <section class="project-section" id="requirements">
+          <div class="section-label"><ListChecks size={15} /><span>Requirements</span><span class="mono count">{project.requirements.length} ข้อ</span></div>
+          <ul class="req-list">
+            {project.requirements.map((req) => <li><span class="req-check"><Check size={11} stroke-width={3} /></span><span>{req}</span></li>)}
+          </ul>
+        </section>
+
+        <section class="project-section" id="milestones">
+          <div class="section-label"><Flag size={15} /><span>Milestones</span><span class="mono count">{project.milestones.length} stages</span></div>
+          <div class="milestones">
+            {project.milestones.map((m, i) => (
+              <div class="milestone">
+                <div class="milestone__marker"><span class="mono">{String(i + 1).padStart(2, '0')}</span><span class="milestone__dot"></span><span class="milestone__line"></span></div>
+                <div class="milestone__body">
+                  <span class="mono milestone__week">{m.week}</span>
+                  <h3>{m.title}</h3>
+                  <p>{m.body}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section class="project-section" id="rubric">
+          <div class="section-label"><ShieldCheck size={15} /><span>Rubric — ตรวจงานตัวเองก่อนส่ง</span></div>
+          <div class="table-wrap">
+            <table class="data">
+              <thead><tr><th>เกณฑ์</th><th>สิ่งที่ต้องเห็นในงาน</th></tr></thead>
+              <tbody>
+                {project.rubric.map((r) => <tr><td><strong>{r.label}</strong></td><td>{r.detail}</td></tr>)}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section class="project-section" id="stretch">
+          <div class="section-label"><Sparkles size={15} /><span>Stretch goals</span></div>
+          <ul class="stretch-list">
+            {project.stretch.map((s) => <li><span>+</span><p>{s}</p></li>)}
+          </ul>
+        </section>
+
+        <section class="project-section" id="stack">
+          <div class="section-label"><Layers size={15} /><span>Stack ที่แนะนำ</span></div>
+          <div class="stack-chips">{project.stack.map((s) => <span class="tag tag--acid">{s}</span>)}</div>
+          <p class="stack-note">ไม่ใช่ข้อบังคับ — เลือกเครื่องมือที่คุณอธิบายเหตุผลได้และทีมใช้จริง</p>
+        </section>
+
+        <nav class="project-nav">
+          {prev ? <a href={`/projects/${prev.slug}`}><span class="mono"><ArrowLeft size={12} /> ก่อนหน้า</span><strong>{prev.title}</strong></a> : <span></span>}
+          {next ? <a href={`/projects/${next.slug}`} class="project-nav--next"><span class="mono">ถัดไป <ArrowRight size={12} /></span><strong>{next.title}</strong></a> : <span></span>}
+        </nav>
+      </div>
+
+      <aside class="project-side">
+        <div class="side-sticky">
+          <nav class="side-toc panel" aria-label="สารบัญ">
+            <p class="mono micro">ON THIS PAGE</p>
+            <a href="#requirements">Requirements</a>
+            <a href="#milestones">Milestones</a>
+            <a href="#rubric">Rubric</a>
+            <a href="#stretch">Stretch goals</a>
+            <a href="#stack">Stack</a>
+          </nav>
+          <div class="side-card panel">
+            <p class="mono micro">เขียน case study</p>
+            <p>ใช้โครงปัญหา → ข้อจำกัด → วิธีแก้ → หลักฐาน → บทเรียน เพื่อเล่าโปรเจกต์นี้ให้คนอื่นเห็นคุณค่าของงาน</p>
+            <a href="/guides/portfolio-that-gets-hired" class="link-arrow">อ่าน guide <ArrowUpRight size={12} /></a>
+          </div>
+          <div class="side-card panel">
+            <p class="mono micro">ก่อนเริ่ม</p>
+            <ul class="mini-list">
+              <li>กำหนดผู้ใช้จริง 1 กลุ่ม</li>
+              <li>เขียน baseline ก่อนเลือกโมเดล</li>
+              <li>ตั้งตัวเลขความสำเร็จ</li>
+              <li>เก็บ failure cases ตั้งแต่ต้น</li>
+            </ul>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="section section--tight related">
+      <div class="container">
+        <div class="related-head"><p class="eyebrow">NEXT PROJECT</p><a href="/projects" class="link-arrow">ดูทั้งหมด <ArrowRight size={12} /></a></div>
+        <div class="grid grid-2">
+          {suggested.map((p) => (
+            <a href={`/projects/${p.slug}`} class="related-card panel panel--hover">
+              <span class="mono tiny faint">{p.category} · {p.time}</span>
+              <h3>{p.title}</h3>
+              <p>{p.summary}</p>
+              <ArrowUpRight size={16} />
+            </a>
+          ))}
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<style>
+  .project-hero-page { padding-top: calc(var(--header-h) + 2.5rem); padding-bottom: 3.2rem; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+  .project-hero-page::before { content: ''; position: absolute; width: 60vw; height: 60vw; max-width: 760px; max-height: 760px; right: -14%; top: -45%; border-radius: 50%; background: radial-gradient(circle, rgba(211, 250, 124, .07), transparent 65%); pointer-events: none; }
+  .project-hero-page__grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, .55fr); gap: clamp(2rem, 5vw, 5rem); margin-top: 2.5rem; align-items: end; position: relative; }
+  .project-tags { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .project-hero-page h1 { margin-top: 1.1rem; font-size: clamp(2.4rem, 5.3vw, 4.8rem); max-width: 16ch; }
+  .project-hero-page__en { margin-top: .7rem; color: var(--acid); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; }
+  .project-hero-page__summary { margin-top: 1.1rem; max-width: 60ch; color: var(--muted); font-size: 1rem; line-height: 1.8; }
+  .project-hero-page__meta { display: flex; flex-wrap: wrap; gap: 1rem; margin-top: 1.3rem; color: var(--faint); font-family: var(--font-mono); font-size: .62rem; }
+  .project-hero-page__meta span { display: inline-flex; align-items: center; gap: .35rem; }
+  .project-hero-page__skills { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: 1.2rem; }
+
+  .project-why { padding: 1.2rem; border-radius: var(--radius); }
+  .project-why__top { display: flex; justify-content: space-between; align-items: center; padding-bottom: .8rem; border-bottom: 1px solid var(--line); color: var(--faint); font-size: .55rem; letter-spacing: .08em; }
+  .project-why > p { margin-top: .9rem; color: var(--muted); font-size: .8rem; line-height: 1.7; }
+  .project-why__user { padding: .8rem 0; margin-top: .8rem; border-top: 1px solid var(--line); }
+  .project-why__user p { margin-top: .35rem; color: var(--text); font-size: .8rem; line-height: 1.6; }
+  .project-why .link-arrow { margin-top: .4rem; }
+
+  .project-layout { display: grid; grid-template-columns: minmax(0, 1fr) 270px; gap: clamp(2rem, 5vw, 4rem); padding-top: 3rem; }
+  .project-section { padding-bottom: 3rem; scroll-margin-top: calc(var(--header-h) + 24px); }
+  .section-label { display: flex; align-items: center; gap: .5rem; padding-bottom: .9rem; border-bottom: 1px solid var(--line); margin-bottom: 1.2rem; font-family: var(--font-mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); }
+  .section-label svg { color: var(--acid); }
+  .section-label .count { margin-left: auto; color: var(--faint); font-size: .55rem; }
+
+  .req-list { list-style: none; display: flex; flex-direction: column; gap: .5rem; }
+  .req-list li { display: flex; gap: .65rem; align-items: flex-start; padding: .75rem .85rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); color: var(--muted); font-size: .84rem; line-height: 1.65; }
+  .req-check { display: grid; place-items: center; width: 19px; height: 19px; flex: none; border-radius: 50%; background: var(--acid-soft); color: var(--acid); margin-top: .1rem; }
+
+  .milestones { display: flex; flex-direction: column; }
+  .milestone { display: grid; grid-template-columns: 48px 1fr; gap: .9rem; }
+  .milestone__marker { display: flex; flex-direction: column; align-items: center; }
+  .milestone__marker .mono { font-size: .58rem; color: var(--faint); }
+  .milestone__dot { width: 8px; height: 8px; border-radius: 50%; background: var(--acid); margin-top: .5rem; box-shadow: 0 0 0 4px var(--acid-soft); }
+  .milestone__line { flex: 1; width: 1px; background: var(--line); margin-top: .4rem; }
+  .milestone:last-child .milestone__line { display: none; }
+  .milestone__body { padding: 0 0 1.8rem; }
+  .milestone__week { color: var(--faint); font-size: .56rem; text-transform: uppercase; letter-spacing: .07em; }
+  .milestone h3 { margin-top: .3rem; font-size: 1.08rem; }
+  .milestone p { margin-top: .35rem; color: var(--muted); font-size: .83rem; line-height: 1.7; }
+
+  .stretch-list { list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+  .stretch-list li { display: flex; gap: .65rem; align-items: flex-start; }
+  .stretch-list li > span { display: grid; place-items: center; width: 20px; height: 20px; flex: none; border: 1px solid var(--line-strong); border-radius: 5px; color: var(--acid); font-family: var(--font-mono); font-size: .7rem; }
+  .stretch-list p { color: var(--muted); font-size: .84rem; line-height: 1.65; }
+
+  .stack-chips { display: flex; flex-wrap: wrap; gap: .4rem; }
+  .stack-note { margin-top: .8rem; color: var(--faint); font-size: .72rem; }
+
+  .project-side .side-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); display: flex; flex-direction: column; gap: .7rem; }
+  .side-toc { display: flex; flex-direction: column; padding: 1rem; border-radius: var(--radius); }
+  .side-toc .micro { padding-bottom: .6rem; border-bottom: 1px solid var(--line); margin-bottom: .5rem; }
+  .side-toc a { padding: .35rem 0; color: var(--muted); font-size: .73rem; text-decoration: none; }
+  .side-toc a:hover { color: var(--acid); }
+  .side-card { padding: 1rem; border-radius: var(--radius); }
+  .side-card > p:not(.micro) { margin-top: .5rem; color: var(--muted); font-size: .74rem; line-height: 1.65; }
+  .side-card .link-arrow { margin-top: .7rem; font-size: .68rem; }
+  .mini-list { list-style: none; margin-top: .6rem; display: flex; flex-direction: column; gap: .4rem; }
+  .mini-list li { position: relative; padding-left: .8rem; color: var(--muted); font-size: .73rem; }
+  .mini-list li::before { content: ''; position: absolute; left: 0; top: .55em; width: 4px; height: 4px; border-radius: 50%; background: var(--acid); }
+
+  .project-nav { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .project-nav a { display: flex; flex-direction: column; gap: .3rem; padding: .85rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; }
+  .project-nav a:hover { border-color: var(--line-strong); background: var(--panel); }
+  .project-nav span { display: flex; align-items: center; gap: .3rem; color: var(--faint); font-size: .55rem; text-transform: uppercase; letter-spacing: .06em; }
+  .project-nav strong { font-size: .8rem; font-weight: 500; }
+  .project-nav--next { text-align: right; align-items: flex-end; }
+
+  .related { border-top: 1px solid var(--line); }
+  .related-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.2rem; }
+  .related-card { display: flex; flex-direction: column; gap: .35rem; padding: 1.2rem; text-decoration: none; border-radius: var(--radius); position: relative; }
+  .related-card h3 { font-size: 1.1rem; }
+  .related-card p { color: var(--muted); font-size: .8rem; line-height: 1.6; }
+  .related-card > svg { position: absolute; top: 1.1rem; right: 1.1rem; color: var(--faint); }
+
+  @media (max-width: 950px) {
+    .project-hero-page__grid { grid-template-columns: 1fr; }
+    .project-why { max-width: 550px; }
+    .project-layout { grid-template-columns: 1fr; }
+    .project-side { display: none; }
+  }
+  @media (max-width: 600px) {
+    .project-nav { grid-template-columns: 1fr; }
+    .project-nav--next { text-align: left; align-items: flex-start; }
+  }
+</style>

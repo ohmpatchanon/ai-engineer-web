@@ -1,0 +1,84 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowRight, Compass, Layers } from '@lucide/astro';
+import { paths } from '../../data/paths';
+import PathCard from '../../components/PathCard.astro';
+---
+<BaseLayout title="เลือกสายอาชีพ AI" description="4 เส้นทางอาชีพ AI Engineer: LLM, Machine Learning, AI Product และ MLOps พร้อมหลักสูตรและ capstone ที่แตกต่างกัน">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">TRAJECTORIES / 04</p>
+        <h1 class="reveal">ไม่ใช่ทุกคน<br />ต้องเป็น <span class="text-acid">AI Engineer</span> แบบเดียวกัน</h1>
+        <p class="lead reveal">อาชีพ AI มีหลายบทบาทที่ใช้ทักษะต่างกัน เลือกเส้นทางจากสิ่งที่คุณอยากสร้างและพื้นเดิมที่มี ไม่ใช่จากชื่อตำแหน่งที่ดังที่สุด</p>
+      </div>
+      <div class="path-note panel reveal">
+        <Compass size={20} class="text-acid" />
+        <p class="mono micro">HOW TO CHOOSE</p>
+        <p>เริ่มจากคำถาม 3 ข้อ: คุณชอบทำงานกับ <strong>ข้อมูล</strong>, <strong>ระบบ</strong> หรือ <strong>ผู้ใช้</strong>? และคุณมีเวลากี่ชั่วโมงต่อสัปดาห์?</p>
+        <a href="/start" class="link-arrow">ให้แบบประเมินช่วยเลือก <ArrowRight size={12} /></a>
+      </div>
+    </div>
+  </header>
+
+  <section class="section">
+    <div class="container">
+      <div class="grid grid-2 paths-grid">
+        {paths.map((path) => <div class="reveal"><PathCard path={path} large /></div>)}
+      </div>
+    </div>
+  </section>
+
+  <section class="section section--line">
+    <div class="container">
+      <div class="section-head">
+        <div>
+          <p class="eyebrow reveal">SIDE BY SIDE</p>
+          <h2 class="reveal">เทียบให้เห็น<br />ก่อนตัดสินใจ</h2>
+        </div>
+        <p class="section-head__aside reveal">ทุกเส้นทางมีฐานร่วมกัน ประมาณ 8–10 modules แรก แล้วจึงแยกความเชี่ยวชาญ</p>
+      </div>
+      <div class="table-wrap reveal">
+        <table class="data">
+          <thead><tr><th>เส้นทาง</th><th>เวลา</th><th>เหมาะกับ</th><th>โมดูล</th><th>Capstone</th><th></th></tr></thead>
+          <tbody>
+            {paths.map((path) => (
+              <tr>
+                <td><strong>{path.title}</strong><br /><span class="tiny faint">{path.tagline}</span></td>
+                <td class="mono tiny">{path.weeks}</td>
+                <td class="tiny">{path.bestFor[0]}</td>
+                <td class="mono">{path.moduleSlugs.length}</td>
+                <td class="tiny">{path.capstone.split(' พร้อม')[0]}</td>
+                <td><a href={`/paths/${path.slug}`} class="link-arrow">ดู <ArrowRight size={12} /></a></td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="choose-help">
+        <div class="choose-help__icon"><Layers size={20} /></div>
+        <div>
+          <h3>ยังไม่แน่ใจ? เริ่มจากฐานร่วมก่อนได้</h3>
+          <p>เรียน Python, Data, SQL, Software Engineering และ ML Foundations ให้จบ แล้วค่อยเลือกสายเมื่อเห็นว่าตัวเองสนุกกับอะไรจริง ๆ</p>
+        </div>
+        <a href="/modules" class="btn btn--primary btn--small">ดูหลักสูตร <ArrowRight size={13} /></a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<style>
+  .path-note { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-start; }
+  .path-note p:not(.micro) { color: var(--muted); font-size: 0.82rem; line-height: 1.7; }
+  .path-note strong { color: var(--text); font-weight: 500; }
+  .paths-grid { align-items: stretch; }
+  .paths-grid > div { display: flex; }
+  .paths-grid > div > :global(*) { width: 100%; }
+  .choose-help { display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--radius); }
+  .choose-help__icon { display: grid; place-items: center; width: 42px; height: 42px; flex: none; border-radius: 50%; background: var(--acid-soft); color: var(--acid); }
+  .choose-help h3 { font-size: 1rem; }
+  .choose-help p { margin-top: 0.2rem; color: var(--muted); font-size: 0.78rem; }
+  .choose-help .btn { margin-left: auto; }
+  @media (max-width: 700px) { .choose-help { flex-wrap: wrap; } .choose-help .btn { margin-left: 0; } }
+</style>

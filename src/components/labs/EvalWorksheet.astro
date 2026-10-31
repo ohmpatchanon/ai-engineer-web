@@ -1,0 +1,201 @@
+---
+import { ClipboardCheck, Download, RotateCcw } from '@lucide/astro';
+
+const dimensions = ['ความถูกต้อง (correctness)', 'ความครบถ้วน (coverage)', 'ความเกี่ยวข้อง (relevance)', 'ความน่าเชื่อถือ (faithfulness)', 'ความปลอดภัย (safety)', 'ประสบการณ์ผู้ใช้ (UX)', 'ต้นทุน (cost)', 'ความเร็ว (latency)'];
+const metrics = ['Accuracy / exact match', 'Groundedness / citation', 'Retrieval recall@k', 'Human rating 1–5', 'Task success rate', 'Latency p95', 'Cost per request', 'Refusal appropriateness'];
+const failureModes = ['ตอบผิดแต่ดูมั่นใจ', 'อ้างแหล่งที่ไม่มีจริง', 'ตอบนอกขอบเขต', 'ปฏิเสธคำถามที่ควรตอบ', 'ลืมบริบทก่อนหน้า', 'จัดรูปแบบผลลัพธ์ผิด', 'ใช้ภาษาที่ไม่เหมาะสม'];
+---
+
+<section class="lab" data-eval-lab>
+  <div class="lab__bar">
+    <span>EVAL DESIGN WORKSHEET</span>
+    <strong data-el-status>0% complete</strong>
+  </div>
+  <div class="lab__body">
+    <div class="lab__grid lab__grid--side">
+      <div class="lab__grid">
+        <div class="lab__field">
+          <label for="el-usecase">Use case</label>
+          <input id="el-usecase" class="input" data-el="usecase" placeholder="เช่น ผู้ช่วยตอบคำถามนโยบาย HR จากเอกสารภายใน" />
+        </div>
+        <div class="lab__grid lab__grid--2">
+          <div class="lab__field">
+            <label for="el-user">ผู้ใช้หลัก</label>
+            <input id="el-user" class="input" data-el="user" placeholder="เช่น พนักงานใหม่ 200 คน" />
+          </div>
+          <div class="lab__field">
+            <label for="el-size">ขนาด eval set</label>
+            <input id="el-size" class="input" type="number" min="0" max="1000" value="40" data-el="size" />
+          </div>
+        </div>
+        <div class="lab__field">
+          <p class="lab__label">มิติคุณภาพที่สำคัญ (เลือก 2–4)</p>
+          <div class="lab__chips" data-el-dimensions>
+            {dimensions.map((d) => <label><input type="checkbox" value={d} /> {d}</label>)}
+          </div>
+        </div>
+        <div class="lab__field">
+          <p class="lab__label">Metric ที่จะวัด</p>
+          <div class="lab__chips" data-el-metrics>
+            {metrics.map((m) => <label><input type="checkbox" value={m} /> {m}</label>)}
+          </div>
+        </div>
+        <div class="lab__field">
+          <p class="lab__label">Failure modes ที่ต้องครอบคลุม</p>
+          <div class="lab__chips" data-el-failures>
+            {failureModes.map((f) => <label><input type="checkbox" value={f} /> {f}</label>)}
+          </div>
+        </div>
+        <div class="lab__grid lab__grid--2">
+          <div class="lab__field">
+            <label for="el-gate">เกณฑ์ปล่อย launch (% ผ่าน)</label>
+            <input id="el-gate" class="input" type="number" min="0" max="100" value="85" data-el="gate" />
+          </div>
+          <div class="lab__field">
+            <label for="el-human">สัดส่วนที่คนตรวจ (%)</label>
+            <input id="el-human" class="input" type="number" min="0" max="100" value="100" data-el="human" />
+          </div>
+        </div>
+        <div class="lab__field">
+          <label for="el-notes">บันทึกเพิ่มเติม</label>
+          <textarea id="el-notes" class="textarea" rows="3" data-el="notes" placeholder="ข้อจำกัด งบประมาณ หรือสิ่งที่ยังวัดไม่ได้"></textarea>
+        </div>
+      </div>
+
+      <div>
+        <div class="lab__result">
+          <p class="mono tiny faint">WORKSHEET COMPLETENESS</p>
+          <p class="lab__score" data-el-score>0<small>%</small></p>
+          <div class="lab__meter"><span data-el-meter></span></div>
+          <ul class="lab__checklist" data-el-checks></ul>
+        </div>
+        <div class="lab__actions">
+          <button type="button" class="btn btn--primary btn--small" data-el-export><ClipboardCheck size={13} /> สร้าง scorecard</button>
+          <button type="button" class="btn btn--ghost btn--small" data-el-download><Download size={13} /> ดาวน์โหลด .md</button>
+          <button type="button" class="btn btn--ghost btn--small" data-el-reset><RotateCcw size={13} /> ล้าง</button>
+        </div>
+        <pre class="lab__output" data-el-output hidden></pre>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-eval-lab]')!;
+  if (root) {
+    const KEY = 'aie:lab:eval';
+    const fields = [...root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>('[data-el]')];
+    const groups = [...root.querySelectorAll<HTMLElement>('[data-el-dimensions], [data-el-metrics], [data-el-failures]')];
+    const scoreEl = root.querySelector<HTMLElement>('[data-el-score]');
+    const meter = root.querySelector<HTMLElement>('[data-el-meter]');
+    const checks = root.querySelector<HTMLElement>('[data-el-checks]');
+    const output = root.querySelector<HTMLElement>('[data-el-output]');
+    const status = root.querySelector<HTMLElement>('[data-el-status]');
+
+    function getChecked(group: HTMLElement | null) {
+      return [...(group?.querySelectorAll<HTMLInputElement>('input:checked') || [])].map((i) => i.value);
+    }
+    function state() {
+      const s: Record<string, string> = {};
+      fields.forEach((f) => { s[f.dataset.el || ''] = f.value.trim(); });
+      return s;
+    }
+    function update() {
+      const s = state();
+      const dims = getChecked(root.querySelector('[data-el-dimensions]'));
+      const mets = getChecked(root.querySelector('[data-el-metrics]'));
+      const fails = getChecked(root.querySelector('[data-el-failures]'));
+      const checksList = [
+        { ok: s.usecase?.length > 5, label: 'ระบุ use case ชัดเจน' },
+        { ok: s.user?.length > 2, label: 'รู้ว่าผู้ใช้หลักคือใคร' },
+        { ok: dims.length >= 2 && dims.length <= 4, label: 'เลือกมิติคุณภาพ 2–4 ด้าน' },
+        { ok: mets.length >= 2, label: 'มี metric อย่างน้อย 2 ตัว' },
+        { ok: fails.length >= 2, label: 'ระบุ failure modes อย่างน้อย 2 แบบ' },
+        { ok: Number(s.size) >= 30, label: 'eval set อย่างน้อย 30 เคส' },
+        { ok: Number(s.gate) > 0, label: 'มีเกณฑ์ปล่อย launch' },
+        { ok: Number(s.human) >= 20, label: 'มี human review อย่างน้อย 20%' }
+      ];
+      const passed = checksList.filter((c) => c.ok).length;
+      const pct = Math.round((passed / checksList.length) * 100);
+      if (scoreEl) scoreEl.innerHTML = `${pct}<small>%</small>`;
+      if (meter) meter.style.width = pct + '%';
+      if (status) status.textContent = `${pct}% complete`;
+      if (checks) checks.innerHTML = checksList.map((c) => `<li class="${c.ok ? 'is-pass' : 'is-fail'}"><span class="mark">✓</span><span>${c.label}</span></li>`).join('');
+      persist();
+      return { s, dims, mets, fails };
+    }
+    function persist() {
+      try {
+        const data = { fields: state(), dims: getChecked(root.querySelector('[data-el-dimensions]')), mets: getChecked(root.querySelector('[data-el-metrics]')), fails: getChecked(root.querySelector('[data-el-failures]')) };
+        localStorage.setItem(KEY, JSON.stringify(data));
+      } catch {}
+    }
+    function buildMarkdown() {
+      const { s, dims, mets, fails } = update();
+      return `# Eval Scorecard: ${s.usecase || '(ยังไม่ระบุ use case)'}
+
+## บริบท
+- ผู้ใช้หลัก: ${s.user || '-'}
+- ขนาด eval set: ${s.size || 0} เคส
+- Human review: ${s.human || 0}%
+- เกณฑ์ปล่อย launch: ${s.gate || 0}% ผ่าน
+
+## มิติคุณภาพ
+${dims.map((d) => `- ${d}`).join('\n') || '- (ยังไม่ได้เลือก)'}
+
+## Metrics
+${mets.map((m) => `- ${m}`).join('\n') || '- (ยังไม่ได้เลือก)'}
+
+## Failure modes ที่ต้องมีใน test set
+${fails.map((f) => `- ${f}`).join('\n') || '- (ยังไม่ได้เลือก)'}
+
+## เกณฑ์ตัดสิน
+- ปล่อยได้เมื่อผ่าน ${s.gate || 0}% ของ eval set และไม่มี failure ระดับร้ายแรง
+- ตรวจโดยคนอย่างน้อย ${s.human || 0}% ของเคส
+- บันทึกผลก่อน/หลังทุกครั้งที่เปลี่ยน prompt หรือโมเดล
+
+## บันทึก
+${s.notes || '-'}
+
+---
+สร้างด้วย Road to AI Engineer · Eval Design Worksheet`;
+    }
+
+    root.querySelector('[data-el-export]')?.addEventListener('click', () => {
+      if (!output) return;
+      output.hidden = false;
+      output.textContent = buildMarkdown();
+      output.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+    });
+    root.querySelector('[data-el-download]')?.addEventListener('click', () => {
+      const blob = new Blob([buildMarkdown()], { type: 'text/markdown;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = 'eval-scorecard.md';
+      a.click();
+      URL.revokeObjectURL(a.href);
+    });
+    root.querySelector('[data-el-reset]')?.addEventListener('click', () => {
+      fields.forEach((f) => { if (f.type === 'number') f.value = f.dataset.el === 'size' ? '40' : f.dataset.el === 'gate' ? '85' : '100'; else f.value = ''; });
+      groups.forEach((g) => g.querySelectorAll<HTMLInputElement>('input').forEach((i) => { i.checked = false; }));
+      if (output) { output.hidden = true; output.textContent = ''; }
+      try { localStorage.removeItem(KEY); } catch {}
+      update();
+    });
+
+    fields.forEach((f) => f.addEventListener('input', update));
+    groups.forEach((g) => g.addEventListener('change', update));
+
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (saved) {
+        fields.forEach((f) => { if (saved.fields?.[f.dataset.el || ''] != null) f.value = saved.fields[f.dataset.el || '']; });
+        [['[data-el-dimensions]', saved.dims], ['[data-el-metrics]', saved.mets], ['[data-el-failures]', saved.fails]].forEach(([sel, values]) => {
+          const group = root.querySelector<HTMLElement>(sel as string);
+          group?.querySelectorAll<HTMLInputElement>('input').forEach((i) => { i.checked = Array.isArray(values) && values.includes(i.value); });
+        });
+      }
+    } catch {}
+    update();
+  }
+</script>

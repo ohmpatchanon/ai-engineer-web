@@ -1,0 +1,203 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowRight, ArrowUpRight, Check, CalendarDays, Printer, RotateCcw, Target, Clock } from '@lucide/astro';
+import { plan } from '../data/plan';
+import { moduleBySlug } from '../data/modules';
+
+const totalModules = plan.reduce((sum, week) => sum + week.modules.length, 0);
+---
+
+<BaseLayout title="แผนเรียน 12 สัปดาห์" description="แผนเรียน AI Engineer 12 สัปดาห์แบบทำไปด้วยทำงานไปด้วย พร้อม deliverable และ checkpoint รายสัปดาห์">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">STUDY PLAN / 12 WEEKS</p>
+        <h1 class="reveal">มีแผนที่ดี<br />ดีกว่ามี<span class="text-acid">แรงบันดาลใจ</span></h1>
+        <p class="lead reveal">แผน 12 สัปดาห์ที่ออกแบบสำหรับคนมีงานประจำ — สัปดาห์ละ 2 modules และหนึ่งชิ้นงานที่ต้องส่งจริง ไม่ใช่แค่ดูวิดีโอจบ</p>
+        <div class="hero-actions reveal">
+          <a href="#week-1" class="btn btn--primary">เริ่มสัปดาห์ 1 <ArrowRight size={14} /></a>
+          <button type="button" class="btn btn--ghost" data-plan-print><Printer size={14} /> พิมพ์แผน</button>
+        </div>
+      </div>
+      <div class="plan-hero panel reveal">
+        <CalendarDays size={20} class="text-acid" />
+        <div class="plan-hero__stats">
+          <div><strong>12</strong><span>WEEKS</span></div>
+          <div><strong>{totalModules}</strong><span>MODULES</span></div>
+          <div><strong>8–12</strong><span>HRS/WEEK</span></div>
+        </div>
+        <p>แผนนี้เป็น sprint เร่งรัด หากต้องการเส้นทางเต็ม 26 สัปดาห์ให้ดู Roadmap</p>
+        <div class="plan-progress">
+          <div class="plan-progress__head"><span class="mono micro">YOUR PLAN PROGRESS</span><span class="mono tiny text-acid" data-plan-pct>0%</span></div>
+          <div class="progress-track"><span data-plan-bar></span></div>
+          <p class="mono tiny faint"><span data-plan-done>0</span> / 12 สัปดาห์</p>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="plan-toolbar">
+        <p class="mono tiny faint">ทำเครื่องหมายเมื่อส่งงานของสัปดาห์นั้นแล้ว — ความคืบหน้าเก็บในเครื่องคุณ</p>
+        <button class="chip" data-plan-reset><RotateCcw size={12} /> ล้างความคืบหน้า</button>
+      </div>
+
+      <div class="week-list">
+        {plan.map((week) => (
+          <article class="week panel" id={`week-${week.week}`} data-plan-week={week.week}>
+            <div class="week__marker">
+              <span class="mono">W{String(week.week).padStart(2, '0')}</span>
+              <button class="week__check" type="button" data-plan-check aria-label={`ทำเครื่องหมายสัปดาห์ ${week.week} ว่าเสร็จ`} aria-pressed="false"><Check size={13} stroke-width={3} /></button>
+            </div>
+            <div class="week__body">
+              <div class="week__head">
+                <div>
+                  <p class="mono micro">{week.theme}</p>
+                  <h2>{week.title}</h2>
+                </div>
+                <span class="mono week__hours"><Clock size={12} /> {week.hours}</span>
+              </div>
+
+              <div class="week__modules">
+                {week.modules.map((slug) => {
+                  const module = moduleBySlug[slug];
+                  if (!module) return null;
+                  return (
+                    <a href={`/modules/${module.slug}`} class="week-module">
+                      <span class="mono">{module.number}</span>
+                      <span>{module.title}</span>
+                      <ArrowUpRight size={13} />
+                    </a>
+                  );
+                })}
+                {week.optional?.map((slug) => {
+                  const module = moduleBySlug[slug];
+                  if (!module) return null;
+                  return (
+                    <a href={`/modules/${module.slug}`} class="week-module week-module--optional">
+                      <span class="mono">OPT</span>
+                      <span>{module.title}</span>
+                      <ArrowUpRight size={13} />
+                    </a>
+                  );
+                })}
+              </div>
+
+              <div class="week__foot">
+                <div class="week__deliverable"><Target size={14} /><div><span class="mono micro">DELIVERABLE</span><p>{week.deliverable}</p></div></div>
+                <div class="week__checkpoint"><span class="mono micro">CHECKPOINT</span><p>{week.checkpoint}</p></div>
+              </div>
+            </div>
+          </article>
+        ))}
+      </div>
+
+      <aside class="plan-note panel">
+        <Target size={18} class="text-acid" />
+        <div><h2>ถ้าตามแผนไม่ทัน</h2><p>ไม่ต้องชดเชยทุกอย่างพร้อมกัน ให้ตัด optional ออกก่อน แล้วเลื่อน deliverable ที่ยังไม่สมบูรณ์ไปหนึ่งสัปดาห์ — แต่ห้ามข้าม checkpoint</p></div>
+        <a href="/start" class="link-arrow">ประเมินจุดเริ่มต้นใหม่ <ArrowRight size={12} /></a>
+      </aside>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const KEY = 'aie:plan';
+  const weeks = [...document.querySelectorAll<HTMLElement>('[data-plan-week]')];
+  const checks = [...document.querySelectorAll<HTMLButtonElement>('[data-plan-check]')];
+  const getDone = (): number[] => {
+    try { const v = JSON.parse(localStorage.getItem(KEY) || '[]'); return Array.isArray(v) ? v : []; } catch { return []; }
+  };
+  function sync() {
+    const done = getDone();
+    weeks.forEach((week) => {
+      const id = Number(week.dataset.planWeek);
+      const active = done.includes(id);
+      week.classList.toggle('is-done', active);
+      week.querySelector('[data-plan-check]')?.setAttribute('aria-pressed', String(active));
+    });
+    const pct = Math.round((done.length / 12) * 100);
+    document.querySelectorAll<HTMLElement>('[data-plan-pct]').forEach((el) => { el.textContent = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-plan-bar]').forEach((el) => { el.style.width = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-plan-done]').forEach((el) => { el.textContent = String(done.length); });
+  }
+  checks.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const week = btn.closest<HTMLElement>('[data-plan-week]');
+      if (!week) return;
+      const id = Number(week.dataset.planWeek);
+      const done = getDone();
+      const next = done.includes(id) ? done.filter((x) => x !== id) : [...done, id];
+      try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
+      (window as any).AIE?.toast(next.includes(id) ? `สัปดาห์ ${id} เสร็จแล้ว ✓` : `ยกเลิกสัปดาห์ ${id}`);
+      sync();
+    });
+  });
+  document.querySelector('[data-plan-reset]')?.addEventListener('click', () => {
+    if (!confirm('ล้างความคืบหน้าของแผน 12 สัปดาห์หรือไม่?')) return;
+    try { localStorage.removeItem(KEY); } catch {}
+    sync();
+    (window as any).AIE?.toast('ล้างความคืบหน้าแผนแล้ว');
+  });
+  document.querySelector('[data-plan-print]')?.addEventListener('click', () => window.print());
+  sync();
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .plan-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .7rem; align-items: flex-start; }
+  .plan-hero__stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: .4rem; width: 100%; }
+  .plan-hero__stats div { padding: .5rem; border: 1px solid var(--line); border-radius: 6px; }
+  .plan-hero__stats strong { display: block; font-family: var(--font-display); font-size: 1.15rem; font-weight: 500; }
+  .plan-hero__stats span { font-family: var(--font-mono); font-size: .43rem; letter-spacing: .06em; color: var(--faint); }
+  .plan-hero > p { color: var(--muted); font-size: .76rem; line-height: 1.6; }
+  .plan-progress { width: 100%; padding-top: .7rem; border-top: 1px solid var(--line); }
+  .plan-progress__head { display: flex; justify-content: space-between; margin-bottom: .5rem; }
+  .plan-progress p { margin-top: .4rem; }
+
+  .plan-toolbar { display: flex; justify-content: space-between; align-items: center; gap: 1rem; flex-wrap: wrap; padding-bottom: 1rem; border-bottom: 1px solid var(--line); }
+  .week-list { display: flex; flex-direction: column; gap: .7rem; margin-top: 1.2rem; }
+  .week { display: grid; grid-template-columns: 56px 1fr; gap: 1rem; padding: 1.2rem; border-radius: var(--radius); scroll-margin-top: calc(var(--header-h) + 24px); }
+  .week__marker { display: flex; flex-direction: column; align-items: center; gap: .5rem; padding-top: .15rem; }
+  .week__marker .mono { color: var(--faint); font-size: .6rem; }
+  .week__check { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid var(--line-strong); border-radius: 50%; background: transparent; color: transparent; transition: all .18s; }
+  .week__check:hover { color: var(--faint); border-color: var(--acid); }
+  .week.is-done { border-color: rgba(211, 250, 124, .28); }
+  .week.is-done .week__check { background: var(--acid); border-color: var(--acid); color: var(--acid-ink); }
+  .week.is-done h2 { color: var(--muted); }
+  .week__head { display: flex; justify-content: space-between; gap: 1rem; align-items: start; }
+  .week__head h2 { margin-top: .35rem; font-size: clamp(1.2rem, 2.2vw, 1.55rem); }
+  .week__hours { display: inline-flex; align-items: center; gap: .3rem; color: var(--faint); font-size: .56rem; white-space: nowrap; }
+  .week__modules { display: grid; grid-template-columns: 1fr 1fr; gap: .4rem; margin-top: 1rem; }
+  .week-module { display: flex; align-items: center; gap: .55rem; padding: .55rem .65rem; border: 1px solid var(--line); border-radius: 7px; background: var(--bg-soft); text-decoration: none; }
+  .week-module:hover { border-color: var(--line-strong); background: var(--panel-2); }
+  .week-module .mono { color: var(--acid); font-size: .55rem; flex: none; }
+  .week-module > span:nth-child(2) { flex: 1; font-size: .76rem; }
+  .week-module svg { color: var(--faint); flex: none; }
+  .week-module--optional { opacity: .72; }
+  .week-module--optional .mono { color: var(--faint); }
+
+  .week__foot { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-top: 1rem; padding-top: .9rem; border-top: 1px solid var(--line); }
+  .week__deliverable { display: flex; gap: .5rem; color: var(--acid); }
+  .week__deliverable svg { flex: none; margin-top: .1rem; }
+  .week__deliverable p { margin-top: .25rem; color: var(--muted); font-size: .74rem; line-height: 1.6; }
+  .week__checkpoint p { margin-top: .25rem; color: var(--muted); font-size: .74rem; line-height: 1.6; }
+
+  .plan-note { display: flex; align-items: center; gap: 1rem; margin-top: 1.5rem; padding: 1.2rem; border-radius: var(--radius); }
+  .plan-note h2 { font-size: 1.02rem; }
+  .plan-note p { margin-top: .2rem; color: var(--muted); font-size: .78rem; }
+  .plan-note .link-arrow { margin-left: auto; white-space: nowrap; }
+
+  @media (max-width: 760px) {
+    .week { grid-template-columns: 36px 1fr; gap: .7rem; padding: 1rem; }
+    .week__modules, .week__foot { grid-template-columns: 1fr; }
+    .week__head { flex-direction: column; gap: .4rem; }
+    .plan-note { flex-wrap: wrap; }
+    .plan-note .link-arrow { margin-left: 0; }
+  }
+  @media print {
+    .week { break-inside: avoid; }
+    .week__check, .plan-toolbar, .hero-actions { display: none !important; }
+  }
+</style>

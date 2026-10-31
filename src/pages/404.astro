@@ -1,0 +1,52 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowLeft, ArrowRight, Compass, Search } from '@lucide/astro';
+---
+
+<BaseLayout title="ไม่พบหน้านี้" description="ไม่พบหน้าที่คุณกำลังมองหา — กลับไปยังหน้าหลักหรือค้นหาจากหลักสูตร" noindex>
+  <section class="notfound">
+    <div class="container notfound__inner">
+      <p class="notfound__code mono">ERROR / 404</p>
+      <h1>หลงทาง<br /><span class="text-acid">เล็กน้อย</span></h1>
+      <p class="lead">หน้านี้ไม่มีอยู่ อาจถูกย้าย เปลี่ยนชื่อ หรือลิงก์พิมพ์ผิด — ไม่เป็นไร เส้นทางยังอยู่</p>
+      <div class="notfound__actions">
+        <a href="/" class="btn btn--primary"><ArrowLeft size={14} /> กลับหน้าแรก</a>
+        <a href="/modules" class="btn btn--ghost">ดูหลักสูตร</a>
+        <button type="button" class="btn btn--ghost" data-search-open><Search size={14} /> ค้นหา</button>
+      </div>
+
+      <div class="notfound__links">
+        <p class="mono micro">ทางออกที่ใช้บ่อย</p>
+        <a href="/start">เริ่มตรงนี้ <ArrowRight size={12} /></a>
+        <a href="/roadmap">Roadmap 26 สัปดาห์ <ArrowRight size={12} /></a>
+        <a href="/exercises">Interactive Labs <ArrowRight size={12} /></a>
+        <a href="/glossary">Glossary <ArrowRight size={12} /></a>
+      </div>
+
+      <div class="notfound__orbit" aria-hidden="true">
+        <Compass size={28} />
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  document.querySelectorAll<HTMLElement>('[data-search-open]').forEach((btn) => {
+    btn.addEventListener('click', () => window.dispatchEvent(new CustomEvent('aie:opensearch')));
+  });
+</script>
+
+<style>
+  .notfound { min-height: 72vh; display: grid; place-items: center; padding-top: calc(var(--header-h) + 3rem); padding-bottom: 4rem; position: relative; overflow: hidden; }
+  .notfound__inner { position: relative; text-align: center; max-width: 720px; }
+  .notfound__code { color: var(--faint); font-size: .62rem; letter-spacing: .14em; }
+  .notfound h1 { margin-top: 1rem; font-size: clamp(3rem, 10vw, 7rem); line-height: .98; }
+  .notfound .lead { margin: 1.2rem auto 0; }
+  .notfound__actions { display: flex; justify-content: center; flex-wrap: wrap; gap: .55rem; margin-top: 1.8rem; }
+  .notfound__links { display: flex; flex-direction: column; align-items: center; gap: .5rem; margin-top: 2.5rem; padding-top: 1.5rem; border-top: 1px solid var(--line); }
+  .notfound__links a { display: inline-flex; align-items: center; gap: .4rem; color: var(--muted); font-size: .8rem; text-decoration: none; }
+  .notfound__links a:hover { color: var(--acid); }
+  .notfound__orbit { position: absolute; right: -18%; top: -10%; width: 220px; height: 220px; border: 1px solid var(--line); border-radius: 50%; display: grid; place-items: center; color: var(--line-strong); pointer-events: none; }
+  .notfound__orbit::before { content: ''; position: absolute; inset: 28px; border: 1px dashed var(--line); border-radius: 50%; }
+  @media (max-width: 700px) { .notfound__orbit { display: none; } }
+</style>

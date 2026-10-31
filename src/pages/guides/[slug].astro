@@ -1,0 +1,214 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowLeft, ArrowRight, Clock, Copy, Check, BookOpen, Lightbulb, ArrowUpRight } from '@lucide/astro';
+import { guides } from '../../data/guides';
+import { readingTime } from '../../lib/ui';
+import GuideCard from '../../components/GuideCard.astro';
+
+export function getStaticPaths() {
+  return guides.map((guide) => ({ params: { slug: guide.slug }, props: { guide } }));
+}
+const { guide } = Astro.props;
+const index = guides.findIndex((g) => g.slug === guide.slug);
+const minutes = readingTime(guide.sections);
+const prev = index > 0 ? guides[index - 1] : null;
+const next = index < guides.length - 1 ? guides[index + 1] : null;
+const related = guides.filter((g) => g.slug !== guide.slug && g.category === guide.category).slice(0, 2);
+const fallbackRelated = guides.filter((g) => g.slug !== guide.slug).slice(0, 2);
+const suggested = related.length >= 2 ? related : [...related, ...fallbackRelated].slice(0, 2);
+---
+<BaseLayout title={guide.title} description={guide.dek} type="article" readingProgress>
+  <article class="guide-page">
+    <header class="guide-hero">
+      <div class="container">
+        <nav class="breadcrumbs"><a href="/">หน้าแรก</a><span>/</span><a href="/guides">Guides</a><span>/</span><span>{guide.category}</span></nav>
+        <div class="guide-hero__meta reveal">
+          <span class="tag tag--acid">{guide.category}</span>
+          <span class="mono tiny faint">{guide.updated}</span>
+          <span class="mono tiny faint"><Clock size={12} /> {minutes} นาที</span>
+        </div>
+        <h1 class="reveal">{guide.title}</h1>
+        <p class="guide-hero__dek reveal">{guide.dek}</p>
+        <div class="guide-hero__foot reveal">
+          <div class="tags">{guide.tags.map((tag) => <span class="tag">#{tag}</span>)}</div>
+          <button class="copy-link" type="button" data-copy-link><Copy size={13} /> คัดลอกลิงก์</button>
+        </div>
+      </div>
+    </header>
+
+    <div class="container guide-layout">
+      <div class="guide-content">
+        {guide.sections.map((section, i) => (
+          <section class="guide-section" id={`section-${i + 1}`}>
+            <div class="guide-section__head">
+              <span class="mono guide-section__num">{String(i + 1).padStart(2, '0')}</span>
+              <h2>{section.heading}</h2>
+            </div>
+            {section.paragraphs?.map((p) => <p class="guide-p">{p}</p>)}
+
+            {section.bullets && (
+              <ul class="guide-bullets">
+                {section.bullets.map((b) => <li><span class="bullet-mark"></span><span>{b}</span></li>)}
+              </ul>
+            )}
+
+            {section.steps && (
+              <ol class="guide-steps">
+                {section.steps.map((step, si) => (
+                  <li>
+                    <span class="guide-steps__num mono">{String(si + 1).padStart(2, '0')}</span>
+                    <div><h3>{step.title}</h3><p>{step.body}</p></div>
+                  </li>
+                ))}
+              </ol>
+            )}
+
+            {section.code && (
+              <div class="code-block">
+                <div class="code-block__bar mono"><span>{section.code.lang}</span><span>copy</span></div>
+                <pre><code>{section.code.content}</code></pre>
+              </div>
+            )}
+
+            {section.callout && (
+              <aside class="guide-callout">
+                <div class="guide-callout__icon"><Lightbulb size={16} /></div>
+                <div>
+                  <span class="mono micro">{section.callout.label}</span>
+                  <p>{section.callout.text}</p>
+                </div>
+              </aside>
+            )}
+          </section>
+        ))}
+
+        <div class="guide-end">
+          <div class="guide-end__mark"><Check size={16} /></div>
+          <div>
+            <p class="mono micro">END OF GUIDE</p>
+            <h3>เลือกหนึ่งอย่างแล้วลงมือทำ</h3>
+            <p>ความรู้จะติดก็ต่อเมื่อใช้ มีแบบฝึกหัดและโปรเจกต์ให้ต่อจากนี้</p>
+          </div>
+          <div class="guide-end__actions">
+            <a href="/exercises" class="btn btn--primary btn--small">ไปที่ Labs <ArrowRight size={12} /></a>
+            <a href="/projects" class="btn btn--ghost btn--small">ดู Projects</a>
+          </div>
+        </div>
+
+        <nav class="guide-nav">
+          {prev ? <a href={`/guides/${prev.slug}`}><span class="mono"><ArrowLeft size={12} /> ก่อนหน้า</span><strong>{prev.title}</strong></a> : <span></span>}
+          {next ? <a href={`/guides/${next.slug}`} class="guide-nav--next"><span class="mono">ถัดไป <ArrowRight size={12} /></span><strong>{next.title}</strong></a> : <span></span>}
+        </nav>
+      </div>
+
+      <aside class="guide-side">
+        <div class="side-sticky">
+          <nav class="toc panel" aria-label="สารบัญ">
+            <p class="mono micro">IN THIS GUIDE</p>
+            {guide.sections.map((section, i) => (
+              <a href={`#section-${i + 1}`}><span class="mono">{String(i + 1).padStart(2, '0')}</span>{section.heading}</a>
+            ))}
+          </nav>
+          <div class="side-cta panel">
+            <BookOpen size={17} class="text-acid" />
+            <p>guide นี้เป็นส่วนหนึ่งของหลักสูตร 28 modules</p>
+            <a href="/modules" class="link-arrow">ดูหลักสูตร <ArrowUpRight size={12} /></a>
+          </div>
+        </div>
+      </aside>
+    </div>
+
+    <section class="section section--tight related-section">
+      <div class="container">
+        <div class="related-head"><p class="eyebrow">READ NEXT</p><a href="/guides" class="link-arrow">guides ทั้งหมด <ArrowRight size={12} /></a></div>
+        <div class="grid grid-2">
+          {suggested.map((g) => <GuideCard guide={g} />)}
+        </div>
+      </div>
+    </section>
+  </article>
+</BaseLayout>
+
+<script>
+  document.querySelector('[data-copy-link]')?.addEventListener('click', async (e) => {
+    const btn = e.currentTarget as HTMLButtonElement;
+    try {
+      await navigator.clipboard.writeText(location.href);
+      btn.innerHTML = 'คัดลอกแล้ว ✓';
+      setTimeout(() => { btn.innerHTML = 'คัดลอกลิงก์'; }, 1800);
+    } catch {}
+  });
+</script>
+
+<style>
+  .guide-hero { padding-top: calc(var(--header-h) + 2.5rem); padding-bottom: 3.5rem; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+  .guide-hero::after { content: ''; position: absolute; width: 600px; height: 600px; right: -15%; top: -50%; border: 1px solid var(--line); border-radius: 50%; opacity: 0.6; pointer-events: none; }
+  .guide-hero__meta { display: flex; align-items: center; gap: 0.65rem; margin-top: 2.5rem; flex-wrap: wrap; }
+  .guide-hero__meta .mono { display: inline-flex; align-items: center; gap: 0.3rem; }
+  .guide-hero h1 { margin-top: 1.2rem; max-width: 18ch; font-size: clamp(2.5rem, 5.5vw, 4.8rem); line-height: 1.12; }
+  .guide-hero__dek { margin-top: 1.2rem; max-width: 62ch; color: var(--muted); font-size: 1.05rem; line-height: 1.8; }
+  .guide-hero__foot { display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; margin-top: 1.6rem; }
+  .tags { display: flex; gap: 0.35rem; flex-wrap: wrap; }
+  .copy-link { display: inline-flex; align-items: center; gap: 0.35rem; border: 1px solid var(--line); border-radius: 999px; background: transparent; color: var(--muted); font-family: var(--font-mono); font-size: 0.63rem; padding: 0.4rem 0.7rem; }
+  .copy-link:hover { border-color: var(--line-strong); color: var(--text); }
+
+  .guide-layout { display: grid; grid-template-columns: minmax(0, 1fr) 260px; gap: clamp(2rem, 6vw, 5rem); padding-top: 3.5rem; }
+  .guide-content { max-width: 740px; }
+  .guide-section { padding-bottom: 2.8rem; }
+  .guide-section__head { display: grid; grid-template-columns: 44px 1fr; gap: 0.8rem; align-items: baseline; margin-bottom: 1.1rem; }
+  .guide-section__num { color: var(--acid); font-size: 0.65rem; }
+  .guide-section h2 { font-size: clamp(1.5rem, 3vw, 1.95rem); line-height: 1.25; }
+  .guide-p { color: var(--muted); font-size: 1rem; line-height: 1.9; margin-bottom: 1.1rem; max-width: 68ch; }
+  .guide-bullets { list-style: none; display: flex; flex-direction: column; gap: 0.65rem; margin: 1.2rem 0 1.4rem; }
+  .guide-bullets li { display: flex; gap: 0.7rem; color: var(--muted); font-size: 0.92rem; line-height: 1.75; }
+  .bullet-mark { width: 5px; height: 5px; border-radius: 50%; background: var(--acid); flex: none; margin-top: 0.62rem; }
+  .guide-steps { list-style: none; display: flex; flex-direction: column; gap: 0.6rem; margin: 1.3rem 0 1.5rem; }
+  .guide-steps li { display: grid; grid-template-columns: 38px 1fr; gap: 0.7rem; padding: 0.85rem 0.9rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .guide-steps__num { color: var(--acid); font-size: 0.6rem; padding-top: 0.2rem; }
+  .guide-steps h3 { font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600; letter-spacing: 0; }
+  .guide-steps p { margin-top: 0.25rem; color: var(--muted); font-size: 0.8rem; line-height: 1.65; }
+  .guide-callout { display: flex; gap: 0.8rem; margin: 1.5rem 0; padding: 1rem 1.1rem; border: 1px solid var(--line); border-left: 2px solid var(--acid); border-radius: 4px 10px 10px 4px; background: var(--panel); }
+  .guide-callout__icon { color: var(--acid); flex: none; margin-top: 0.15rem; }
+  .guide-callout p { margin-top: 0.35rem; color: var(--text); font-size: 0.88rem; line-height: 1.7; }
+  .code-block { margin: 1.2rem 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .code-block__bar { display: flex; justify-content: space-between; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--line); background: var(--panel-2); color: var(--faint); font-size: 0.56rem; }
+  .code-block pre { border: 0; border-radius: 0; margin: 0; }
+
+  .guide-end { display: flex; gap: 1rem; align-items: flex-start; padding: 1.2rem; border: 1px solid var(--line); border-radius: var(--radius); background: var(--panel); margin-block: 1rem 2rem; }
+  .guide-end__mark { display: grid; place-items: center; width: 34px; height: 34px; flex: none; border-radius: 50%; background: var(--acid); color: var(--acid-ink); }
+  .guide-end h3 { margin-top: 0.2rem; font-size: 1.1rem; }
+  .guide-end p:not(.micro) { margin-top: 0.25rem; color: var(--muted); font-size: 0.78rem; }
+  .guide-end__actions { display: flex; gap: 0.4rem; flex-wrap: wrap; margin-left: auto; }
+  .guide-nav { display: grid; grid-template-columns: 1fr 1fr; gap: 0.7rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .guide-nav a { display: flex; flex-direction: column; gap: 0.3rem; padding: 0.8rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; }
+  .guide-nav a:hover { border-color: var(--line-strong); background: var(--panel); }
+  .guide-nav span { display: flex; align-items: center; gap: 0.3rem; color: var(--faint); font-size: 0.55rem; text-transform: uppercase; letter-spacing: 0.06em; }
+  .guide-nav strong { font-size: 0.78rem; font-weight: 500; }
+  .guide-nav--next { text-align: right; align-items: flex-end; }
+
+  .side-sticky { position: sticky; top: calc(var(--header-h) + 1.5rem); display: flex; flex-direction: column; gap: 0.7rem; }
+  .toc { display: flex; flex-direction: column; padding: 1rem; border-radius: var(--radius); }
+  .toc .micro { padding-bottom: 0.6rem; border-bottom: 1px solid var(--line); margin-bottom: 0.5rem; }
+  .toc a { display: grid; grid-template-columns: 22px 1fr; gap: 0.35rem; padding: 0.35rem 0; color: var(--muted); text-decoration: none; font-size: 0.7rem; line-height: 1.4; }
+  .toc a:hover { color: var(--acid); }
+  .toc a .mono { color: var(--faint); font-size: 0.52rem; }
+  .side-cta { padding: 1rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: 0.5rem; align-items: flex-start; }
+  .side-cta p { color: var(--muted); font-size: 0.72rem; }
+
+  .related-section { border-top: 1px solid var(--line); }
+  .related-head { display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.3rem; }
+
+  @media (max-width: 960px) {
+    .guide-layout { grid-template-columns: 1fr; }
+    .guide-side { display: none; }
+    .guide-content { max-width: none; }
+  }
+  @media (max-width: 620px) {
+    .guide-section__head { grid-template-columns: 28px 1fr; }
+    .guide-end { flex-wrap: wrap; }
+    .guide-end__actions { margin-left: 0; }
+    .guide-nav { grid-template-columns: 1fr; }
+    .guide-nav--next { text-align: left; align-items: flex-start; }
+    .guide-hero h1 { font-size: clamp(2.2rem, 10vw, 3.4rem); }
+  }
+</style>

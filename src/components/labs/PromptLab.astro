@@ -1,0 +1,126 @@
+---
+import { Sparkles, RotateCcw } from '@lucide/astro';
+
+const example = `คุณคือนักวิเคราะห์ใบเสร็จสำหรับระบบบัญชี
+งาน: สกัดข้อมูลจากข้อความใบเสร็จเป็น JSON
+บริบท: เอกสารมาจากหลายร้านและบางบรรทัดอาจขาดหาย
+ข้อจำกัด: ห้ามเดาค่าที่ไม่ปรากฏ ถ้าวันที่ไม่ชัดให้ใส่ null
+รูปแบบผลลัพธ์: JSON ตาม schema {"vendor": string|null, "total": number|null, "date": "YYYY-MM-DD"|null}
+ตัวอย่าง: "ร้าน ABC ยอด 250 บาท วันที่ 12/03/2025" → {"vendor":"ร้าน ABC","total":250,"date":"2025-03-12"}
+เกณฑ์สำเร็จ: parse ได้ทุกครั้งและไม่แต่งข้อมูลขึ้นมาเอง
+ผู้อ่าน: ระบบบัญชีอัตโนมัติ โทนกระชับ ไม่มีคำอธิบายเกิน`;
+---
+
+<section class="lab" data-prompt-lab>
+  <script type="application/json" data-pl-example is:inline set:html={JSON.stringify(example)}></script>
+  <div class="lab__bar">
+    <span>PROMPT AUDIT / 8 ELEMENTS</span>
+    <strong data-pl-status>รอตรวจ</strong>
+  </div>
+  <div class="lab__body">
+    <div class="lab__grid lab__grid--side">
+      <div class="lab__field">
+        <label for="pl-input">Prompt ของคุณ</label>
+        <textarea id="pl-input" class="textarea" rows="12" data-pl-input placeholder="วาง prompt ที่ใช้อยู่ หรือเขียนใหม่จากโจทย์ของคุณ..."></textarea>
+        <p class="lab__hint">Lab ตรวจจากโครงสร้างภาษา ไม่ได้เรียกโมเดลภายนอก ข้อความของคุณอยู่ในเบราว์เซอร์เท่านั้น</p>
+        <div class="lab__actions">
+          <button type="button" class="btn btn--primary btn--small" data-pl-run><Sparkles size={13} /> ตรวจ prompt</button>
+          <button type="button" class="btn btn--ghost btn--small" data-pl-example>โหลดตัวอย่าง</button>
+          <button type="button" class="btn btn--ghost btn--small" data-pl-reset><RotateCcw size={13} /> ล้าง</button>
+        </div>
+      </div>
+
+      <div class="lab__result" aria-live="polite">
+        <p class="mono tiny faint">QUALITY SCORE</p>
+        <p class="lab__score" data-pl-score>0<small>/100</small></p>
+        <div class="lab__meter"><span data-pl-meter></span></div>
+        <p class="lab__hint" data-pl-verdict style="margin-top:.6rem">กด “ตรวจ prompt” เพื่อเริ่ม</p>
+        <ul class="lab__checklist" data-pl-list></ul>
+        <div class="lab__warning" data-pl-warning hidden>
+          <span>!</span>
+          <p>Prompt ยาวมาก ลองตัดข้อมูลที่ไม่จำเป็นออก หรือแยกเป็นหลายขั้นตอนเพื่อลดความสับสนของโมเดล</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-prompt-lab]')!;
+  if (root) {
+    const input = root.querySelector<HTMLTextAreaElement>('[data-pl-input]');
+    const scoreEl = root.querySelector<HTMLElement>('[data-pl-score]');
+    const meter = root.querySelector<HTMLElement>('[data-pl-meter]');
+    const verdict = root.querySelector<HTMLElement>('[data-pl-verdict]');
+    const list = root.querySelector<HTMLElement>('[data-pl-list]');
+    const warning = root.querySelector<HTMLElement>('[data-pl-warning]');
+    const status = root.querySelector<HTMLElement>('[data-pl-status]');
+    const KEY = 'aie:lab:prompt';
+    const example = JSON.parse(root.querySelector('[data-pl-example]')?.textContent || '""') as string;
+
+    const checks = [
+      { id: 'role', label: 'ระบุบทบาทหรือ persona', re: /(คุณคือ|ในฐานะ|บทบาท|acting as|you are|as an? )/i, tip: 'บอกโมเดลว่ามันรับบทเป็นใคร เพื่อกำหนดมุมมองและความเชี่ยวชาญ' },
+      { id: 'task', label: 'มีงานที่ชัดเจนและวัดได้', re: /(สรุป|สกัด|เขียน|แปล|จำแนก|วิเคราะห์|จัดหมวด|สร้าง|summar|extract|classif|write|translate|analy|generate|categor)/i, tip: 'ใช้คำกริยาที่บอกผลลัพธ์ที่ต้องการ เช่น “สกัด” “สรุปเป็น 3 ข้อ”' },
+      { id: 'context', label: 'ให้บริบทที่จำเป็น', re: /(บริบท|ข้อมูล|จาก|context|background|given|source|เอกสาร|ผู้ใช้)/i, tip: 'ใส่ข้อมูลตั้งต้น ข้อจำกัดของโดเมน และสิ่งที่ผู้ใช้ต้องการจริง' },
+      { id: 'constraints', label: 'มีข้อจำกัดหรือสิ่งที่ห้ามทำ', re: /(ห้าม|ต้อง|ไม่ควร|ไม่เกิน|จำกัด|ภายใน|must|should|do not|don't|within|at most|only)/i, tip: 'ระบุขอบเขต เช่น ความยาว ภาษา สิ่งที่ห้ามเดา และข้อมูลที่ห้ามเปิดเผย' },
+      { id: 'format', label: 'กำหนดรูปแบบผลลัพธ์', re: /(json|markdown|csv|ตาราง|bullet|รายการ|schema|รูปแบบ|format|โครงสร้าง)/i, tip: 'บอกโครงสร้างผลลัพธ์ให้ชัด โดยเฉพาะเมื่อต้องนำไปใช้ต่อในโค้ด' },
+      { id: 'example', label: 'มีตัวอย่าง input/output', re: /(ตัวอย่าง|เช่น|example|e\.g\.|เช่นนี้|sample)/i, tip: 'ตัวอย่างหนึ่งคู่ช่วยลดความกำกวมได้มากกว่าคำอธิบายยาว ๆ' },
+      { id: 'criteria', label: 'มีเกณฑ์ตัดสินความสำเร็จ', re: /(เกณฑ์|วัด|ความแม่น|ถูกต้อง|ครบถ้วน|success|criteria|accuracy|quality|ความยาว|จำนวนคำ)/i, tip: 'บอกว่า “ดี” หมายถึงอะไร เพื่อให้ตรวจและปรับได้' },
+      { id: 'audience', label: 'ระบุผู้อ่านและโทน', re: /(ผู้อ่าน|ผู้ใช้|โทน|น้ำเสียง|audience|tone|formal|friendly|กระชับ|มือใหม่|ผู้บริหาร)/i, tip: 'ผู้อ่านต่างกันต้องการระดับรายละเอียดและน้ำเสียงต่างกัน' }
+    ];
+
+    function analyze() {
+      const text = input?.value.trim() || '';
+      const words = text.split(/\s+/).filter(Boolean).length;
+      let passed = 0;
+      if (list) {
+        list.innerHTML = checks.map((c) => {
+          const ok = text.length > 0 && c.re.test(text);
+          if (ok) passed++;
+          return `<li class="${ok ? 'is-pass' : 'is-fail'}"><span class="mark">✓</span><span><strong>${c.label}</strong><br><span class="lab__hint">${ok ? 'พบองค์ประกอบนี้แล้ว' : c.tip}</span></span></li>`;
+        }).join('');
+      }
+      const lengthScore = text.length === 0 ? 0 : Math.min(20, Math.round((Math.min(words, 160) / 160) * 20));
+      const score = text.length === 0 ? 0 : Math.min(100, Math.round((passed / checks.length) * 80) + lengthScore);
+      if (scoreEl) scoreEl.innerHTML = `${score}<small>/100</small>`;
+      if (meter) meter.style.width = score + '%';
+      if (scoreEl) scoreEl.className = 'lab__score ' + (score >= 80 ? 'lab__score--good' : score >= 50 ? 'lab__score--mid' : 'lab__score--low');
+      if (verdict) {
+        verdict.textContent = text.length === 0
+          ? 'ยังไม่มีข้อความ — วาง prompt ก่อนตรวจ'
+          : score >= 80
+            ? 'พร้อมใช้และทดสอบได้ — เหลือแค่ทำ eval set จริง'
+            : score >= 50
+              ? 'พอใช้ แต่ยังมีจุดที่โมเดลต้องเดา ลองเติมองค์ประกอบที่ขาด'
+              : 'กำกวมสูง — โมเดลจะเดาแทนคุณ เติมบทบาท บริบท และรูปแบบผลลัพธ์';
+      }
+      if (warning) warning.hidden = words < 220;
+      if (status) status.textContent = text.length === 0 ? 'รอตรวจ' : `${passed}/8 องค์ประกอบ`;
+      try { localStorage.setItem(KEY, text); } catch {}
+    }
+
+    try {
+      const saved = localStorage.getItem(KEY);
+      if (saved && input) input.value = saved;
+    } catch {}
+
+    root.querySelector('[data-pl-run]')?.addEventListener('click', analyze);
+    root.querySelector('[data-pl-example]')?.addEventListener('click', () => {
+      if (input) { input.value = example; input.focus(); }
+      analyze();
+    });
+    root.querySelector('[data-pl-reset]')?.addEventListener('click', () => {
+      if (input) input.value = '';
+      try { localStorage.removeItem(KEY); } catch {}
+      if (list) list.innerHTML = '';
+      if (scoreEl) scoreEl.innerHTML = '0<small>/100</small>';
+      if (meter) meter.style.width = '0%';
+      if (verdict) verdict.textContent = 'กด “ตรวจ prompt” เพื่อเริ่ม';
+      if (status) status.textContent = 'รอตรวจ';
+      if (warning) warning.hidden = true;
+    });
+    input?.addEventListener('input', () => {
+      try { localStorage.setItem(KEY, input.value); } catch {}
+    });
+  }
+</script>

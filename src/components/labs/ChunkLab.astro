@@ -1,0 +1,155 @@
+---
+import { Scissors } from '@lucide/astro';
+
+const sample = `นโยบายการลาพักร้อนของบริษัท
+
+พนักงานประจำทุกคนมีสิทธิ์ลาพักร้อนได้ปีละ 12 วัน โดยต้องแจ้งล่วงหน้าอย่างน้อย 3 วันทำการสำหรับการลาไม่เกิน 2 วัน และล่วงหน้า 7 วันสำหรับการลาตั้งแต่ 3 วันขึ้นไป
+
+การสะสมวันลา: วันลาพักร้อนที่ไม่ได้ใช้สามารถสะสมข้ามปีได้ไม่เกิน 6 วัน ส่วนวันที่เกินจะถูกยกเลิกเมื่อสิ้นสุดปีบัญชี
+
+การลาฉุกเฉิน: กรณีเหตุสุดวิสัยสามารถแจ้งหัวหน้างานทางโทรศัพท์ได้ทันที แต่ต้องยื่นแบบฟอร์มย้อนหลังภายใน 2 วันทำการ
+
+วันหยุดนักขัตฤกษ์: บริษัทประกาศวันหยุดตามปฏิทินราชการ และอาจมีวันหยุดเพิ่มเติมตามประกาศประจำปี
+
+การลาโดยไม่รับค่าจ้าง: ต้องได้รับอนุมัติจากผู้จัดการฝ่ายและฝ่ายทรัพยากรบุคคลล่วงหน้าอย่างน้อย 14 วัน`;
+---
+
+<section class="lab" data-chunker-lab>
+  <div class="lab__bar">
+    <span>CHUNKING SIMULATOR</span>
+    <strong data-cl-status>—</strong>
+  </div>
+  <div class="lab__body">
+    <div class="lab__grid lab__grid--side">
+      <div>
+        <div class="lab__field">
+          <label for="cl-text">ข้อความต้นฉบับ</label>
+          <textarea id="cl-text" class="textarea" rows="8" data-cl-text>{sample}</textarea>
+        </div>
+        <div class="lab__grid lab__grid--2" style="margin-top:1rem">
+          <div class="lab__field">
+            <div class="lab__range-row">
+              <label for="cl-size">Chunk size (ตัวอักษร)</label>
+              <output data-cl-size-out>420</output>
+            </div>
+            <input id="cl-size" type="range" min="120" max="1200" step="20" value="420" data-cl-size />
+          </div>
+          <div class="lab__field">
+            <div class="lab__range-row">
+              <label for="cl-overlap">Overlap (ตัวอักษร)</label>
+              <output data-cl-overlap-out>60</output>
+            </div>
+            <input id="cl-overlap" type="range" min="0" max="300" step="10" value="60" data-cl-overlap />
+          </div>
+        </div>
+        <div class="lab__actions">
+          <button type="button" class="btn btn--primary btn--small" data-cl-run><Scissors size={13} /> สร้าง chunks</button>
+          <button type="button" class="btn btn--ghost btn--small" data-cl-reset>คืนค่าเดิม</button>
+        </div>
+      </div>
+
+      <div class="lab__result" aria-live="polite">
+        <p class="mono tiny faint">CHUNK STATS</p>
+        <div class="lab__stat-grid" style="margin-top:.6rem">
+          <div class="lab__stat"><span>Chunks</span><strong data-cl-count>0</strong></div>
+          <div class="lab__stat"><span>Avg length</span><strong data-cl-avg>0</strong></div>
+          <div class="lab__stat"><span>Min / Max</span><strong data-cl-range>0 / 0</strong></div>
+          <div class="lab__stat"><span>Overlap ratio</span><strong data-cl-ratio>0%</strong></div>
+        </div>
+        <div class="lab__warning" data-cl-warn hidden><span>!</span><p data-cl-warn-text></p></div>
+        <p class="lab__hint" style="margin-top:.8rem">ไม่มี chunk size ที่ดีที่สุดสำหรับทุกงาน — วัดด้วยคำถามจริงจากผู้ใช้เสมอ</p>
+      </div>
+    </div>
+
+    <div style="margin-top:1.4rem">
+      <p class="lab__label">ผลลัพธ์</p>
+      <div data-cl-output style="display:flex;flex-direction:column;gap:.5rem;margin-top:.55rem"></div>
+    </div>
+  </div>
+</section>
+
+<script>
+  const root = document.querySelector<HTMLElement>('[data-chunker-lab]')!;
+  if (root) {
+    const text = root.querySelector<HTMLTextAreaElement>('[data-cl-text]');
+    const size = root.querySelector<HTMLInputElement>('[data-cl-size]');
+    const overlap = root.querySelector<HTMLInputElement>('[data-cl-overlap]');
+    const sizeOut = root.querySelector<HTMLElement>('[data-cl-size-out]');
+    const overlapOut = root.querySelector<HTMLElement>('[data-cl-overlap-out]');
+    const output = root.querySelector<HTMLElement>('[data-cl-output]');
+    const count = root.querySelector<HTMLElement>('[data-cl-count]');
+    const avg = root.querySelector<HTMLElement>('[data-cl-avg]');
+    const range = root.querySelector<HTMLElement>('[data-cl-range]');
+    const ratio = root.querySelector<HTMLElement>('[data-cl-ratio]');
+    const warn = root.querySelector<HTMLElement>('[data-cl-warn]');
+    const warnText = root.querySelector<HTMLElement>('[data-cl-warn-text]');
+    const status = root.querySelector<HTMLElement>('[data-cl-status]');
+    const initial = text?.value || '';
+
+    function makeChunks(source: string, chunkSize: number, overlapSize: number) {
+      const clean = source.replace(/\r/g, '').trim();
+      if (!clean) return [] as string[];
+      const step = Math.max(1, chunkSize - overlapSize);
+      const chunks: string[] = [];
+      for (let start = 0; start < clean.length; start += step) {
+        const end = Math.min(clean.length, start + chunkSize);
+        chunks.push(clean.slice(start, end));
+        if (end >= clean.length) break;
+      }
+      return chunks;
+    }
+
+    function render() {
+      const chunkSize = Number(size?.value || 420);
+      const overlapSize = Number(overlap?.value || 60);
+      if (sizeOut) sizeOut.textContent = String(chunkSize);
+      if (overlapOut) overlapOut.textContent = String(overlapSize);
+      const chunks = makeChunks(text?.value || '', chunkSize, overlapSize);
+      const lengths = chunks.map((c) => c.length);
+      const avgLen = lengths.length ? Math.round(lengths.reduce((a, b) => a + b, 0) / lengths.length) : 0;
+      if (count) count.textContent = String(chunks.length);
+      if (avg) avg.textContent = String(avgLen);
+      if (range) range.textContent = `${lengths.length ? Math.min(...lengths) : 0} / ${lengths.length ? Math.max(...lengths) : 0}`;
+      if (ratio) ratio.textContent = `${Math.round((overlapSize / chunkSize) * 100)}%`;
+      if (status) status.textContent = `${chunks.length} chunks · ${chunkSize}/${overlapSize}`;
+
+      if (output) {
+        output.innerHTML = chunks.map((chunk, i) => `
+          <article class="chunk-card">
+            <header><span class="mono">CHUNK ${String(i + 1).padStart(2, '0')}</span><span class="mono">${chunk.length} chars</span></header>
+            <p>${chunk.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] || c))}</p>
+            ${i > 0 ? `<small class="mono">ทับซ้อนกับ chunk ก่อน ${Math.min(overlapSize, chunk.length)} ตัวอักษร</small>` : ''}
+          </article>`).join('');
+      }
+
+      const issues: string[] = [];
+      if (overlapSize >= chunkSize) issues.push('Overlap ต้องน้อยกว่า chunk size ไม่อย่างนั้นการเลื่อนหน้าต่างจะไม่เดินหน้า');
+      if (chunkSize < 180) issues.push('Chunk เล็กมากอาจทำให้ขาดบริบท ต้องพึ่ง metadata หรือการดึงเพื่อนบ้านเพิ่ม');
+      if (chunkSize > 900) issues.push('Chunk ใหญ่อาจทำให้ retrieval ไม่แม่นและเปลือง token');
+      if (chunks.length === 0) issues.push('ยังไม่มีข้อความให้แบ่ง');
+      if (warn && warnText) {
+        warn.hidden = issues.length === 0;
+        warnText.textContent = issues.join(' · ');
+      }
+    }
+
+    root.querySelector('[data-cl-run]')?.addEventListener('click', render);
+    root.querySelector('[data-cl-reset]')?.addEventListener('click', () => {
+      if (text) text.value = initial;
+      if (size) size.value = '420';
+      if (overlap) overlap.value = '60';
+      render();
+    });
+    size?.addEventListener('input', render);
+    overlap?.addEventListener('input', render);
+    text?.addEventListener('input', render);
+    render();
+  }
+</script>
+
+<style>
+  .chunk-card { padding: .75rem .85rem; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); }
+  .chunk-card header { display: flex; justify-content: space-between; gap: 1rem; color: var(--acid); font-size: .55rem; letter-spacing: .06em; }
+  .chunk-card p { margin-top: .45rem; color: var(--muted); font-size: .78rem; line-height: 1.65; white-space: pre-wrap; }
+  .chunk-card small { display: block; margin-top: .45rem; color: var(--faint); font-size: .52rem; }
+</style>

@@ -1,0 +1,332 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowRight, ArrowUpRight, Check, MapPin, RotateCcw, Sparkles, Target } from '@lucide/astro';
+import { modules, modulesByPhase } from '../data/modules';
+import { phases } from '../data/phases';
+
+---
+<BaseLayout title="Roadmap 26 สัปดาห์" description="Roadmap เรียน AI Engineer 6 phases 28 modules พร้อม pace calculator และบันทึกความคืบหน้าในเครื่องของคุณ">
+  <header class="page-hero roadmap-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">FLIGHT PLAN / 26 WEEKS</p>
+        <h1 class="reveal">จากศูนย์ถึงงาน<br /><span class="text-acid">เส้นทางที่ไม่หลง</span></h1>
+        <p class="lead reveal">6 phase ที่ต่อกันอย่างมีเหตุผล พร้อมจุดตรวจว่าเมื่อไรควรไปต่อ ไม่ต้องเรียนทุกอย่างพร้อมกัน และไม่ต้องรอให้พร้อมก่อนเริ่ม</p>
+        <div class="roadmap-hero__actions reveal">
+          <a href="/start" class="btn btn--primary">ประเมินจุดเริ่มต้น <ArrowRight size={14} /></a>
+          <a href="#phase-foundations" class="btn btn--ghost">เริ่ม Phase 01</a>
+        </div>
+      </div>
+
+      <div class="flight-plan panel reveal">
+        <div class="flight-plan__top mono"><span>YOUR FLIGHT PLAN</span><span class="text-acid" data-flight-pct>0%</span></div>
+        <div class="flight-plan__ring" data-flight-ring style="--pct: 0">
+          <div class="flight-plan__ring-inner">
+            <strong><span data-flight-done>0</span><small>/{modules.length}</small></strong>
+            <span class="mono">COMPLETE</span>
+          </div>
+        </div>
+        <div class="flight-plan__stats">
+          <div><span class="mono">REMAINING</span><strong data-flight-remaining>{modules.length}</strong><small>modules</small></div>
+          <div><span class="mono">EST. TIME</span><strong data-flight-weeks>26</strong><small>weeks @ 5h</small></div>
+        </div>
+        <div class="pace">
+          <div class="pace__head"><label for="pace">ชั่วโมงเรียน / สัปดาห์</label><span class="mono text-acid" data-pace-value>5h</span></div>
+          <input id="pace" type="range" min="3" max="20" step="1" value="5" data-pace />
+          <div class="pace__scale mono"><span>3h</span><span>10h</span><span>20h</span></div>
+        </div>
+        <p class="flight-plan__note">คำนวณจาก 4.5 ชั่วโมงต่อ module โดยประมาณ ปรับตามพื้นฐานของคุณได้</p>
+        <a href="/plan" class="link-arrow">ดูแผนรายสัปดาห์ <ArrowUpRight size={12} /></a>
+      </div>
+    </div>
+  </header>
+
+  <section class="section roadmap-section">
+    <div class="container">
+      <div class="roadmap-toolbar">
+        <div>
+          <p class="mono small muted">FILTER BY TRACK</p>
+          <div class="track-filters">
+            <button class="chip is-active" data-roadmap-track="all">ทั้งหมด</button>
+            <button class="chip" data-roadmap-track="llm">LLM</button>
+            <button class="chip" data-roadmap-track="ml">ML</button>
+            <button class="chip" data-roadmap-track="product">Product</button>
+            <button class="chip" data-roadmap-track="mlops">MLOps</button>
+          </div>
+        </div>
+        <div class="toolbar-right">
+          <p class="mono tiny faint"><span data-roadmap-visible>{modules.length}</span> modules แสดงอยู่</p>
+          <button class="chip" data-roadmap-reset><RotateCcw size={12} /> ล้างความคืบหน้า</button>
+        </div>
+      </div>
+
+      <div class="orientation panel">
+        <div class="orientation__icon"><MapPin size={18} /></div>
+        <div>
+          <span class="mono micro">BEFORE TAKEOFF · PHASE 00</span>
+          <h2>ยังไม่รู้จะเริ่มตรงไหน?</h2>
+          <p>ทำแบบประเมิน 6 ข้อ หรืออ่าน Field Guide “เริ่มเรียน AI Engineering โดยไม่หลงทาง” ก่อนเข้าสู่ Phase 01</p>
+        </div>
+        <div class="orientation__actions">
+          <a href="/start" class="btn btn--ghost btn--small">ทำแบบประเมิน</a>
+          <a href="/guides/start-ai-engineering" class="btn btn--ghost btn--small">อ่าน guide</a>
+        </div>
+      </div>
+
+      <div class="phases">
+        {phases.map((phase) => {
+          const phaseModules = modulesByPhase(phase.id);
+          return (
+            <section class:list={['phase', `phase--${phase.color}`]} id={phase.id} data-phase-section data-phase={phase.id}>
+              <div class="phase__marker">
+                <span class="mono">{phase.number}</span>
+                <span class="phase__dot"></span>
+                <span class="phase__line"></span>
+              </div>
+              <div class="phase__content">
+                <div class="phase__head">
+                  <div>
+                    <p class="mono micro">PHASE {phase.number} · {phase.en.toUpperCase()}</p>
+                    <h2>{phase.title}</h2>
+                    <p>{phase.description}</p>
+                  </div>
+                  <div class="phase__side">
+                    <span class="mono tiny">{phase.weeks}</span>
+                    <span class="mono tiny" data-phase-count={phase.id}>0/{phaseModules.length}</span>
+                  </div>
+                </div>
+                <div class="phase__outcome"><Target size={14} /><p><span class="mono">OUTCOME</span> {phase.outcome}</p></div>
+
+                <div class="phase-modules">
+                  {phaseModules.map((module) => (
+                    <div class="roadmap-module" data-roadmap-module data-id={module.id} data-tracks={module.tracks.join(' ')}>
+                      <button type="button" class="roadmap-check" data-roadmap-check aria-label={`ทำเครื่องหมาย ${module.title}`} aria-pressed="false">
+                        <Check size={12} stroke-width={3} />
+                      </button>
+                      <a href={`/modules/${module.slug}`} class="roadmap-module__link">
+                        <span class="roadmap-module__num mono">{module.number}</span>
+                        <span class="roadmap-module__title">{module.title}<small class="mono">{module.duration} · {module.level}</small></span>
+                      </a>
+                      <a href={`/modules/${module.slug}`} class="roadmap-module__open" aria-label={`เปิด ${module.title}`}><ArrowUpRight size={14} /></a>
+                    </div>
+                  ))}
+                </div>
+
+                <div class="phase__foot">
+                  <span class="mono tiny text-faint">PHASE COMPLETE</span>
+                  <div class="progress-track"><span data-phase-bar={phase.id} style="width: 0%"></span></div>
+                  <a href={`/roadmap#${phase.id}`} class="mono tiny">#{phase.id}</a>
+                </div>
+              </div>
+            </section>
+          );
+        })}
+      </div>
+
+      <div class="roadmap-end panel">
+        <Sparkles size={20} class="text-acid" />
+        <div>
+          <p class="eyebrow">NOT THE END</p>
+          <h3>จบหลักสูตร ≠ จบการเรียนรู้</h3>
+          <p>กลับไปทำโปรเจกต์ให้ลึกขึ้น สอนคนอื่น และติดตาม paper/tool ใหม่ โดยไม่ทิ้งหลักการที่เรียนมา</p>
+        </div>
+        <a href="/projects" class="btn btn--primary btn--small">เลือกโปรเจกต์ <ArrowRight size={13} /></a>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const TOTAL = 28;
+  const getDone = (): string[] => {
+    try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
+  };
+  const rows = [...document.querySelectorAll<HTMLElement>('[data-roadmap-module]')];
+  const checks = [...document.querySelectorAll<HTMLButtonElement>('[data-roadmap-check]')];
+  const pace = document.querySelector<HTMLInputElement>('[data-pace]');
+  let track = 'all';
+
+  function update() {
+    const done = getDone();
+    const count = done.length;
+    const pct = Math.round((count / TOTAL) * 100);
+    document.querySelectorAll<HTMLElement>('[data-flight-done]').forEach((el) => { el.textContent = String(count); });
+    document.querySelectorAll<HTMLElement>('[data-flight-pct]').forEach((el) => { el.textContent = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-flight-remaining]').forEach((el) => { el.textContent = String(TOTAL - count); });
+    document.querySelectorAll<HTMLElement>('[data-flight-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); });
+
+    const hours = Number(pace?.value || 5);
+    const weeks = Math.max(1, Math.ceil(((TOTAL - count) * 4.5) / hours));
+    document.querySelectorAll<HTMLElement>('[data-flight-weeks]').forEach((el) => { el.textContent = String(weeks); });
+    document.querySelectorAll<HTMLElement>('[data-pace-value]').forEach((el) => { el.textContent = hours + 'h'; });
+
+    rows.forEach((row) => {
+      const isDone = done.includes(row.dataset.id || '');
+      row.classList.toggle('is-done', isDone);
+      const check = row.querySelector<HTMLButtonElement>('[data-roadmap-check]');
+      check?.setAttribute('aria-pressed', String(isDone));
+    });
+
+    document.querySelectorAll<HTMLElement>('[data-phase-section]').forEach((section) => {
+      const phaseRows = [...section.querySelectorAll<HTMLElement>('[data-roadmap-module]')];
+      const phaseDone = phaseRows.filter((r) => done.includes(r.dataset.id || '')).length;
+      const countEl = section.querySelector<HTMLElement>(`[data-phase-count="${section.dataset.phase}"]`);
+      if (countEl) countEl.textContent = `${phaseDone}/${phaseRows.length}`;
+      const bar = section.querySelector<HTMLElement>(`[data-phase-bar="${section.dataset.phase}"]`);
+      if (bar) bar.style.width = `${phaseRows.length ? (phaseDone / phaseRows.length) * 100 : 0}%`;
+    });
+  }
+
+  checks.forEach((check) => {
+    check.addEventListener('click', () => {
+      const row = check.closest<HTMLElement>('[data-roadmap-module]');
+      const api = (window as any).AIE;
+      if (!row || !api) return;
+      const active = api.toggleModule(row.dataset.id);
+      api.toast(active ? 'บันทึกความคืบหน้าแล้ว ✓' : 'ยกเลิกเครื่องหมายแล้ว');
+      update();
+    });
+  });
+
+  pace?.addEventListener('input', update);
+
+  document.querySelectorAll<HTMLButtonElement>('[data-roadmap-track]').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      track = btn.dataset.roadmapTrack || 'all';
+      document.querySelectorAll<HTMLButtonElement>('[data-roadmap-track]').forEach((b) => b.classList.toggle('is-active', b === btn));
+      let visible = 0;
+      rows.forEach((row) => {
+        const match = track === 'all' || (row.dataset.tracks || '').split(' ').includes(track);
+        row.hidden = !match;
+        if (match) visible++;
+      });
+      document.querySelectorAll<HTMLElement>('[data-roadmap-visible]').forEach((el) => { el.textContent = String(visible); });
+      document.querySelectorAll<HTMLElement>('[data-phase-section]').forEach((section) => {
+        section.hidden = ![...section.querySelectorAll<HTMLElement>('[data-roadmap-module]')].some((r) => !r.hidden);
+      });
+    });
+  });
+
+  document.querySelector('[data-roadmap-reset]')?.addEventListener('click', () => {
+    if (!confirm('ล้างเครื่องหมายว่าเรียนจบทั้งหมดหรือไม่?')) return;
+    localStorage.removeItem('aie:modules');
+    window.dispatchEvent(new CustomEvent('aie:progress'));
+    update();
+    (window as any).AIE?.toast('ล้างความคืบหน้าแล้ว');
+  });
+
+  update();
+  window.addEventListener('aie:progress', update);
+</script>
+
+<style>
+  .roadmap-hero .page-hero__grid { align-items: center; }
+  .roadmap-hero__actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+
+  .flight-plan { padding: 1.2rem; border-radius: var(--radius-lg); }
+  .flight-plan__top { display: flex; justify-content: space-between; padding-bottom: 0.9rem; border-bottom: 1px solid var(--line); font-size: 0.56rem; letter-spacing: 0.08em; color: var(--faint); }
+  .flight-plan__ring {
+    --pct: 0;
+    width: 160px; aspect-ratio: 1; margin: 1.4rem auto 0.8rem;
+    border-radius: 50%; display: grid; place-items: center;
+    background: conic-gradient(var(--acid) calc(var(--pct) * 1%), var(--panel-3) 0);
+  }
+  .flight-plan__ring-inner {
+    width: calc(100% - 12px); aspect-ratio: 1; border-radius: 50%;
+    background: var(--panel); display: grid; place-content: center; text-align: center;
+  }
+  .flight-plan__ring-inner strong { font-family: var(--font-display); font-size: 2.6rem; line-height: 1; letter-spacing: -0.06em; }
+  .flight-plan__ring-inner small { font-size: 0.75rem; color: var(--faint); letter-spacing: 0; }
+  .flight-plan__ring-inner span { font-size: 0.48rem; color: var(--faint); margin-top: 0.25rem; letter-spacing: 0.1em; }
+  .flight-plan__stats { display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.8rem; }
+  .flight-plan__stats div { display: flex; flex-direction: column; gap: 0.1rem; padding: 0.6rem; border: 1px solid var(--line); border-radius: 7px; }
+  .flight-plan__stats span { font-size: 0.47rem; color: var(--faint); letter-spacing: 0.07em; }
+  .flight-plan__stats strong { font-family: var(--font-display); font-size: 1.3rem; font-weight: 500; line-height: 1.2; }
+  .flight-plan__stats small { font-family: var(--font-mono); font-size: 0.5rem; color: var(--faint); }
+  .pace { margin-top: 1rem; }
+  .pace__head { display: flex; justify-content: space-between; align-items: center; font-size: 0.68rem; color: var(--muted); }
+  .pace__head span { font-size: 0.62rem; }
+  .pace input { margin-top: 0.5rem; }
+  .pace__scale { display: flex; justify-content: space-between; font-size: 0.48rem; color: var(--faint); margin-top: 0.15rem; }
+  .flight-plan__note { margin-top: 0.55rem; color: var(--faint); font-size: 0.64rem; line-height: 1.5; }
+  .flight-plan > .link-arrow { margin-top: 0.9rem; font-size: 0.65rem; }
+
+  .roadmap-section { padding-top: 2.5rem; }
+  .roadmap-toolbar { display: flex; justify-content: space-between; align-items: end; gap: 1rem; flex-wrap: wrap; padding-bottom: 1.2rem; border-bottom: 1px solid var(--line); }
+  .track-filters { display: flex; gap: 0.3rem; flex-wrap: wrap; margin-top: 0.6rem; }
+  .toolbar-right { display: flex; align-items: center; gap: 0.8rem; flex-wrap: wrap; }
+
+  .orientation { display: flex; align-items: center; gap: 1rem; margin-top: 1.2rem; padding: 1rem 1.2rem; border-radius: var(--radius); }
+  .orientation__icon { display: grid; place-items: center; width: 38px; height: 38px; flex: none; border-radius: 50%; background: var(--acid-soft); color: var(--acid); }
+  .orientation h2 { margin-top: 0.2rem; font-size: 1.1rem; }
+  .orientation p { margin-top: 0.25rem; color: var(--muted); font-size: 0.78rem; }
+  .orientation__actions { display: flex; gap: 0.4rem; margin-left: auto; flex-wrap: wrap; }
+
+  .phases { margin-top: 2.5rem; }
+  .phase { display: grid; grid-template-columns: 60px 1fr; gap: 1.2rem; scroll-margin-top: calc(var(--header-h) + 20px); }
+  .phase__marker { display: flex; flex-direction: column; align-items: center; position: relative; }
+  .phase__marker .mono { font-size: 0.65rem; color: var(--faint); }
+  .phase__dot { width: 9px; height: 9px; border-radius: 50%; background: var(--acid); margin-top: 0.6rem; box-shadow: 0 0 0 5px var(--acid-soft); }
+  .phase__line { width: 1px; flex: 1; background: var(--line); margin-top: 0.5rem; }
+  .phase:last-child .phase__line { display: none; }
+  .phase--amber .phase__dot { background: var(--amber); box-shadow: 0 0 0 5px var(--amber-soft); }
+  .phase--sky .phase__dot { background: var(--sky); box-shadow: 0 0 0 5px var(--sky-soft); }
+  .phase--violet .phase__dot { background: var(--violet); box-shadow: 0 0 0 5px var(--violet-soft); }
+  .phase--coral .phase__dot { background: var(--coral); box-shadow: 0 0 0 5px var(--coral-soft); }
+  .phase--sand .phase__dot { background: var(--sand); box-shadow: 0 0 0 5px var(--sand-soft); }
+  .phase__content { padding-bottom: 3.5rem; }
+  .phase__head { display: flex; justify-content: space-between; gap: 2rem; align-items: start; padding-bottom: 1rem; }
+  .phase__head h2 { margin-top: 0.45rem; font-size: clamp(1.6rem, 3vw, 2.2rem); }
+  .phase__head p:not(.micro) { margin-top: 0.5rem; color: var(--muted); font-size: 0.87rem; max-width: 60ch; }
+  .phase__side { display: flex; flex-direction: column; align-items: flex-end; gap: 0.35rem; color: var(--faint); white-space: nowrap; }
+  .phase__outcome { display: flex; gap: 0.55rem; padding: 0.75rem 0.85rem; border-left: 2px solid var(--acid); background: var(--panel); margin-bottom: 1rem; }
+  .phase--amber .phase__outcome { border-color: var(--amber); }
+  .phase--sky .phase__outcome { border-color: var(--sky); }
+  .phase--violet .phase__outcome { border-color: var(--violet); }
+  .phase--coral .phase__outcome { border-color: var(--coral); }
+  .phase--sand .phase__outcome { border-color: var(--sand); }
+  .phase__outcome svg { flex: none; color: var(--faint); margin-top: 0.15rem; }
+  .phase__outcome p { color: var(--muted); font-size: 0.75rem; }
+  .phase__outcome .mono { color: var(--faint); font-size: 0.52rem; letter-spacing: 0.07em; margin-right: 0.4rem; }
+
+  .phase-modules { display: grid; grid-template-columns: 1fr 1fr; gap: 0.45rem; }
+  .roadmap-module { display: flex; align-items: stretch; border: 1px solid var(--line); border-radius: 8px; background: var(--panel); overflow: hidden; transition: border-color 0.2s, background 0.2s; }
+  .roadmap-module:hover { border-color: var(--line-strong); background: var(--panel-2); }
+  .roadmap-module.is-done { border-color: rgba(211, 250, 124, 0.25); }
+  .roadmap-check { width: 38px; flex: none; display: grid; place-items: center; border: 0; border-right: 1px solid var(--line); background: transparent; color: transparent; }
+  .roadmap-check:hover { background: var(--acid-soft); color: var(--faint); }
+  .roadmap-module.is-done .roadmap-check { background: var(--acid); color: var(--acid-ink); }
+  .roadmap-module__link { display: flex; align-items: center; gap: 0.65rem; flex: 1; padding: 0.65rem 0.7rem; text-decoration: none; min-width: 0; }
+  .roadmap-module__num { color: var(--faint); font-size: 0.58rem; flex: none; }
+  .roadmap-module__title { display: flex; flex-direction: column; gap: 0.08rem; font-size: 0.78rem; font-weight: 500; min-width: 0; }
+  .roadmap-module__title small { font-size: 0.47rem; color: var(--faint); font-weight: 400; }
+  .roadmap-module.is-done .roadmap-module__title { color: var(--muted); text-decoration: line-through; text-decoration-color: var(--faint); }
+  .roadmap-module__open { display: grid; place-items: center; width: 32px; flex: none; color: var(--faint); }
+  .roadmap-module__open:hover { color: var(--acid); }
+  .phase__foot { display: grid; grid-template-columns: auto 1fr auto; gap: 0.8rem; align-items: center; margin-top: 0.9rem; }
+  .phase__foot .progress-track { height: 3px; }
+  .phase__foot a { color: var(--faint); text-decoration: none; }
+  .phase__foot a:hover { color: var(--acid); }
+
+  .roadmap-end { display: flex; align-items: center; gap: 1rem; margin-top: 1rem; padding: 1.3rem; border-radius: var(--radius); }
+  .roadmap-end h3 { margin-top: 0.2rem; font-size: 1.1rem; }
+  .roadmap-end p:not(.eyebrow) { margin-top: 0.25rem; color: var(--muted); font-size: 0.78rem; }
+  .roadmap-end .btn { margin-left: auto; }
+
+  @media (max-width: 840px) {
+    .phase { grid-template-columns: 34px 1fr; gap: 0.8rem; }
+    .phase-modules { grid-template-columns: 1fr; }
+    .phase__head { flex-direction: column; gap: 0.6rem; }
+    .phase__side { flex-direction: row; align-items: center; }
+    .orientation { align-items: flex-start; flex-wrap: wrap; }
+    .orientation__actions { margin-left: 0; width: 100%; }
+    .roadmap-end { flex-wrap: wrap; }
+    .roadmap-end .btn { margin-left: 0; }
+  }
+
+  @media (max-width: 560px) {
+    .flight-plan__ring { width: 140px; }
+    .roadmap-toolbar { align-items: flex-start; }
+    .toolbar-right { width: 100%; justify-content: space-between; }
+  }
+</style>

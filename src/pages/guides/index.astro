@@ -1,0 +1,103 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Search, ArrowRight, Bookmark } from '@lucide/astro';
+import { guides, guideCategories } from '../../data/guides';
+import GuideCard from '../../components/GuideCard.astro';
+
+const featured = guides[0];
+const rest = guides.slice(1);
+---
+<BaseLayout title="Guides & Playbooks" description="คู่มือปฏิบัติสำหรับ AI Engineer: เริ่มเรียน, portfolio, สัมภาษณ์, RAG, evaluation, security และการจัดการต้นทุน">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">FIELD GUIDES / {guides.length} PLAYBOOKS</p>
+        <h1 class="reveal">คำตอบสำหรับ<br />คำถามที่คอร์สไม่บอก</h1>
+        <p class="lead reveal">เรื่องที่เจอจริงในงาน — จะเริ่มยังไง จะเขียน portfolio อย่างไร จะ debug ระบบที่ตอบผิด และจะตัดสินใจเมื่อข้อมูลไม่ครบ</p>
+      </div>
+      <div class="guides-hero-stat panel reveal">
+        <Bookmark size={20} class="text-acid" />
+        <p class="mono micro">READING PRINCIPLE</p>
+        <p>อ่านเพื่อนำไปใช้ ไม่ใช่เพื่อให้จบ อ่านหนึ่ง guide แล้วเลือกทำตามหนึ่งข้อภายในสัปดาห์นี้</p>
+        <a href="/guides/start-ai-engineering" class="link-arrow">เริ่มจาก guide แรก <ArrowRight size={12} /></a>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="controls">
+        <div class="guide-search">
+          <Search size={15} />
+          <input type="search" placeholder="ค้นหา guide..." data-guide-search aria-label="ค้นหา guide" />
+        </div>
+        <div class="cats">
+          <button class="chip is-active" data-guide-cat="all">ทั้งหมด</button>
+          {guideCategories.map((cat) => <button class="chip" data-guide-cat={cat}>{cat}</button>)}
+        </div>
+        <span class="mono tiny faint" data-guide-count>{guides.length} guides</span>
+      </div>
+
+      <div class="featured-guide reveal">
+        <GuideCard guide={featured} featured />
+      </div>
+
+      <div class="guide-grid" data-guide-list>
+        {rest.map((guide) => (
+          <div class="guide-wrap reveal" data-guide-wrap data-title={`${guide.title} ${guide.dek} ${guide.tags.join(' ')}`.toLowerCase()} data-cat={guide.category}>
+            <GuideCard guide={guide} />
+          </div>
+        ))}
+      </div>
+      <div class="empty-state" data-guide-empty hidden><p>ไม่พบ guide ที่ตรงกับคำค้นหา</p></div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const search = document.querySelector<HTMLInputElement>('[data-guide-search]');
+  const cards = [...document.querySelectorAll<HTMLElement>('[data-guide-wrap]')];
+  const catBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-guide-cat]')];
+  const count = document.querySelector<HTMLElement>('[data-guide-count]');
+  const empty = document.querySelector<HTMLElement>('[data-guide-empty]');
+  const list = document.querySelector<HTMLElement>('[data-guide-list]');
+  let cat = 'all';
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    cards.forEach((card) => {
+      const matchQ = !q || (card.dataset.title || '').includes(q);
+      const matchCat = cat === 'all' || card.dataset.cat === cat;
+      const visible = matchQ && matchCat;
+      card.hidden = !visible;
+      if (visible) shown++;
+    });
+    if (count) count.textContent = `${shown + (shown > 0 ? 1 : 0)} guides`;
+    if (empty) empty.hidden = shown > 0;
+    if (list) list.hidden = shown === 0;
+  }
+  catBtns.forEach((btn) => btn.addEventListener('click', () => {
+    cat = btn.dataset.guideCat || 'all';
+    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+  search?.addEventListener('input', apply);
+</script>
+
+<style>
+  .guides-hero-stat { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: 0.55rem; align-items: flex-start; }
+  .guides-hero-stat p:not(.micro) { color: var(--muted); font-size: 0.8rem; line-height: 1.7; }
+  .controls { display: flex; align-items: center; gap: 0.75rem; flex-wrap: wrap; padding-bottom: 1.2rem; border-bottom: 1px solid var(--line); }
+  .guide-search { flex: 1 1 250px; max-width: 330px; display: flex; align-items: center; gap: 0.55rem; padding: 0.5rem 0.75rem; border: 1px solid var(--line); border-radius: 8px; background: var(--bg-soft); color: var(--faint); }
+  .guide-search:focus-within { border-color: var(--acid); }
+  .guide-search input { border: 0; background: transparent; outline: none; flex: 1; min-width: 0; font-size: 0.8rem; }
+  .cats { display: flex; gap: 0.3rem; flex-wrap: wrap; }
+  .controls > .mono { margin-left: auto; }
+  .featured-guide { margin-top: 1.4rem; }
+  .featured-guide > :global(*) { display: block; }
+  .guide-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.9rem; margin-top: 0.9rem; }
+  .guide-wrap { display: flex; }
+  .guide-wrap > :global(*) { width: 100%; }
+  @media (max-width: 980px) { .guide-grid { grid-template-columns: repeat(2, 1fr); } }
+  @media (max-width: 640px) { .guide-grid { grid-template-columns: 1fr; } .controls > .mono { margin-left: 0; } }
+</style>

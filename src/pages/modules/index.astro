@@ -1,0 +1,181 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { Search, SlidersHorizontal, ArrowRight } from '@lucide/astro';
+import { modules } from '../../data/modules';
+import { phases } from '../../data/phases';
+import { tracks } from '../../data/phases';
+import ModuleCard from '../../components/ModuleCard.astro';
+
+const levels = ['เริ่มต้น', 'กลาง', 'สูง'];
+---
+<BaseLayout title="หลักสูตร 28 Modules" description="หลักสูตร AI Engineer แบบครบวงจร 28 modules ตั้งแต่ Python และคณิตศาสตร์ ไปจนถึง LLM, RAG, agents, MLOps และ responsible AI">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">CURRICULUM / 28 MODULES</p>
+        <h1 class="reveal">ทุกอย่างที่ต้องรู้<br />เรียงให้แล้ว</h1>
+        <p class="lead reveal">ไม่ใช่รายการหัวข้อกระจัดกระจาย แต่เป็นหลักสูตรที่แต่ละบทต่อยอดจากบทก่อนหน้า ตั้งแต่ฐานรากจนถึงระบบที่ deploy ได้จริง</p>
+        <div class="hero-actions reveal">
+          <a href="/start" class="btn btn--primary">หาจุดเริ่มต้น <ArrowRight size={14} /></a>
+          <a href="/roadmap" class="btn btn--ghost">ดูตามลำดับเวลา</a>
+        </div>
+      </div>
+      <div class="curriculum-summary panel reveal">
+        <div class="curriculum-summary__top mono"><span>SYLLABUS MAP</span><span class="text-acid">v2.6</span></div>
+        {phases.map((phase) => (
+          <div class="curriculum-summary__row">
+            <span class:list={['dot', `dot--${phase.color}`]}></span>
+            <span>{phase.title}</span>
+            <span class="mono">{modules.filter((m) => m.phase === phase.id).length}</span>
+          </div>
+        ))}
+        <div class="curriculum-summary__foot mono"><span>{modules.length} MODULES</span><span>{modules.reduce((sum, m) => sum + m.quiz.length, 0)} QUIZ</span><span>6 PHASES</span></div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="module-controls" data-module-controls>
+        <div class="module-search">
+          <Search size={16} />
+          <input type="search" placeholder="ค้นหา module, เครื่องมือ, แนวคิด..." aria-label="ค้นหา module" data-module-search />
+        </div>
+        <div class="filter-group" role="group" aria-label="กรองตามสาย">
+          <button class="chip is-active" data-track="all">ทั้งหมด</button>
+          {tracks.map((track) => <button class="chip" data-track={track.id}>{track.short}</button>)}
+        </div>
+        <div class="filter-group filter-group--levels" role="group" aria-label="กรองตามระดับ">
+          <SlidersHorizontal size={13} class="filter-icon" />
+          <button class="chip is-active" data-level="all">ทุกระดับ</button>
+          {levels.map((level) => <button class="chip" data-level={level}>{level}</button>)}
+        </div>
+      </div>
+
+      <div class="result-line mono">
+        <span><span data-result-count>{modules.length}</span> modules</span>
+        <span class="faint">คลิกการ์ดเพื่อเปิดบทเรียน</span>
+      </div>
+
+      <div class="module-list" data-module-list>
+        {modules.map((module) => (
+          <div class="module-wrap reveal" data-module-wrap data-title={`${module.title} ${module.en} ${module.summary} ${module.keywords.join(' ')}`.toLowerCase()} data-tracks={module.tracks.join(' ')} data-level={module.level} data-phase={module.phase}>
+            <ModuleCard module={module} />
+          </div>
+        ))}
+      </div>
+
+      <div class="empty-state" data-module-empty hidden>
+        <p>ไม่พบ module ที่ตรงกับคำค้นหา</p>
+        <button class="chip" data-clear-filter>ล้างตัวกรอง</button>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script>
+  const list = document.querySelector<HTMLElement>('[data-module-list]');
+  const wraps = [...document.querySelectorAll<HTMLElement>('[data-module-wrap]')];
+  const search = document.querySelector<HTMLInputElement>('[data-module-search]');
+  const count = document.querySelector<HTMLElement>('[data-result-count]');
+  const empty = document.querySelector<HTMLElement>('[data-module-empty]');
+  const trackBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-track]')];
+  const levelBtns = [...document.querySelectorAll<HTMLButtonElement>('[data-level]')];
+  let track = 'all';
+  let level = 'all';
+
+  function apply() {
+    const q = (search?.value || '').toLowerCase().trim();
+    let shown = 0;
+    wraps.forEach((wrap) => {
+      const matchQ = !q || (wrap.dataset.title || '').includes(q);
+      const matchTrack = track === 'all' || (wrap.dataset.tracks || '').split(' ').includes(track);
+      const matchLevel = level === 'all' || wrap.dataset.level === level;
+      const visible = matchQ && matchTrack && matchLevel;
+      wrap.hidden = !visible;
+      if (visible) shown++;
+    });
+    if (count) count.textContent = String(shown);
+    if (empty) empty.hidden = shown > 0;
+    if (list) list.hidden = shown === 0;
+  }
+
+  trackBtns.forEach((btn) => btn.addEventListener('click', () => {
+    track = btn.dataset.track || 'all';
+    trackBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+
+  levelBtns.forEach((btn) => btn.addEventListener('click', () => {
+    level = btn.dataset.level || 'all';
+    levelBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    apply();
+  }));
+
+  search?.addEventListener('input', apply);
+
+  document.querySelector('[data-clear-filter]')?.addEventListener('click', () => {
+    if (search) search.value = '';
+    track = 'all'; level = 'all';
+    trackBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.track === 'all'));
+    levelBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.level === 'all'));
+    apply();
+  });
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: 0.6rem; flex-wrap: wrap; margin-top: 1.6rem; }
+
+  .curriculum-summary { border-radius: var(--radius); padding: 1rem; align-self: end; }
+  .curriculum-summary__top { display: flex; justify-content: space-between; padding-bottom: 0.7rem; border-bottom: 1px solid var(--line); font-size: 0.56rem; color: var(--faint); letter-spacing: 0.08em; }
+  .curriculum-summary__row { display: grid; grid-template-columns: 10px 1fr auto; gap: 0.55rem; align-items: center; padding: 0.48rem 0; border-bottom: 1px solid var(--line); font-size: 0.74rem; color: var(--muted); }
+  .curriculum-summary__row .mono { font-size: 0.6rem; color: var(--faint); }
+  .dot { width: 5px; height: 5px; border-radius: 50%; background: var(--acid); }
+  .dot--amber { background: var(--amber); }
+  .dot--sky { background: var(--sky); }
+  .dot--violet { background: var(--violet); }
+  .dot--coral { background: var(--coral); }
+  .dot--sand { background: var(--sand); }
+  .curriculum-summary__foot { display: flex; justify-content: space-between; gap: 0.5rem; padding-top: 0.8rem; font-size: 0.48rem; color: var(--faint); }
+
+  .module-controls {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 0.75rem;
+    padding-bottom: 1.1rem;
+    border-bottom: 1px solid var(--line);
+  }
+
+  .module-search {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    flex: 1 1 280px;
+    max-width: 400px;
+    padding: 0.55rem 0.8rem;
+    border: 1px solid var(--line);
+    border-radius: 9px;
+    background: var(--bg-soft);
+    color: var(--faint);
+  }
+
+  .module-search:focus-within { border-color: var(--acid); }
+  .module-search input { flex: 1; min-width: 0; border: 0; background: transparent; outline: none; font-size: 0.82rem; }
+  .filter-group { display: flex; align-items: center; gap: 0.35rem; flex-wrap: wrap; }
+  .filter-icon { color: var(--faint); }
+  .filter-group--levels { margin-left: auto; }
+  .result-line { display: flex; justify-content: space-between; padding: 1rem 0 0.3rem; font-size: 0.62rem; color: var(--muted); }
+  .module-list { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; margin-top: 0.6rem; }
+  .module-wrap { display: flex; }
+  .module-wrap > :global(*) { width: 100%; }
+  .empty-state button { margin-top: 1rem; }
+
+  @media (max-width: 1000px) { .module-list { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+  @media (max-width: 720px) {
+    .module-controls { align-items: stretch; }
+    .module-search { max-width: none; }
+    .filter-group--levels { margin-left: 0; }
+    .module-list { grid-template-columns: 1fr; }
+  }
+</style>

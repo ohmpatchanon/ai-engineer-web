@@ -1,0 +1,62 @@
+---
+import { ArrowUpRight, Code, Sparkles, Scissors, ClipboardCheck, LayoutTemplate, Calculator, Bot } from '@lucide/astro';
+import type { Exercise } from '../data/exercises';
+
+interface Props { exercise: Exercise; }
+const { exercise } = Astro.props;
+const icons = {
+  quiz: Code,
+  prompt: Sparkles,
+  chunker: Scissors,
+  worksheet: ClipboardCheck,
+  canvas: LayoutTemplate,
+  calculator: Calculator,
+  blueprint: Bot
+};
+const Icon = icons[exercise.kind];
+---
+<a href={`/exercises/${exercise.slug}`} class="exercise-card panel panel--hover">
+  <div class="exercise-card__icon"><Icon size={19} stroke-width={1.6} /></div>
+  <div class="exercise-card__main">
+    <div class="exercise-card__meta mono">
+      <span>{exercise.category}</span><span class="dot-sep">/</span><span>{exercise.time}</span>
+    </div>
+    <h3>{exercise.title}</h3>
+    <p>{exercise.summary}</p>
+    <div class="exercise-card__foot">
+      <span class:list={['tag', exercise.difficulty === 'เริ่มต้น' ? 'tag--sky' : exercise.difficulty === 'กลาง' ? 'tag--amber' : 'tag--coral']}>{exercise.difficulty}</span>
+      <span class="mono tiny faint">{exercise.skills.slice(0, 2).join(' · ')}</span>
+      <ArrowUpRight size={16} class="exercise-card__arrow" />
+    </div>
+  </div>
+</a>
+
+<style>
+  .exercise-card {
+    display: flex;
+    gap: 1rem;
+    padding: 1.15rem;
+    text-decoration: none;
+    border-radius: var(--radius);
+  }
+
+  .exercise-card__icon {
+    display: grid;
+    place-items: center;
+    width: 42px;
+    height: 42px;
+    flex: none;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--acid-soft);
+    color: var(--acid);
+  }
+
+  .exercise-card__main { min-width: 0; flex: 1; }
+  .exercise-card__meta { display: flex; gap: 0.4rem; font-size: 0.6rem; color: var(--faint); text-transform: uppercase; letter-spacing: 0.06em; }
+  .exercise-card h3 { margin-top: 0.4rem; font-size: 1.1rem; }
+  .exercise-card p { margin-top: 0.35rem; color: var(--muted); font-size: 0.8rem; line-height: 1.65; }
+  .exercise-card__foot { display: flex; align-items: center; gap: 0.55rem; margin-top: 0.9rem; }
+  .exercise-card__arrow { margin-left: auto; color: var(--faint); transition: transform 0.2s, color 0.2s; }
+  .exercise-card:hover .exercise-card__arrow { color: var(--acid); transform: translate(2px, -2px); }
+</style>

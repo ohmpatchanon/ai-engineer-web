@@ -1,0 +1,32 @@
+import type { Lesson } from './types';
+export type { Lesson, TheorySection, TheoryFormula } from './types';
+export { lessonWordCount, lessonMinutes } from './types';
+
+import { foundationLessons } from './foundations';
+import { coreLessons } from './core';
+import { deepLessons } from './deep';
+import { llmLessons } from './llm';
+import { llmAdvancedLessons } from './llm_advanced';
+import { productionLessons } from './production';
+import { impactLessons } from './impact';
+
+export const lessons: Lesson[] = [
+  ...foundationLessons,
+  ...coreLessons,
+  ...deepLessons,
+  ...llmLessons,
+  ...llmAdvancedLessons,
+  ...productionLessons,
+  ...impactLessons
+] as Lesson[];
+
+export const lessonBySlug = Object.fromEntries(lessons.map((l) => [l.slug, l])) as Record<string, Lesson>;
+
+export function lessonsByPhase(phase: string): Lesson[] {
+  return lessons.filter((l) => l.phase === phase);
+}
+
+export function lessonSequence(): Lesson[] {
+  // เรียงตามหมายเลขบท (T.xx) เพื่อใช้แสดงลำดับการอ่าน
+  return [...lessons].sort((a, b) => a.number.localeCompare(b.number, 'en', { numeric: true }));
+}

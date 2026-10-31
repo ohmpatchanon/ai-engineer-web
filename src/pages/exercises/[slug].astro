@@ -1,0 +1,165 @@
+---
+import BaseLayout from '../../layouts/BaseLayout.astro';
+import { ArrowLeft, ArrowRight, ArrowUpRight, Clock, ChartColumn, FlaskConical, Target, BookOpen, Check } from '@lucide/astro';
+import { exercises } from '../../data/exercises';
+import { moduleBySlug } from '../../data/modules';
+import Quiz from '../../components/Quiz.astro';
+import PromptLab from '../../components/labs/PromptLab.astro';
+import ChunkLab from '../../components/labs/ChunkLab.astro';
+import EvalWorksheet from '../../components/labs/EvalWorksheet.astro';
+import SystemCanvas from '../../components/labs/SystemCanvas.astro';
+import AgentBlueprint from '../../components/labs/AgentBlueprint.astro';
+import TokenCalculator from '../../components/labs/TokenCalculator.astro';
+
+export function getStaticPaths() {
+  return exercises.map((exercise) => ({ params: { slug: exercise.slug }, props: { exercise } }));
+}
+
+const { exercise } = Astro.props;
+const index = exercises.findIndex((e) => e.slug === exercise.slug);
+const prev = index > 0 ? exercises[index - 1] : null;
+const next = index < exercises.length - 1 ? exercises[index + 1] : null;
+const module = moduleBySlug[exercise.moduleSlug];
+const diffTone = exercise.difficulty === 'เริ่มต้น' ? 'sky' : exercise.difficulty === 'กลาง' ? 'amber' : 'coral';
+const labMap: Record<string, any> = {
+  prompt: PromptLab,
+  chunker: ChunkLab,
+  worksheet: EvalWorksheet,
+  canvas: SystemCanvas,
+  blueprint: AgentBlueprint,
+  calculator: TokenCalculator
+};
+const Lab = labMap[exercise.kind];
+---
+
+<BaseLayout title={`${exercise.title} — Interactive Lab`} description={exercise.summary} type="article" readingProgress>
+  <article class="lab-page">
+    <header class="lab-hero-page">
+      <div class="container">
+        <nav class="breadcrumbs"><a href="/">หน้าแรก</a><span>/</span><a href="/exercises">Labs</a><span>/</span><span>{exercise.category}</span></nav>
+        <div class="lab-hero-page__grid">
+          <div>
+            <div class="lab-hero-page__meta reveal">
+              <span class="tag tag--acid">LAB {String(index + 1).padStart(2, '0')}</span>
+              <span class:list={['tag', `tag--${diffTone}`]}>{exercise.difficulty}</span>
+              <span class="mono tiny faint"><Clock size={12} /> {exercise.time}</span>
+            </div>
+            <h1 class="reveal">{exercise.title}</h1>
+            <p class="lab-hero-page__en mono reveal">{exercise.en}</p>
+            <p class="lab-hero-page__summary reveal">{exercise.summary}</p>
+            <div class="lab-hero-page__skills reveal">
+              {exercise.skills.map((skill) => <span class="tag">{skill}</span>)}
+            </div>
+          </div>
+          <aside class="lab-brief panel reveal">
+            <p class="mono micro">LAB BRIEF</p>
+            <div class="lab-brief__row"><Target size={14} /><div><span class="mono micro">เป้าหมาย</span><p>ฝึกทักษะที่ใช้จริงในงาน ไม่ใช่แค่จำคำตอบ</p></div></div>
+            <div class="lab-brief__row"><FlaskConical size={14} /><div><span class="mono micro">รูปแบบ</span><p>{exercise.kind === 'quiz' ? 'คำถามแบบเลือกตอบพร้อมคำอธิบาย' : 'เครื่องมือ interactive ทำงานในเบราว์เซอร์'}</p></div></div>
+            {module && (
+              <a href={`/modules/${module.slug}`} class="lab-brief__module">
+                <span class="mono micro">MODULE ที่เกี่ยวข้อง</span>
+                <strong>{module.number} · {module.title}</strong>
+                <ArrowUpRight size={14} />
+              </a>
+            )}
+          </aside>
+        </div>
+      </div>
+    </header>
+
+    <div class="container lab-content">
+      {exercise.questions && (
+        <section class="lab-section">
+          <div class="lab-section__label"><ChartColumn size={15} /><span>แบบฝึกหัด</span><span class="mono count">{exercise.questions.length} ข้อ</span></div>
+          <Quiz questions={exercise.questions} id={`lab-${exercise.slug}`} title={`${exercise.title} · knowledge check`} />
+        </section>
+      )}
+
+      {Lab && (
+        <section class="lab-section">
+          <div class="lab-section__label"><FlaskConical size={15} /><span>Interactive tool</span><span class="mono count">LOCAL ONLY</span></div>
+          <Lab />
+        </section>
+      )}
+
+      <section class="lab-section">
+        <div class="lab-section__label"><BookOpen size={15} /><span>วิธีใช้ lab นี้ให้คุ้ม</span></div>
+        <div class="lab-howto">
+          <div><span class="mono">01</span><h3>ทำก่อนดูเฉลย</h3><p>เขียนคำตอบหรือเติมเครื่องมือด้วยความเข้าใจปัจจุบันของคุณก่อน แล้วค่อยเทียบกับคำอธิบาย</p></div>
+          <div><span class="mono">02</span><h3>บันทึกจุดที่พลาด</h3><p>ข้อที่ผิดมีค่ามากกว่าข้อที่ถูก จดว่าทำไมถึงเลือกผิดและหลักการที่ต้องแก้</p></div>
+          <div><span class="mono">03</span><h3>เชื่อมกับงานจริง</h3><p>ลองใช้เครื่องมือกับ use case ของคุณเอง ไม่ใช่แค่ตัวอย่างใน lab</p></div>
+        </div>
+      </section>
+
+      <section class="lab-section">
+        <div class="lab-section__label"><Check size={15} /><span>Checkpoint</span></div>
+        <ul class="lab-checkpoints">
+          <li><Check size={12} /> อธิบายได้ว่าผลลัพธ์ที่ได้หมายถึงอะไร โดยไม่ดูคำอธิบาย</li>
+          <li><Check size={12} /> บอกได้ว่าอะไรคือจุดอ่อนของวิธีที่ใช้ และจะวัดปรับปรุงอย่างไร</li>
+          <li><Check size={12} /> ลองใช้กับข้อมูลหรือ use case ของตัวเองอย่างน้อย 1 ครั้ง</li>
+        </ul>
+      </section>
+
+      <nav class="lab-nav">
+        {prev ? <a href={`/exercises/${prev.slug}`}><span class="mono"><ArrowLeft size={12} /> ก่อนหน้า</span><strong>{prev.title}</strong></a> : <span></span>}
+        {next ? <a href={`/exercises/${next.slug}`} class="lab-nav--next"><span class="mono">ถัดไป <ArrowRight size={12} /></span><strong>{next.title}</strong></a> : <span></span>}
+      </nav>
+    </div>
+  </article>
+</BaseLayout>
+
+<style>
+  .lab-hero-page { padding-top: calc(var(--header-h) + 2.5rem); padding-bottom: 3rem; border-bottom: 1px solid var(--line); position: relative; overflow: hidden; }
+  .lab-hero-page::before { content: ''; position: absolute; width: 55vw; height: 55vw; max-width: 720px; max-height: 720px; right: -12%; top: -40%; border-radius: 50%; background: radial-gradient(circle, rgba(211, 250, 124, .07), transparent 65%); pointer-events: none; }
+  .lab-hero-page__grid { display: grid; grid-template-columns: minmax(0, 1.3fr) minmax(300px, .55fr); gap: clamp(2rem, 5vw, 5rem); margin-top: 2.5rem; align-items: end; position: relative; }
+  .lab-hero-page__meta { display: flex; align-items: center; gap: .5rem; flex-wrap: wrap; }
+  .lab-hero-page__meta .mono { display: inline-flex; align-items: center; gap: .3rem; }
+  .lab-hero-page h1 { margin-top: 1.1rem; font-size: clamp(2.5rem, 5.5vw, 5rem); max-width: 15ch; }
+  .lab-hero-page__en { margin-top: .7rem; color: var(--acid); font-size: .68rem; text-transform: uppercase; letter-spacing: .08em; }
+  .lab-hero-page__summary { margin-top: 1.1rem; max-width: 60ch; color: var(--muted); font-size: .98rem; line-height: 1.8; }
+  .lab-hero-page__skills { display: flex; flex-wrap: wrap; gap: .35rem; margin-top: 1.3rem; }
+
+  .lab-brief { padding: 1.2rem; border-radius: var(--radius); }
+  .lab-brief > .micro { padding-bottom: .7rem; border-bottom: 1px solid var(--line); }
+  .lab-brief__row { display: flex; gap: .6rem; padding: .8rem 0; border-bottom: 1px solid var(--line); color: var(--acid); }
+  .lab-brief__row svg { flex: none; margin-top: .1rem; }
+  .lab-brief__row p { margin-top: .3rem; color: var(--muted); font-size: .76rem; line-height: 1.6; }
+  .lab-brief__module { display: grid; grid-template-columns: 1fr auto; gap: .2rem .5rem; padding-top: .8rem; text-decoration: none; }
+  .lab-brief__module .micro { grid-column: 1 / -1; }
+  .lab-brief__module strong { font-size: .8rem; font-weight: 500; }
+  .lab-brief__module svg { color: var(--faint); align-self: center; }
+  .lab-brief__module:hover strong { color: var(--acid); }
+
+  .lab-content { max-width: 1080px; padding-top: 3rem; }
+  .lab-section { padding-bottom: 3.2rem; }
+  .lab-section__label { display: flex; align-items: center; gap: .5rem; padding-bottom: .9rem; border-bottom: 1px solid var(--line); font-family: var(--font-mono); font-size: .64rem; text-transform: uppercase; letter-spacing: .08em; color: var(--muted); margin-bottom: 1.3rem; }
+  .lab-section__label svg { color: var(--acid); }
+  .lab-section__label .count { margin-left: auto; color: var(--faint); font-size: .55rem; }
+
+  .lab-howto { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
+  .lab-howto > div { padding-top: .9rem; border-top: 1px solid var(--line-strong); }
+  .lab-howto .mono { color: var(--acid); font-size: .6rem; }
+  .lab-howto h3 { margin-top: .6rem; font-size: 1rem; }
+  .lab-howto p { margin-top: .35rem; color: var(--muted); font-size: .79rem; line-height: 1.65; }
+
+  .lab-checkpoints { list-style: none; display: flex; flex-direction: column; gap: .55rem; }
+  .lab-checkpoints li { display: flex; gap: .55rem; align-items: flex-start; color: var(--muted); font-size: .84rem; }
+  .lab-checkpoints svg { color: var(--acid); flex: none; margin-top: .28rem; }
+
+  .lab-nav { display: grid; grid-template-columns: 1fr 1fr; gap: .8rem; padding-top: 1.2rem; border-top: 1px solid var(--line); }
+  .lab-nav a { display: flex; flex-direction: column; gap: .3rem; padding: .85rem; border: 1px solid var(--line); border-radius: 8px; text-decoration: none; }
+  .lab-nav a:hover { border-color: var(--line-strong); background: var(--panel); }
+  .lab-nav span { display: flex; align-items: center; gap: .3rem; color: var(--faint); font-size: .55rem; text-transform: uppercase; letter-spacing: .06em; }
+  .lab-nav strong { font-size: .8rem; font-weight: 500; }
+  .lab-nav--next { text-align: right; align-items: flex-end; }
+
+  @media (max-width: 900px) {
+    .lab-hero-page__grid { grid-template-columns: 1fr; }
+    .lab-brief { max-width: 520px; }
+    .lab-howto { grid-template-columns: 1fr; }
+  }
+  @media (max-width: 600px) {
+    .lab-nav { grid-template-columns: 1fr; }
+    .lab-nav--next { text-align: left; align-items: flex-start; }
+  }
+</style>

@@ -1,0 +1,302 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowRight, ArrowUpRight, Download, Upload, RotateCcw, Gauge, MapPin, Sparkles, Target } from '@lucide/astro';
+import { modules } from '../data/modules';
+import { phases } from '../data/phases';
+import { plan } from '../data/plan';
+
+const shapes = {
+  modules: modules.map((m) => ({ id: m.id, slug: m.slug, number: m.number, title: m.title, phase: m.phase, duration: m.duration })),
+  phases: phases.map((p) => ({ id: p.id, number: p.number, title: p.title, color: p.color, total: modules.filter((m) => m.phase === p.id).length })),
+  planTotal: plan.length
+};
+---
+
+<BaseLayout title="ความคืบหน้าของฉัน" description="แดชบอร์ดความคืบหน้าการเรียน AI Engineer จากข้อมูลในเบราว์เซอร์ของคุณ พร้อม export และ import">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">YOUR DASHBOARD / LOCAL ONLY</p>
+        <h1 class="reveal">ความคืบหน้า<br />ที่<span class="text-acid">วัดได้</span></h1>
+        <p class="lead reveal">ทุกอย่างในหน้านี้มาจาก localStorage ของคุณ ไม่มีบัญชี ไม่มีเซิร์ฟเวอร์ และไม่มีใครเห็น — export เก็บไว้หรือย้ายเครื่องได้</p>
+        <div class="hero-actions reveal">
+          <a href="/roadmap" class="btn btn--primary">ไปที่ Roadmap <ArrowRight size={14} /></a>
+          <a href="/plan" class="btn btn--ghost">ดูแผน 12 สัปดาห์</a>
+        </div>
+      </div>
+      <div class="dash-hero panel reveal">
+        <Gauge size={20} class="text-acid" />
+        <p class="mono micro">OVERALL COMPLETION</p>
+        <div class="dash-ring" data-dash-ring style="--pct: 0">
+          <div><strong data-dash-done>0</strong><span>/{modules.length}</span></div>
+        </div>
+        <p class="mono tiny faint" data-dash-label>ยังไม่ได้เริ่ม — เริ่มจาก module 01</p>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container">
+      <div class="dash-stats">
+        <div class="dash-stat panel"><span class="mono micro">MODULES DONE</span><strong data-stat-modules>0</strong><small>จาก {modules.length}</small></div>
+        <div class="dash-stat panel"><span class="mono micro">PHASES TOUCHED</span><strong data-stat-phases>0</strong><small>จาก {phases.length}</small></div>
+        <div class="dash-stat panel"><span class="mono micro">PLAN WEEKS</span><strong data-stat-plan>0</strong><small>จาก {plan.length}</small></div>
+        <div class="dash-stat panel"><span class="mono micro">STREAK</span><strong data-stat-streak>—</strong><small>ยังไม่มีข้อมูล</small></div>
+      </div>
+
+      <div class="dash-grid">
+        <section class="dash-main">
+          <div class="dash-block panel">
+            <div class="dash-block__head">
+              <div><p class="mono micro">NEXT MISSION</p><h2 data-next-title>เริ่มจาก Python สำหรับงาน AI</h2></div>
+              <MapPin size={16} class="text-acid" />
+            </div>
+            <p class="dash-block__desc" data-next-desc>ยังไม่ได้ทำเครื่องหมาย module ใด — บทแรกคือจุดเริ่มต้นที่ดีที่สุด</p>
+            <a href="/modules/python-for-ai" class="btn btn--primary btn--small" data-next-link>ไปยังบทถัดไป <ArrowRight size={12} /></a>
+          </div>
+
+          <div class="dash-block panel">
+            <div class="dash-block__head"><div><p class="mono micro">PHASE BREAKDOWN</p><h2>ความคืบหน้าตาม phase</h2></div></div>
+            <div class="phase-progress" data-phase-progress>
+              {phases.map((phase) => (
+                <div class="phase-progress__row" data-phase-row data-phase={phase.id}>
+                  <span class:list={['phase-dot', `phase-dot--${phase.color}`]}></span>
+                  <div class="phase-progress__main">
+                    <div class="phase-progress__label"><span>{phase.number} · {phase.title}</span><span class="mono" data-phase-label={phase.id}>0/{modules.filter((m) => m.phase === phase.id).length}</span></div>
+                    <div class="progress-track"><span data-phase-bar={phase.id} style="width:0%"></span></div>
+                  </div>
+                  <a href={`/roadmap#${phase.id}`} aria-label={`ไปยัง ${phase.title}`}><ArrowUpRight size={13} /></a>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div class="dash-block panel">
+            <div class="dash-block__head"><div><p class="mono micro">COMPLETED</p><h2>บทที่เรียนจบแล้ว</h2></div><span class="mono tiny faint" data-done-count>0 รายการ</span></div>
+            <div class="done-list" data-done-list></div>
+            <div class="done-empty" data-done-empty>
+              <Sparkles size={18} class="faint" />
+              <p>ยังไม่มีบทที่ทำเครื่องหมายว่าเรียนจบ — เปิด module แล้วกด “ทำเครื่องหมายว่าเรียนจบ”</p>
+            </div>
+          </div>
+        </section>
+
+        <aside class="dash-side">
+          <div class="dash-block panel">
+            <div class="dash-block__head"><div><p class="mono micro">ASSESSMENT</p><h2>จุดเริ่มต้นที่คุณเลือก</h2></div></div>
+            <div data-assessment-box>
+              <p class="dash-empty-text">ยังไม่ได้ทำแบบประเมิน</p>
+              <a href="/start" class="link-arrow">ทำแบบประเมิน 2 นาที <ArrowRight size={12} /></a>
+            </div>
+          </div>
+
+          <div class="dash-block panel">
+            <div class="dash-block__head"><div><p class="mono micro">DATA PORTABILITY</p><h2>ข้อมูลของคุณ</h2></div></div>
+            <p class="dash-empty-text">ข้อมูลอยู่ในเบราว์เซอร์นี้เท่านั้น การล้าง browser data จะลบความคืบหน้า</p>
+            <div class="data-actions">
+              <button type="button" class="btn btn--ghost btn--small" data-export><Download size={12} /> Export JSON</button>
+              <label class="btn btn--ghost btn--small" style="cursor:pointer"><Upload size={12} /> Import<input type="file" accept="application/json" data-import hidden /></label>
+              <button type="button" class="btn btn--ghost btn--small" data-reset><RotateCcw size={12} /> ล้างทั้งหมด</button>
+            </div>
+            <p class="mono tiny faint" data-data-status></p>
+          </div>
+
+          <div class="dash-block panel">
+            <div class="dash-block__head"><div><p class="mono micro">KEEP GOING</p><h2>ทำต่อเนื่อง</h2></div><Target size={15} class="text-acid" /></div>
+            <ul class="dash-tips">
+              <li>เรียนสัปดาห์ละ 2 modules ก็จบ 28 modules ใน 14 สัปดาห์</li>
+              <li>ทำ lab ของบทนั้นก่อนไปบทถัดไป</li>
+              <li>ถ้าติดเกิน 30 นาที ให้จดคำถามแล้วไปต่อ</li>
+            </ul>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script type="application/json" data-shapes is:inline set:html={JSON.stringify(shapes)}></script>
+<script>
+  interface ShapeModule { id: string; slug: string; number: string; title: string; phase: string; duration: string }
+  interface ShapePhase { id: string; number: string; title: string; color: string; total: number }
+  const SHAPES: { modules: ShapeModule[]; phases: ShapePhase[]; planTotal: number } = JSON.parse(document.querySelector('[data-shapes]')?.textContent || '{}');
+  const moduleList = SHAPES.modules;
+  const phaseList = SHAPES.phases;
+  const moduleById = Object.fromEntries(moduleList.map((m) => [m.id, m]));
+  const KEY = 'aie:modules';
+  const PLAN_KEY = 'aie:plan';
+  const ASSESS_KEY = 'aie:assessment';
+
+  const get = (key: string): any => {
+    try { return JSON.parse(localStorage.getItem(key) || 'null'); } catch { return null; }
+  };
+  const done = (): string[] => {
+    const v = get(KEY);
+    return Array.isArray(v) ? v : [];
+  };
+  const planDone = (): number[] => {
+    const v = get(PLAN_KEY);
+    return Array.isArray(v) ? v : [];
+  };
+
+  function render() {
+    const completed = done();
+    const count = completed.filter((id) => moduleById[id]).length;
+    const pct = Math.round((count / moduleList.length) * 100);
+
+    document.querySelectorAll<HTMLElement>('[data-dash-done]').forEach((el) => { el.textContent = String(count); });
+    document.querySelectorAll<HTMLElement>('[data-dash-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); });
+    document.querySelectorAll<HTMLElement>('[data-dash-label]').forEach((el) => {
+      el.textContent = count === 0 ? 'ยังไม่ได้เริ่ม — เริ่มจาก module 01' : count === moduleList.length ? 'จบครบทั้ง 28 modules — ไปที่ projects เพื่อต่อยอด' : `${pct}% ของหลักสูตร — ทำต่อจากบทถัดไป`;
+    });
+    document.querySelectorAll<HTMLElement>('[data-stat-modules]').forEach((el) => { el.textContent = String(count); });
+    const touchedPhases = phaseList.filter((p) => completed.some((id) => moduleById[id]?.phase === p.id)).length;
+    document.querySelectorAll<HTMLElement>('[data-stat-phases]').forEach((el) => { el.textContent = String(touchedPhases); });
+    document.querySelectorAll<HTMLElement>('[data-stat-plan]').forEach((el) => { el.textContent = String(planDone().filter((w) => w >= 1 && w <= SHAPES.planTotal).length); });
+    document.querySelectorAll<HTMLElement>('[data-stat-streak]').forEach((el) => { el.textContent = count > 0 ? `${count}` : '—'; });
+
+    phaseList.forEach((phase) => {
+      const phaseModules = moduleList.filter((m) => m.phase === phase.id);
+      const phaseDone = phaseModules.filter((m) => completed.includes(m.id)).length;
+      const label = document.querySelector<HTMLElement>(`[data-phase-label="${phase.id}"]`);
+      if (label) label.textContent = `${phaseDone}/${phaseModules.length}`;
+      const bar = document.querySelector<HTMLElement>(`[data-phase-bar="${phase.id}"]`);
+      if (bar) bar.style.width = `${phaseModules.length ? (phaseDone / phaseModules.length) * 100 : 0}%`;
+    });
+
+    const next = moduleList.find((m) => !completed.includes(m.id));
+    const nextTitle = document.querySelector<HTMLElement>('[data-next-title]');
+    const nextDesc = document.querySelector<HTMLElement>('[data-next-desc]');
+    const nextLink = document.querySelector<HTMLAnchorElement>('[data-next-link]');
+    if (!next) {
+      if (nextTitle) nextTitle.textContent = 'จบหลักสูตรแล้ว — ไปทำโปรเจกต์';
+      if (nextDesc) nextDesc.textContent = 'คุณทำครบทั้ง 28 modules แล้ว ถึงเวลาสร้างหลักฐานจากงานจริง';
+      if (nextLink) { nextLink.href = '/projects'; nextLink.innerHTML = 'ดูโจทย์โปรเจกต์ <span aria-hidden="true">→</span>'; }
+    } else {
+      if (nextTitle) nextTitle.textContent = `${next.number} · ${next.title}`;
+      if (nextDesc) nextDesc.textContent = `${next.duration} · ยังไม่ได้ทำเครื่องหมาย — เปิดบทนี้เพื่อไปต่อ`;
+      if (nextLink) { nextLink.href = `/modules/${next.slug}`; nextLink.innerHTML = 'ไปยังบทถัดไป <span aria-hidden="true">→</span>'; }
+    }
+
+    const list = document.querySelector<HTMLElement>('[data-done-list]');
+    const empty = document.querySelector<HTMLElement>('[data-done-empty]');
+    const doneCount = document.querySelector<HTMLElement>('[data-done-count]');
+    const completedModules = moduleList.filter((m) => completed.includes(m.id));
+    if (doneCount) doneCount.textContent = `${completedModules.length} รายการ`;
+    if (empty) empty.hidden = completedModules.length > 0;
+    if (list) {
+      list.innerHTML = completedModules.map((m) => `
+        <a href="/modules/${m.slug}" class="done-row">
+          <span class="done-row__check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span>
+          <span class="done-row__num mono">${m.number}</span>
+          <span class="done-row__title">${m.title}</span>
+          <span class="mono tiny faint">${m.duration}</span>
+        </a>`).join('');
+    }
+
+    const assess = get(ASSESS_KEY);
+    const box = document.querySelector<HTMLElement>('[data-assessment-box]');
+    if (box && assess) {
+      box.innerHTML = `
+        <p class="dash-assess-score"><strong>${assess.score ?? 0}</strong><small>/12</small></p>
+        <p class="dash-empty-text">เริ่มที่ <strong>${assess.startSlug || 'python-for-ai'}</strong> · เป้าหมาย ${assess.goal || '—'} · ~${assess.weeks || '—'} สัปดาห์</p>
+        <a href="/start" class="link-arrow">ทำแบบประเมินใหม่ <span aria-hidden="true">→</span></a>`;
+    }
+  }
+
+  document.querySelector('[data-export]')?.addEventListener('click', () => {
+    const payload = { version: 1, exportedAt: new Date().toISOString(), modules: done(), plan: planDone(), assessment: get(ASSESS_KEY) };
+    const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+    const a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'road-to-ai-progress.json';
+    a.click();
+    URL.revokeObjectURL(a.href);
+    (window as any).AIE?.toast('Export ความคืบหน้าแล้ว');
+  });
+
+  document.querySelector<HTMLInputElement>('[data-import]')?.addEventListener('change', async (event) => {
+    const input = event.target as HTMLInputElement;
+    const file = input.files?.[0];
+    if (!file) return;
+    try {
+      const parsed = JSON.parse(await file.text());
+      if (Array.isArray(parsed.modules)) localStorage.setItem(KEY, JSON.stringify(parsed.modules));
+      if (Array.isArray(parsed.plan)) localStorage.setItem(PLAN_KEY, JSON.stringify(parsed.plan));
+      if (parsed.assessment) localStorage.setItem(ASSESS_KEY, JSON.stringify(parsed.assessment));
+      document.querySelectorAll<HTMLElement>('[data-data-status]').forEach((el) => { el.textContent = 'Import สำเร็จ ✓'; });
+      window.dispatchEvent(new CustomEvent('aie:progress'));
+      render();
+      (window as any).AIE?.toast('Import ความคืบหน้าแล้ว');
+    } catch {
+      document.querySelectorAll<HTMLElement>('[data-data-status]').forEach((el) => { el.textContent = 'ไฟล์ไม่ถูกต้อง — ต้องเป็น JSON ที่ export จากหน้านี้'; });
+    }
+    input.value = '';
+  });
+
+  document.querySelector('[data-reset]')?.addEventListener('click', () => {
+    if (!confirm('ล้างความคืบหน้าทั้งหมดในเบราว์เซอร์นี้หรือไม่? การกระทำนี้ย้อนกลับไม่ได้')) return;
+    [KEY, PLAN_KEY, ASSESS_KEY].forEach((k) => localStorage.removeItem(k));
+    window.dispatchEvent(new CustomEvent('aie:progress'));
+    render();
+    (window as any).AIE?.toast('ล้างข้อมูลทั้งหมดแล้ว');
+  });
+
+  render();
+  window.addEventListener('aie:progress', render);
+  window.addEventListener('storage', (e) => { if (e.key === KEY || e.key === PLAN_KEY) render(); });
+</script>
+
+<style>
+  .hero-actions { display: flex; gap: .6rem; flex-wrap: wrap; margin-top: 1.5rem; }
+  .dash-hero { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; align-items: center; gap: .4rem; }
+  .dash-hero > .micro { align-self: flex-start; }
+  .dash-ring { --pct: 0; width: 150px; aspect-ratio: 1; margin: .6rem 0; border-radius: 50%; display: grid; place-items: center; background: conic-gradient(var(--acid) calc(var(--pct) * 1%), var(--panel-3) 0); }
+  .dash-ring > div { width: calc(100% - 10px); aspect-ratio: 1; border-radius: 50%; background: var(--panel); display: flex; align-items: baseline; justify-content: center; }
+  .dash-ring strong { font-family: var(--font-display); font-size: 2.6rem; line-height: 2.8; letter-spacing: -.05em; }
+  .dash-ring span { font-family: var(--font-mono); font-size: .75rem; color: var(--faint); }
+
+  .dash-stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: .6rem; }
+  .dash-stat { padding: .9rem 1rem; border-radius: var(--radius); }
+  .dash-stat strong { display: block; margin-top: .35rem; font-family: var(--font-display); font-size: 1.9rem; font-weight: 500; line-height: 1; letter-spacing: -.04em; }
+  .dash-stat small { font-family: var(--font-mono); font-size: .52rem; color: var(--faint); }
+
+  .dash-grid { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(280px, .8fr); gap: 1rem; margin-top: 1rem; }
+  .dash-main, .dash-side { display: flex; flex-direction: column; gap: 1rem; }
+  .dash-block { padding: 1.1rem 1.2rem; border-radius: var(--radius); }
+  .dash-block__head { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; }
+  .dash-block h2 { margin-top: .3rem; font-size: 1.1rem; }
+  .dash-block__desc { margin-top: .5rem; color: var(--muted); font-size: .8rem; line-height: 1.65; }
+  .dash-block .btn { margin-top: .8rem; }
+
+  .phase-progress { display: flex; flex-direction: column; gap: .7rem; margin-top: 1rem; }
+  .phase-progress__row { display: grid; grid-template-columns: 10px 1fr 20px; gap: .55rem; align-items: center; }
+  .phase-dot { width: 6px; height: 6px; border-radius: 50%; background: var(--acid); }
+  .phase-dot--amber { background: var(--amber); } .phase-dot--sky { background: var(--sky); } .phase-dot--violet { background: var(--violet); } .phase-dot--coral { background: var(--coral); } .phase-dot--sand { background: var(--sand); }
+  .phase-progress__label { display: flex; justify-content: space-between; gap: .6rem; margin-bottom: .3rem; color: var(--muted); font-size: .72rem; }
+  .phase-progress__label .mono { font-size: .54rem; color: var(--faint); }
+  .phase-progress__row > a { color: var(--faint); }
+  .phase-progress__row > a:hover { color: var(--acid); }
+
+  .done-list { display: flex; flex-direction: column; margin-top: .8rem; }
+  .done-empty { display: flex; gap: .6rem; align-items: flex-start; margin-top: .8rem; padding: .8rem; border: 1px dashed var(--line-strong); border-radius: 8px; }
+  .done-empty p { color: var(--muted); font-size: .76rem; line-height: 1.6; }
+  .dash-empty-text { margin-top: .5rem; color: var(--muted); font-size: .76rem; line-height: 1.65; }
+  .dash-empty-text strong { color: var(--text); font-weight: 500; }
+  .dash-block .link-arrow { margin-top: .6rem; font-size: .68rem; }
+
+  .data-actions { display: flex; flex-direction: column; gap: .4rem; margin-top: .8rem; }
+  .data-actions .btn { justify-content: flex-start; }
+  [data-data-status] { margin-top: .6rem; display: block; }
+
+  .dash-tips { list-style: none; display: flex; flex-direction: column; gap: .45rem; margin-top: .8rem; }
+  .dash-tips li { position: relative; padding-left: .85rem; color: var(--muted); font-size: .74rem; line-height: 1.55; }
+  .dash-tips li::before { content: ''; position: absolute; left: 0; top: .55em; width: 4px; height: 4px; border-radius: 50%; background: var(--acid); }
+  .dash-assess-score { display: flex; align-items: baseline; gap: .2rem; margin-top: .6rem; font-family: var(--font-display); font-size: 2rem; line-height: 1; color: var(--acid); }
+  .dash-assess-score small { font-family: var(--font-mono); font-size: .7rem; color: var(--faint); }
+
+  @media (max-width: 900px) {
+    .dash-stats { grid-template-columns: repeat(2, 1fr); }
+    .dash-grid { grid-template-columns: 1fr; }
+  }
+</style>

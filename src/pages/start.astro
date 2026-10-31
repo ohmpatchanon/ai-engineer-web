@@ -1,0 +1,338 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { ArrowRight, Compass, RotateCcw, Check, Sparkles, Clock, Target, Route } from '@lucide/astro';
+import { paths } from '../data/paths';
+import { modules } from '../data/modules';
+
+const questions = [
+  {
+    id: 'python',
+    label: 'พื้นฐานการเขียนโปรแกรม',
+    hint: 'เลือกสิ่งที่ใกล้เคียงที่สุด ไม่ต้องประเมินตัวเองต่ำเกินไป',
+    options: [
+      { label: 'ยังไม่เคยเขียนโค้ดจริงจัง', value: 0 },
+      { label: 'เขียนได้ตาม tutorial แต่ยังต้องก๊อปบ่อย', value: 1 },
+      { label: 'เขียน Python ได้เอง รวมถึงจัดการ error และไฟล์', value: 2 },
+      { label: 'เขียนโปรแกรมจริงในงาน หรือมีโปรเจกต์ให้ดูได้', value: 3 }
+    ]
+  },
+  {
+    id: 'math',
+    label: 'คณิตศาสตร์และสถิติ',
+    hint: 'ไม่ต้องเก่ง calculus — แค่รู้ว่าตัวเองอยู่ตรงไหน',
+    options: [
+      { label: 'ลืมไปหมดแล้ว หรือไม่เคยเรียนเชิงลึก', value: 0 },
+      { label: 'จำได้บ้าง เข้าใจ notion แต่คำนวณไม่คล่อง', value: 1 },
+      { label: 'เข้าใจ linear algebra, derivative และ probability พอใช้', value: 2 },
+      { label: 'ใช้สถิติและแคลคูลัสในงานหรือการเรียนได้สบาย', value: 3 }
+    ]
+  },
+  {
+    id: 'ml',
+    label: 'ประสบการณ์ Machine Learning',
+    hint: 'นับทั้งการเรียนคอร์สและการทำงานจริง',
+    options: [
+      { label: 'ยังไม่เคยเทรนโมเดล', value: 0 },
+      { label: 'เคยทำตาม tutorial เช่น classification หรือ regression', value: 1 },
+      { label: 'เคยสร้าง pipeline และวัดผลด้วยตัวเอง', value: 2 },
+      { label: 'เคยนำโมเดลขึ้น production หรือดูแลระบบ ML', value: 3 }
+    ]
+  },
+  {
+    id: 'llm',
+    label: 'ประสบการณ์ LLM / GenAI',
+    hint: 'การเรียก API หรือใช้ ChatGPT อย่างเดียวไม่นับว่าเป็นประสบการณ์สร้างระบบ',
+    options: [
+      { label: 'แทบไม่เคยใช้ หรือใช้แค่แชท', value: 0 },
+      { label: 'เคยเรียก API และเขียน prompt บ้าง', value: 1 },
+      { label: 'เคยสร้าง RAG หรือ LLM app ที่มีคนใช้', value: 2 },
+      { label: 'เคยทำ evaluation, fine-tuning หรือ deploy ระบบ LLM จริง', value: 3 }
+    ]
+  },
+  {
+    id: 'goal',
+    label: 'เป้าหมายอาชีพที่ใกล้ที่สุด',
+    hint: 'เลือกจากสิ่งที่อยากทำจริง ไม่ใช่ตำแหน่งที่ตลาดพูดถึงมากที่สุด',
+    options: [
+      { label: 'สร้างผลิตภัณฑ์ที่ใช้ LLM เป็นแกน (RAG, agents)', value: 'llm-engineer' },
+      { label: 'ทำงานกับโมเดล ML และข้อมูลเชิงลึก', value: 'ml-engineer' },
+      { label: 'ออกแบบผลิตภัณฑ์ AI และเชื่อมธุรกิจกับผู้ใช้', value: 'ai-product-engineer' },
+      { label: 'ดูแลระบบ AI ให้เสถียร ปลอดภัย และคุมต้นทุน', value: 'mlops-engineer' }
+    ]
+  },
+  {
+    id: 'hours',
+    label: 'เวลาที่ลงทุนได้ต่อสัปดาห์',
+    hint: 'เลือกแบบที่ทำได้ต่อเนื่อง 12 สัปดาห์ ไม่ใช่แบบที่ทำได้แค่สัปดาห์แรก',
+    options: [
+      { label: '3–5 ชั่วโมง (เรียนแบบมีงานประจำ)', value: 4 },
+      { label: '6–10 ชั่วโมง (เรียนจริงจังหลังเลิกงาน)', value: 8 },
+      { label: '11–20 ชั่วโมง (เรียนเต็มเวลาแบบ part-time)', value: 15 },
+      { label: 'มากกว่า 20 ชั่วโมง (full-time)', value: 25 }
+    ]
+  }
+];
+---
+
+<BaseLayout title="เริ่มตรงนี้ — Self Assessment" description="ตอบ 6 คำถามเพื่อหาจุดเริ่มต้นและเส้นทางเรียน AI Engineer ที่เหมาะกับพื้นฐานและเป้าหมายของคุณ">
+  <header class="page-hero">
+    <div class="container page-hero__grid">
+      <div>
+        <p class="eyebrow reveal">START HERE / SELF ASSESSMENT</p>
+        <h1 class="reveal">ไม่ต้องเริ่มจาก<br />บทที่ 1<br /><span class="text-acid">ถ้าคุณไม่จำเป็น</span></h1>
+        <p class="lead reveal">ตอบ 6 คำถาม ใช้เวลา 2 นาที เพื่อดูว่าควรเริ่มที่ module ไหนและเดินเส้นทางใด — ไม่มีการส่งข้อมูลออกจากเบราว์เซอร์</p>
+      </div>
+      <div class="start-note panel reveal">
+        <Compass size={20} class="text-acid" />
+        <p class="mono micro">ทำไมต้องประเมิน</p>
+        <p>คนส่วนใหญ่เสียเวลากับบทที่ง่ายเกินไปหรือยากเกินไป การรู้จุดเริ่มต้นที่ถูกทำให้เรียนได้เร็วขึ้นและลดการล้มเลิก</p>
+        <div class="start-note__facts">
+          <span><Clock size={12} /> 2 นาที</span>
+          <span><Target size={12} /> 6 คำถาม</span>
+          <span><Route size={12} /> 1 คำแนะนำ</span>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <section class="section section--tight">
+    <div class="container container--narrow">
+      <form class="assessment" data-assessment novalidate>
+        {questions.map((q, qi) => (
+          <fieldset class="assess-q panel" data-aq={q.id}>
+            <legend class="assess-q__legend">
+              <span class="mono assess-q__num">{String(qi + 1).padStart(2, '0')}</span>
+              <span>{q.label}</span>
+            </legend>
+            <p class="assess-q__hint">{q.hint}</p>
+            <div class="assess-options">
+              {q.options.map((opt) => (
+                <label class="assess-option">
+                  <input type="radio" name={q.id} value={opt.value} />
+                  <span class="assess-option__box"></span>
+                  <span>{opt.label}</span>
+                </label>
+              ))}
+            </div>
+          </fieldset>
+        ))}
+
+        <div class="assess-actions">
+          <button type="submit" class="btn btn--primary" data-assess-submit>ดูผลลัพธ์ <ArrowRight size={14} /></button>
+          <button type="reset" class="btn btn--ghost" data-assess-reset><RotateCcw size={13} /> เริ่มใหม่</button>
+          <span class="mono tiny faint" data-assess-progress>0 / 6</span>
+        </div>
+      </form>
+
+      <section class="result panel" data-result hidden aria-live="polite">
+        <div class="result__top mono"><span>YOUR STARTING POINT</span><Sparkles size={14} /></div>
+        <div class="result__grid">
+          <div class="result__score">
+            <span class="mono micro">EXPERIENCE SCORE</span>
+            <p><span data-result-score>0</span><small>/12</small></p>
+            <div class="progress-track"><span data-result-bar></span></div>
+            <p class="mono tiny faint" data-result-level></p>
+          </div>
+          <div class="result__copy">
+            <p class="eyebrow">แนะนำให้เริ่มที่</p>
+            <h2 data-result-title>—</h2>
+            <p data-result-reason>—</p>
+          </div>
+        </div>
+
+        <div class="result__cards">
+          <a class="result__card" data-result-module href="#">
+            <span class="mono micro">STARTING MODULE</span>
+            <strong data-result-module-title>—</strong>
+            <span class="mono tiny" data-result-module-meta>—</span>
+            <ArrowRight size={15} />
+          </a>
+          <a class="result__card" data-result-path href="#">
+            <span class="mono micro">RECOMMENDED PATH</span>
+            <strong data-result-path-title>—</strong>
+            <span class="mono tiny" data-result-path-meta>—</span>
+            <ArrowRight size={15} />
+          </a>
+        </div>
+
+        <div class="result__plan">
+          <div class="result__plan-head"><p class="mono micro">YOUR PACE</p><span class="mono text-acid" data-result-weeks>—</span></div>
+          <p data-result-pace>—</p>
+          <div class="result__actions">
+            <a href="/plan" class="btn btn--primary btn--small">เปิดแผน 12 สัปดาห์ <ArrowRight size={12} /></a>
+            <a href="/roadmap" class="btn btn--ghost btn--small">ดู roadmap</a>
+            <button type="button" class="btn btn--ghost btn--small" data-result-retake><RotateCcw size={12} /> ทำใหม่</button>
+          </div>
+        </div>
+      </section>
+
+      <div class="start-help">
+        <div><Check size={14} /><p><strong>ไม่แน่ใจคำตอบ?</strong> เลือกข้อที่ต่ำกว่าไว้ก่อน ประเมินสูงเกินทำให้ข้ามพื้นฐานที่จำเป็น</p></div>
+        <div><Check size={14} /><p><strong>ผลลัพธ์ไม่ผูกมัด</strong> คุณสามารถเริ่มที่บทไหนก็ได้ และกลับมาทำแบบประเมินอีกครั้งเมื่อพื้นฐานเปลี่ยน</p></div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
+
+<script type="application/json" data-start-data is:inline set:html={JSON.stringify({ pathData: paths.map((p) => ({ slug: p.slug, title: p.title, tagline: p.tagline, weeks: p.weeks, modules: p.moduleSlugs.length, color: p.color })), moduleData: modules.map((m) => ({ slug: m.slug, id: m.id, number: m.number, title: m.title, duration: m.duration, level: m.level, tracks: m.tracks })) })}></script>
+<script>
+  interface StartPath { slug: string; title: string; tagline: string; weeks: string; modules: number; color: string }
+  interface StartModule { slug: string; id: string; number: string; title: string; duration: string; level: string; tracks: string[] }
+  const { pathData, moduleData }: { pathData: StartPath[]; moduleData: StartModule[] } = JSON.parse(document.querySelector('[data-start-data]')?.textContent || '{}');
+  const form = document.querySelector<HTMLFormElement>('[data-assessment]');
+  const result = document.querySelector<HTMLElement>('[data-result]');
+  const progress = document.querySelector('[data-assess-progress]');
+  if (form && result) {
+    const answered = () => [...form.querySelectorAll('input[type="radio"]:checked')].length;
+    form.addEventListener('change', () => {
+      if (progress) progress.textContent = `${answered()} / 6`;
+    });
+
+    form.addEventListener('submit', (event) => {
+      event.preventDefault();
+      if (answered() < 6) {
+        (window as any).AIE?.toast('ตอบให้ครบทั้ง 6 ข้อก่อนดูผลลัพธ์');
+        return;
+      }
+      const value = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value || '';
+      const python = Number(value('python'));
+      const math = Number(value('math'));
+      const ml = Number(value('ml'));
+      const llm = Number(value('llm'));
+      const goal = value('goal');
+      const hours = Number(value('hours'));
+      const score = python + math + ml + llm;
+
+      let startSlug = 'python-for-ai';
+      let reason = '';
+      if (python <= 0) {
+        startSlug = 'python-for-ai';
+        reason = 'เริ่มจาก Python ก่อน เพราะทุกบทหลังจากนี้ต้องใช้โค้ดเป็นเครื่องมือ หากข้ามไปจะเจอปัญหาที่ debug ไม่ได้';
+      } else if (math <= 0) {
+        startSlug = 'math-for-ml';
+        reason = 'เขียนโค้ดได้แล้ว แต่คณิตเป็นคอขวดถัดไป เรียนเท่าที่ใช้ใน ML แล้วกลับมาเขียนโค้ดต่อ';
+      } else if (ml <= 0) {
+        startSlug = 'ml-foundations';
+        reason = 'พื้นฐานโค้ดและคณิตพร้อมแล้ว เริ่มจาก ML foundations เพื่อสร้างกรอบคิดเรื่อง data, baseline และ evaluation';
+      } else if (llm <= 0) {
+        startSlug = 'llm-foundations';
+        reason = 'มีฐาน ML แล้ว เดินต่อที่ LLM foundations เพื่อเข้าใจ token, context, prompting และข้อจำกัดของโมเดล';
+      } else if (goal === 'llm-engineer') {
+        startSlug = 'rag-systems';
+        reason = 'พื้นฐานครบแล้ว เริ่มจาก RAG เพื่อเชื่อม LLM กับข้อมูลจริงและวัดคุณภาพได้ทันที';
+      } else if (goal === 'ml-engineer') {
+        startSlug = 'features-and-leakage';
+        reason = 'พื้นฐานครบแล้ว เริ่มจาก feature engineering และ leakage ซึ่งเป็นจุดที่โมเดลส่วนใหญ่พังในงานจริง';
+      } else if (goal === 'mlops-engineer') {
+        startSlug = 'mlops-deployment';
+        reason = 'พื้นฐานครบแล้ว เริ่มจาก deployment เพื่อเห็นวงจรจริงตั้งแต่ build ถึง monitor';
+      } else {
+        startSlug = 'ai-system-design';
+        reason = 'พื้นฐานครบแล้ว เริ่มจาก system design เพื่อฝึกเชื่อมความต้องการของผู้ใช้กับสถาปัตยกรรมที่วัดผลได้';
+      }
+
+      const path = pathData.find((p) => p.slug === goal) || pathData[0];
+      const module = moduleData.find((m) => m.slug === startSlug) || moduleData[0];
+      const remaining = Math.max(1, path.modules - moduleData.findIndex((m) => m.slug === startSlug) % Math.max(1, path.modules));
+      const weeks = Math.max(4, Math.ceil((remaining * 4.5) / Math.max(1, hours)));
+
+      const set = (sel: string, text: string) => {
+        const el = result.querySelector<HTMLElement>(sel);
+        if (el) el.textContent = text;
+      };
+      set('[data-result-score]', String(score));
+      set('[data-result-level]', score <= 3 ? 'พื้นฐานเริ่มต้น — ค่อย ๆ วางทีละชั้น' : score <= 7 ? 'พื้นฐานบางส่วน — ต่อยอดได้เร็ว' : score <= 10 ? 'พื้นฐานแข็ง — เน้นลงมือทำ' : 'พื้นฐานสูง — เน้นระบบและหลักฐาน');
+      set('[data-result-title]', score <= 3 ? 'เริ่มจากฐานรากให้แน่น' : score <= 7 ? 'ข้ามสิ่งที่รู้แล้ว ไปจุดที่ติดขัด' : 'ลงลึกที่ระบบจริง');
+      set('[data-result-reason]', reason);
+      set('[data-result-module-title]', `${module.number} · ${module.title}`);
+      set('[data-result-module-meta]', `${module.duration} · ${module.level}`);
+      set('[data-result-path-title]', path.title);
+      set('[data-result-path-meta]', `${path.weeks} · ${path.modules} modules`);
+      set('[data-result-weeks]', `~${weeks} สัปดาห์`);
+      set('[data-result-pace]', `ที่ ${hours} ชั่วโมง/สัปดาห์ คุณจะเรียนเส้นทางนี้จบในประมาณ ${weeks} สัปดาห์ หากทำสัปดาห์ละ 5 วัน เฉลี่ยวันละ ${Math.max(1, Math.round(hours / 5))} ชั่วโมง`);
+
+      const moduleLink = result.querySelector<HTMLAnchorElement>('[data-result-module]');
+      if (moduleLink) moduleLink.href = `/modules/${module.slug}`;
+      const pathLink = result.querySelector<HTMLAnchorElement>('[data-result-path]');
+      if (pathLink) pathLink.href = `/paths/${path.slug}`;
+      const bar = result.querySelector<HTMLElement>('[data-result-bar]');
+      if (bar) bar.style.width = `${Math.round((score / 12) * 100)}%`;
+
+      form.hidden = true;
+      result.hidden = false;
+      result.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      try { localStorage.setItem('aie:assessment', JSON.stringify({ score, goal, hours, startSlug, weeks })); } catch {}
+    });
+
+    form.querySelector('[data-assess-reset]')?.addEventListener('click', () => {
+      if (progress) progress.textContent = '0 / 6';
+    });
+    result.querySelector('[data-result-retake]')?.addEventListener('click', () => {
+      form.reset();
+      form.hidden = false;
+      result.hidden = true;
+      if (progress) progress.textContent = '0 / 6';
+      form.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+</script>
+
+<style>
+  .start-note { padding: 1.2rem; border-radius: var(--radius); display: flex; flex-direction: column; gap: .55rem; align-items: flex-start; }
+  .start-note > p:not(.micro) { color: var(--muted); font-size: .8rem; line-height: 1.7; }
+  .start-note__facts { display: flex; flex-wrap: wrap; gap: .8rem; padding-top: .5rem; border-top: 1px solid var(--line); width: 100%; }
+  .start-note__facts span { display: inline-flex; align-items: center; gap: .3rem; color: var(--faint); font-family: var(--font-mono); font-size: .56rem; }
+
+  .assessment { display: flex; flex-direction: column; gap: .9rem; }
+  .assess-q { padding: 1.2rem 1.25rem; border-radius: var(--radius); }
+  .assess-q__legend { display: flex; align-items: baseline; gap: .6rem; padding: 0; font-family: var(--font-display); font-size: 1.1rem; font-weight: 600; letter-spacing: -.02em; }
+  .assess-q__num { color: var(--acid); font-size: .62rem; font-weight: 400; }
+  .assess-q__hint { margin-top: .35rem; color: var(--faint); font-size: .74rem; }
+  .assess-options { display: flex; flex-direction: column; gap: .35rem; margin-top: .9rem; }
+  .assess-option { display: flex; align-items: flex-start; gap: .6rem; padding: .6rem .7rem; border: 1px solid var(--line); border-radius: 7px; color: var(--muted); font-size: .82rem; line-height: 1.5; cursor: pointer; transition: all .16s; }
+  .assess-option:hover { border-color: var(--line-strong); background: var(--panel-2); }
+  .assess-option:has(input:checked) { border-color: var(--acid); background: var(--acid-soft); color: var(--text); }
+  .assess-option input { position: absolute; opacity: 0; width: 1px; height: 1px; }
+  .assess-option__box { width: 17px; height: 17px; flex: none; border: 1px solid var(--line-strong); border-radius: 50%; margin-top: .12rem; display: grid; place-items: center; }
+  .assess-option input:checked + .assess-option__box { border-color: var(--acid); background: var(--acid); box-shadow: inset 0 0 0 3px var(--panel); }
+  .assess-option input:focus-visible + .assess-option__box { outline: 2px solid var(--acid); outline-offset: 2px; }
+
+  .assess-actions { display: flex; align-items: center; gap: .6rem; flex-wrap: wrap; padding-top: .5rem; }
+  .assess-actions > .mono { margin-left: auto; }
+
+  .result { padding: clamp(1.2rem, 3vw, 2rem); border-radius: var(--radius-lg); scroll-margin-top: calc(var(--header-h) + 24px); }
+  .result__top { display: flex; justify-content: space-between; align-items: center; padding-bottom: .9rem; border-bottom: 1px solid var(--line); color: var(--faint); font-size: .56rem; letter-spacing: .08em; }
+  .result__top svg { color: var(--acid); }
+  .result__grid { display: grid; grid-template-columns: 190px 1fr; gap: 1.5rem; align-items: center; padding: 1.4rem 0; }
+  .result__score > p { display: flex; align-items: baseline; gap: .2rem; margin-top: .35rem; font-family: var(--font-display); font-size: 3rem; line-height: 1; letter-spacing: -.05em; color: var(--acid); }
+  .result__score small { font-family: var(--font-mono); font-size: .8rem; color: var(--faint); letter-spacing: 0; }
+  .result__score .progress-track { margin-top: .7rem; }
+  .result__score > .mono { margin-top: .5rem; display: block; line-height: 1.5; }
+  .result__copy h2 { margin-top: .5rem; font-size: clamp(1.5rem, 3vw, 2rem); }
+  .result__copy > p:not(.eyebrow) { margin-top: .6rem; color: var(--muted); font-size: .86rem; line-height: 1.75; }
+
+  .result__cards { display: grid; grid-template-columns: 1fr 1fr; gap: .6rem; }
+  .result__card { display: grid; grid-template-columns: 1fr auto; gap: .15rem .6rem; padding: .9rem 1rem; border: 1px solid var(--line); border-radius: 9px; background: var(--bg-soft); text-decoration: none; transition: border-color .18s, background .18s; }
+  .result__card:hover { border-color: var(--acid); background: var(--acid-soft); }
+  .result__card .micro { grid-column: 1 / -1; color: var(--faint); }
+  .result__card strong { font-size: .88rem; font-weight: 500; line-height: 1.4; }
+  .result__card .tiny { color: var(--faint); }
+  .result__card svg { grid-row: 2 / 4; grid-column: 2; align-self: center; color: var(--faint); }
+
+  .result__plan { margin-top: 1rem; padding-top: 1rem; border-top: 1px solid var(--line); }
+  .result__plan-head { display: flex; justify-content: space-between; align-items: center; }
+  .result__plan > p { margin-top: .5rem; color: var(--muted); font-size: .82rem; line-height: 1.7; }
+  .result__actions { display: flex; flex-wrap: wrap; gap: .5rem; margin-top: 1rem; }
+
+  .start-help { display: flex; flex-direction: column; gap: .6rem; margin-top: 1.5rem; }
+  .start-help > div { display: flex; gap: .55rem; align-items: flex-start; }
+  .start-help svg { color: var(--acid); flex: none; margin-top: .25rem; }
+  .start-help p { color: var(--muted); font-size: .78rem; line-height: 1.65; }
+  .start-help strong { color: var(--text); font-weight: 500; }
+
+  @media (max-width: 620px) {
+    .result__grid { grid-template-columns: 1fr; gap: 1rem; }
+    .result__cards { grid-template-columns: 1fr; }
+    .assess-q__legend { font-size: 1rem; }
+  }
+</style>

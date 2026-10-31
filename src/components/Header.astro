@@ -1,0 +1,303 @@
+---
+import { Search, Menu, X, Sun, Moon, ArrowUpRight } from '@lucide/astro';
+import Logo from './Logo.astro';
+import { modules } from '../data/modules';
+
+const path = Astro.url.pathname;
+const nav = [
+  { href: '/roadmap', label: 'Roadmap' },
+  { href: '/modules', label: 'หลักสูตร' },
+  { href: '/theory', label: 'ทฤษฎี' },
+  { href: '/exercises', label: 'Labs' },
+  { href: '/guides', label: 'Guides' },
+  { href: '/paths', label: 'สายอาชีพ' }
+];
+const isActive = (href: string) => path === href || path.startsWith(href + '/');
+---
+<header class="site-header">
+  <div class="container header-inner">
+    <Logo />
+
+    <nav class="desktop-nav" aria-label="เมนูหลัก">
+      {nav.map((item) => (
+        <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined} class:list={['nav-link', { 'is-active': isActive(item.href) }]}>
+          {item.label}
+        </a>
+      ))}
+    </nav>
+
+    <div class="header-actions">
+      <a href="/progress" class="header-progress" aria-label="ดูความคืบหน้าของคุณ">
+        <span class="header-progress__ring" data-progress-ring aria-hidden="true">
+          <svg viewBox="0 0 24 24">
+            <circle cx="12" cy="12" r="9" class="ring-bg"></circle>
+            <circle cx="12" cy="12" r="9" class="ring-fill" data-ring></circle>
+          </svg>
+        </span>
+        <span class="header-progress__text"><span data-progress-count>0</span>/{modules.length}</span>
+      </a>
+
+      <button class="icon-btn search-trigger" type="button" aria-label="ค้นหา (Command K)" data-search-open>
+        <Search size={16} stroke-width={1.8} />
+      </button>
+
+      <button class="icon-btn theme-toggle" type="button" aria-label="เปลี่ยนธีม" data-theme-toggle>
+        <Sun size={16} stroke-width={1.8} class="theme-icon theme-icon--sun" />
+        <Moon size={16} stroke-width={1.8} class="theme-icon theme-icon--moon" />
+      </button>
+
+      <a href="/start" class="btn btn--primary btn--small header-cta">เริ่มเรียน <ArrowUpRight size={14} /></a>
+
+      <button class="icon-btn menu-toggle" type="button" aria-label="เปิดเมนู" aria-expanded="false" aria-controls="mobile-menu" data-menu-toggle>
+        <Menu size={18} class="menu-icon menu-icon--open" />
+        <X size={18} class="menu-icon menu-icon--close" />
+      </button>
+    </div>
+  </div>
+
+  <div class="mobile-menu" id="mobile-menu" data-mobile-menu hidden>
+    <div class="container">
+      <nav aria-label="เมนูมือถือ" class="mobile-nav">
+        {nav.map((item, i) => (
+          <a href={item.href} aria-current={isActive(item.href) ? 'page' : undefined}>
+            <span class="mono">0{i + 1}</span>
+            <span>{item.label}</span>
+            <ArrowUpRight size={16} />
+          </a>
+        ))}
+        <a href="/projects"><span class="mono">07</span><span>Projects</span><ArrowUpRight size={16} /></a>
+        <a href="/interview"><span class="mono">08</span><span>Interview</span><ArrowUpRight size={16} /></a>
+        <a href="/glossary"><span class="mono">09</span><span>Glossary</span><ArrowUpRight size={16} /></a>
+        <a href="/resources"><span class="mono">10</span><span>Resources</span><ArrowUpRight size={16} /></a>
+        <a href="/cheatsheets"><span class="mono">11</span><span>Cheatsheets</span><ArrowUpRight size={16} /></a>
+      </nav>
+      <a href="/start" class="btn btn--primary btn--block mobile-cta">เริ่มที่จุดเริ่มต้น <ArrowUpRight size={15} /></a>
+    </div>
+  </div>
+</header>
+
+<script>
+  const root = document.documentElement;
+  const themeBtn = document.querySelector<HTMLButtonElement>('[data-theme-toggle]');
+  const themeIcons = document.querySelectorAll<HTMLElement>('.theme-icon');
+
+  function syncThemeButton() {
+    if (!themeBtn) return;
+    const isDark = root.dataset.theme !== 'light';
+    themeBtn.setAttribute('aria-label', isDark ? 'เปลี่ยนเป็นธีมสว่าง' : 'เปลี่ยนเป็นธีมมืด');
+    themeIcons.forEach((icon) => {
+      icon.style.display = (isDark && icon.classList.contains('theme-icon--sun')) || (!isDark && icon.classList.contains('theme-icon--moon')) ? 'block' : 'none';
+    });
+  }
+
+  syncThemeButton();
+  themeBtn?.addEventListener('click', () => {
+    const next = root.dataset.theme === 'light' ? 'dark' : 'light';
+    root.dataset.theme = next;
+    try { localStorage.setItem('aie:theme', next); } catch {}
+    syncThemeButton();
+  });
+
+  const menuBtn = document.querySelector<HTMLButtonElement>('[data-menu-toggle]');
+  const menu = document.querySelector<HTMLElement>('[data-mobile-menu]');
+  const menuOpen = document.querySelector<HTMLElement>('.menu-icon--open');
+  const menuClose = document.querySelector<HTMLElement>('.menu-icon--close');
+
+  function setMenu(open: boolean) {
+    if (!menu || !menuBtn) return;
+    menu.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', String(open));
+    menuBtn.setAttribute('aria-label', open ? 'ปิดเมนู' : 'เปิดเมนู');
+    document.body.style.overflow = open ? 'hidden' : '';
+    if (menuOpen) menuOpen.style.display = open ? 'none' : 'block';
+    if (menuClose) menuClose.style.display = open ? 'block' : 'none';
+  }
+
+  setMenu(false);
+  menuBtn?.addEventListener('click', () => setMenu(!menu || menu.hidden !== false));
+  menu?.querySelectorAll('a').forEach((a) => a.addEventListener('click', () => setMenu(false)));
+
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && menu && !menu.hidden) setMenu(false);
+  });
+
+  function getDone(): string[] {
+    try {
+      const parsed = JSON.parse(localStorage.getItem('aie:modules') || '[]');
+      return Array.isArray(parsed) ? parsed : [];
+    } catch { return []; }
+  }
+
+  function updateProgress() {
+    const done = getDone().length;
+    document.querySelectorAll('[data-progress-count]').forEach((el) => { el.textContent = String(done); });
+    document.querySelectorAll('[data-ring]').forEach((ring) => {
+      const circle = ring as SVGCircleElement;
+      const r = 9;
+      const c = 2 * Math.PI * r;
+      circle.style.strokeDasharray = String(c);
+      circle.style.strokeDashoffset = String(c - (Math.min(done / 28, 1) * c));
+    });
+    document.querySelectorAll('[data-progress-pct]').forEach((el) => {
+      el.textContent = `${Math.round((done / 28) * 100)}%`;
+    });
+  }
+
+  updateProgress();
+  window.addEventListener('aie:progress', updateProgress);
+  window.addEventListener('storage', (e) => {
+    if (e.key === 'aie:modules') updateProgress();
+  });
+
+  document.querySelectorAll<HTMLElement>('[data-search-open]').forEach((btn) => {
+    btn.addEventListener('click', () => window.dispatchEvent(new CustomEvent('aie:opensearch')));
+  });
+</script>
+
+<style>
+  .site-header {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    z-index: 80;
+    border-bottom: 1px solid var(--line);
+    background: color-mix(in srgb, var(--bg) 82%, transparent);
+    backdrop-filter: blur(18px) saturate(1.2);
+    -webkit-backdrop-filter: blur(18px) saturate(1.2);
+  }
+
+  .header-inner {
+    height: var(--header-h);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1.5rem;
+  }
+
+  .desktop-nav {
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    margin-left: auto;
+  }
+
+  .nav-link {
+    position: relative;
+    padding: 0.45rem 0.65rem;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    text-decoration: none;
+    letter-spacing: 0.01em;
+    border-radius: 6px;
+    transition: color 0.18s, background 0.18s;
+  }
+
+  .nav-link:hover { color: var(--text); background: var(--panel-2); }
+  .nav-link.is-active { color: var(--text); }
+  .nav-link.is-active::after {
+    content: '';
+    position: absolute;
+    left: 0.65rem;
+    right: 0.65rem;
+    bottom: 0.12rem;
+    height: 1px;
+    background: var(--acid);
+  }
+
+  .header-actions {
+    display: flex;
+    align-items: center;
+    gap: 0.45rem;
+  }
+
+  .header-progress {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.3rem 0.55rem 0.3rem 0.35rem;
+    border: 1px solid var(--line);
+    border-radius: 999px;
+    text-decoration: none;
+    color: var(--muted);
+    transition: border-color 0.18s, color 0.18s;
+  }
+
+  .header-progress:hover { border-color: var(--line-strong); color: var(--text); }
+
+  .header-progress__ring {
+    width: 22px;
+    height: 22px;
+    display: grid;
+    place-items: center;
+  }
+
+  .header-progress__ring svg { transform: rotate(-90deg); }
+  .ring-bg { fill: none; stroke: var(--line-strong); stroke-width: 2; }
+  .ring-fill {
+    fill: none;
+    stroke: var(--acid);
+    stroke-width: 2;
+    stroke-linecap: round;
+    transition: stroke-dashoffset 0.5s ease;
+  }
+
+  .header-progress__text { font-family: var(--font-mono); font-size: 0.61rem; }
+
+  .search-trigger { border-radius: 50%; }
+  .menu-toggle { display: none; }
+  .menu-icon--close { display: none; }
+
+  .mobile-menu {
+    position: fixed;
+    top: var(--header-h);
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: var(--bg);
+    border-top: 1px solid var(--line);
+    overflow-y: auto;
+    z-index: 79;
+  }
+
+  .mobile-nav {
+    display: flex;
+    flex-direction: column;
+    padding-block: 1rem;
+  }
+
+  .mobile-nav a {
+    display: grid;
+    grid-template-columns: 2rem 1fr auto;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 1rem 0;
+    border-bottom: 1px solid var(--line);
+    text-decoration: none;
+    font-family: var(--font-display);
+    font-size: 1.35rem;
+    color: var(--text);
+  }
+
+  .mobile-nav a .mono { color: var(--faint); font-size: 0.65rem; }
+  .mobile-nav a svg { color: var(--faint); }
+  .mobile-nav a:hover { color: var(--acid); }
+  .mobile-cta { margin-block: 1.5rem 3rem; }
+
+  @media (max-width: 1080px) {
+    .header-progress { display: none; }
+  }
+
+  @media (max-width: 920px) {
+    .desktop-nav { display: none; }
+    .menu-toggle { display: inline-flex; }
+    .header-cta { display: none; }
+    .header-actions { margin-left: auto; }
+  }
+
+  @media (max-width: 480px) {
+    .search-trigger { display: none; }
+    .header-inner { gap: 0.5rem; }
+  }
+</style>

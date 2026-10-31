@@ -1,0 +1,62 @@
+---
+import { Check, Circle } from '@lucide/astro';
+interface Props { id: string; label?: string; block?: boolean; }
+const { id, label = 'ทำเครื่องหมายว่าเรียนจบ', block = false } = Astro.props;
+---
+<button type="button" class:list={['complete-btn', { 'complete-btn--block': block }]} data-complete-id={id} aria-pressed="false">
+  <span class="complete-btn__icon"><Check size={15} stroke-width={2.5} class="icon-check" /><Circle size={15} stroke-width={1.8} class="icon-circle" /></span>
+  <span data-complete-label>{label}</span>
+</button>
+
+<script>
+  const buttons = document.querySelectorAll<HTMLButtonElement>('[data-complete-id]');
+  const getDone = (): string[] => {
+    try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
+  };
+  function sync() {
+    const done = getDone();
+    buttons.forEach((btn) => {
+      const active = done.includes(btn.dataset.completeId || '');
+      btn.classList.toggle('is-done', active);
+      btn.setAttribute('aria-pressed', String(active));
+      const label = btn.querySelector<HTMLElement>('[data-complete-label]');
+      if (label) label.textContent = active ? 'เรียนจบแล้ว · กดเพื่อยกเลิก' : 'ทำเครื่องหมายว่าเรียนจบ';
+    });
+  }
+  buttons.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const api = (window as any).AIE;
+      if (!api) return;
+      const active = api.toggleModule(btn.dataset.completeId);
+      sync();
+      api.toast(active ? 'บันทึกความคืบหน้าแล้ว ✓' : 'ยกเลิกเครื่องหมายแล้ว');
+    });
+  });
+  sync();
+  window.addEventListener('aie:progress', sync);
+</script>
+
+<style>
+  .complete-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.55rem;
+    min-height: 42px;
+    padding: 0.55rem 0.9rem;
+    border: 1px solid var(--line-strong);
+    border-radius: 999px;
+    background: transparent;
+    color: var(--muted);
+    font-family: var(--font-mono);
+    font-size: 0.68rem;
+    transition: all 0.2s;
+  }
+  .complete-btn:hover { color: var(--text); border-color: var(--text); }
+  .complete-btn--block { width: 100%; justify-content: center; }
+  .complete-btn__icon { display: grid; place-items: center; }
+  .complete-btn .icon-check { display: none; }
+  .complete-btn .icon-circle { display: block; }
+  .complete-btn.is-done { background: var(--acid); color: var(--acid-ink); border-color: var(--acid); }
+  .complete-btn.is-done .icon-check { display: block; }
+  .complete-btn.is-done .icon-circle { display: none; }
+</style>
