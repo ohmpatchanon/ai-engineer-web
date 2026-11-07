@@ -53,9 +53,9 @@ export const exercises: Exercise[] = [
       },
       {
         question: 'หากต้องการตรวจว่า dict มี key "user_id" และค่าไม่เป็น None ควรเขียนอย่างไร?',
-        options: ['if "user_id" in d:', 'if d.get("user_id"):', 'if d["user_id"] is not None:', 'if d.user_id:'],
+        options: ['if "user_id" in d:', 'if d.get("user_id"):', 'if "user_id" in d and d["user_id"] is not None:', 'if d.user_id:'],
         answer: 2,
-        explanation: 'd.get() อาจได้ค่า falsy เช่น 0 หรือ "" ซึ่งอาจถูกต้อง ต้องตรวจ key และ None อย่างชัดเจน'
+        explanation: 'ต้องตรวจ key ก่อนถึงจะเข้าถึงค่า ไม่อย่างนั้น d["user_id"] จะ raise KeyError; d.get() เป็น truthy test ซึ่งจะตอบ False สำหรับค่าที่ falsy แต่ถูกต้อง เช่น 0 หรือ ""'
       },
       {
         question: 'เหตุใดจึงควรใช้ Pydantic ที่ขอบระบบ?',
@@ -129,7 +129,7 @@ export const exercises: Exercise[] = [
         question: 'ต้องการหา running total ของยอดขายตามวันที่ ควรใช้ window function ใด?',
         options: ['ROW_NUMBER()', 'SUM(sales) OVER (ORDER BY date)', 'RANK()', 'LAG(sales)'],
         answer: 1,
-        explanation: 'SUM แบบ window พร้อม ORDER BY จะสะสมยอดตามลำดับวันที่'
+        explanation: 'SUM แบบ window พร้อม ORDER BY จะสะสมยอดตามลำดับวันที่ หมายเหตุ: ค่าเริ่มต้นของ frame คือ RANGE UNBOUNDED PRECEDING … CURRENT ROW (รวมแถวที่ ORDER BY ซ้ำกันทั้งหมด) ถ้าต้องการสะสมทีละแถวให้ระบุ ROWS BETWEEN UNBOUNDED PRECEDING AND CURRENT ROW'
       }
     ]
   },

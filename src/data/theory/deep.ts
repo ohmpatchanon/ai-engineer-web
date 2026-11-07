@@ -35,7 +35,7 @@ export const deepLessons: Lesson[] = [
       {
         heading: 'activation: แหล่งของความไม่เป็นเส้นตรง',
         paragraphs: [
-          'ถ้าไม่มี activation, การซ้อนชั้นก็แค่ linear รวมซ้ำ ๆ เหมือน layerเดียว activation เพิ่มความไม่เป็นเส้นตรง: ReLU (max(0,x)) เป็นค่าเริ่มต้นยอดนิยมเพราะ gradient ไหลดีและคำนวณเร็ว, sigmoid/tanh เหมาะชั้นสุดท้ายของ regression/classification หรืองานที่อยากได้ค่าเชิงความน่าจะเป็น',
+          'ถ้าไม่มี activation, การซ้อนชั้นก็แค่ linear รวมซ้ำ ๆ เหมือน layerเดียว activation เพิ่มความไม่เป็นเส้นตรง: ReLU (max(0,x)) เป็นค่าเริ่มต้นยอดนิยมเพราะ gradient ไหลดีและคำนวณเร็ว, sigmoid/softmax สำหรับชั้นสุดท้ายของ classification เมื่อต้องการความน่าจะเป็น, ชั้นสุดท้ายของ regression ใช้ linear (ไม่มี activation), และ sigmoid/tanh ในชั้นซ่อนไม่แนะนำแล้วเพราะทำให้ gradient อิ่มตัว — ชั้นซ่อนให้ใช้ ReLU/GELU',
           'ปัญหา vanishing gradient เกิดจาก activation ประเภทอิ่มตัว (sigmoid/tanh) คูณซ้ำในชั้นลึก: gradient ยิ่งลึกยิ่งหายจนชั้นแรก ๆ "ไม่เรียนรู้" ReLU แก้ได้มาก แต่มีลูกบาปของตัวเองคือ dead ReLU (ถ้า input น้ำหนักทำให้ output ติดลบตลอด neuron จะตายถาวร) — การเริ่ม weight และ learning rate ที่พอเหมาะจึงสำคัญเท่า ๆ กับ choice ของ activation'
         ]
       },
@@ -54,7 +54,7 @@ export const deepLessons: Lesson[] = [
         heading: 'weight init, optimizer และ normalization: แก้ปัญหา "เทรนไม่ขึ้น"',
         paragraphs: [
           'การเริ่ม weight (init) มีผลต่อเนื่องมากกว่าที่คิด: ถ้า init ใหญ่เกิน/เล็กเกิน ชั้นลึกจะกระจายตัว (diverge) หรือ gradient หาย วิธีมาตรฐานคือ init แบบ Xavier/Glorot (สำหรับ sigmoid/tanh) และ Kaiming/He (สำหรับ ReLU) ที่ปรับสเกลตาม fan-in เพื่อให้ variance อยู่นิ่งข้ามชั้น',
-          'Optimizer เหนือ SGD ธรรมดา: Adam ใช้ momentum + per-parameter learning rate ทำให้เทรนเร็วและทนต่อ hyperparameter ที่ไม่สมบูรณ์ แต่ในบางงาน (ที่ต้องการผลลัพธ์แหลม/ขอบเขตการตัดสินใจชัด) SGD + momentum + lr schedule ยังเอาชนะ Adam ได้ Batch normalization (หรือ layer norm) ลด sensitivity ต่อ init/lr อย่างมากโดยปรับให้ค่าในชั้นมี scale นิ่ง — ทำไมมันช่วย: ลด internal covariate shift และยังช่วยเป็น regularization เบา ๆ'
+          'Optimizer เหนือ SGD ธรรมดา: Adam ใช้ momentum + per-parameter learning rate ทำให้เทรนเร็วและทนต่อ hyperparameter ที่ไม่สมบูรณ์ แต่ในบางงาน (ที่ต้องการผลลัพธ์แหลม/ขอบเขตการตัดสินใจชัด) SGD + momentum + lr schedule ยังเอาชนะ Adam ได้ Batch normalization (หรือ layer norm) ลด sensitivity ต่อ init/lr อย่างมากโดยปรับให้ค่าในชั้นมี scale นิ่ง — ทำไมมันช่วย: งานวิจัยภายหลังพบว่าประโยชน์หลักไม่ใช่การลด internal covariate shift แต่คือการทำให้ loss landscape เรียบขึ้น พึ่ง init/lr น้อยลง และฝึกได้ด้วย learning rate สูงขึ้น พร้อมเป็น regularization เบา ๆ'
         ]
       },
       {
@@ -176,5 +176,25 @@ export const deepLessons: Lesson[] = [
         ]
       }
     ]
+  },
+  {
+    id: 't-backprop-deep',
+    number: 'T.20',
+    slug: 'backprop-and-gradient-flow',
+    phase: 'deep-learning',
+    title: 'Backprop เข้มข้น: gradient ไหลอย่างไรบนกราฟการคำนวณ',
+    en: 'Backprop and Gradient Flow',
+    summary: 'เจาะลึกตั้งแต่ chain rule จนถึง vanishing / exploding gradient กับวิธีแก้ที่ใช้จริง (init, normalization, residual)',
+    level: 'สูง',
+    prereqLessons: ['neural-networks-inside'],
+    linkedModules: ['pytorch'],
+    teaches: ['ไล่โล่ derivative ย้อนกลับบนกราฟได้', 'รู้ว่า gradient ขนาดเล็ก/ใหญ่ผิดปกติมาจากอะไร', 'เลือกมาตรการแก้ให้ตรงต้นเหตุ'],
+    keywords: ['backprop', 'chain rule', 'vanishing gradient', 'exploding gradient', 'computational graph'],
+    updated: 'น.ย. 2026',
+    sections: [
+      { heading: 'ภาพรวม', paragraphs: ['Backprop เป็นวิธีประยุกต์ chain rule บน computational graph แต่ละ node คำนวณค่า (forward) และ derivative ของตัวเองต่อ input แล้วตัวทิศย้อนกลับส่ง gradient กลับไปหา parameter ที่มีส่วน', 'gradient = derivative ของ node ต่อ input × upstream gradient', 'ถ้า derivative บาง node ใกล้ 0 หลายครั้งติดกัน gradient ที่ไปหา layer ลึกจะจางหาย (vanishing); ถ้า derivative บาง node ใหญ่เกิน คูณกันหลายครั้ง gradient จะระเบิด (exploding)'] },
+      { heading: 'วิธีแก้ที่นิยม', bullets: ['weight init ที่สเกลตาม fan-in (Xavier/He) เพื่อให้ variance นิ่ง', 'Batch/LayerNorm เพื่อลดความเสี่ยงของการสั่น', 'residual connection ที่ลัดรอบอ้อมไปหนึ่งขั้น ทำให้ gradient วิ่งตรง', 'clip gradient เมื่อขนาดเกินขีดจำกัด'] }
+    ]
   }
 ];
+

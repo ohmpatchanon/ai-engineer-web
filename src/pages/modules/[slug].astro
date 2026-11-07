@@ -183,9 +183,9 @@ const phaseModules = modulesByPhase(module.phase);
             <a href="#resources">แหล่งเรียนต่อ</a>
           </nav>
 
-          <div class="side-progress panel">
+          <div class="side-progress panel" data-total={modules.length}>
             <div class="side-progress__top"><span class="mono micro">YOUR PROGRESS</span><span class="mono tiny text-acid" data-side-pct>0%</span></div>
-            <div class="progress-track"><span data-side-bar></span></div>
+            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax={modules.length} aria-valuenow="0" aria-label="ความคืบหน้าหลักสูตร"><span data-side-bar></span></div>
             <p class="mono tiny faint"><span data-side-done>0</span> / {modules.length} modules completed</p>
             <CompleteButton id={module.id} block />
           </div>
@@ -209,15 +209,19 @@ const phaseModules = modulesByPhase(module.phase);
 </BaseLayout>
 
 <script>
+  const TOTAL = Number(document.querySelector('.side-progress')?.getAttribute('data-total') || 0) || Number(document.body.dataset.moduleTotal) || 28;
   const getDone = (): string[] => {
     try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
   };
   function syncSide() {
     const done = getDone();
     document.querySelectorAll<HTMLElement>('[data-side-done]').forEach((el) => { el.textContent = String(done.length); });
-    const pct = Math.round((done.length / 28) * 100);
+    const pct = TOTAL ? Math.round((done.length / TOTAL) * 100) : 0;
     document.querySelectorAll<HTMLElement>('[data-side-pct]').forEach((el) => { el.textContent = pct + '%'; });
-    document.querySelectorAll<HTMLElement>('[data-side-bar]').forEach((el) => { el.style.width = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-side-bar]').forEach((el) => {
+      el.style.width = pct + '%';
+      el.closest('.progress-track')?.setAttribute('aria-valuenow', String(done.length));
+    });
   }
   syncSide();
   window.addEventListener('aie:progress', syncSide);

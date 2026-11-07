@@ -1,6 +1,8 @@
 ---
 import { ArrowUp, Search } from '@lucide/astro';
 import Logo from './Logo.astro';
+import { modules } from '../data/modules';
+import { glossary } from '../data/glossary';
 
 const year = new Date().getFullYear();
 ---
@@ -20,7 +22,7 @@ const year = new Date().getFullYear();
       <nav class="footer-col" aria-label="เมนูเรียน">
         <p class="footer-label">เรียน</p>
         <a href="/roadmap">Roadmap</a>
-        <a href="/modules">หลักสูตร 28 modules</a>
+        <a href="/modules">หลักสูตร {modules.length} modules</a>
         <a href="/theory">ทฤษฎี — ความรู้เชิงลึก</a>
         <a href="/paths">เลือกสายอาชีพ</a>
         <a href="/exercises">Interactive labs</a>
@@ -32,7 +34,7 @@ const year = new Date().getFullYear();
         <p class="footer-label">คลังความรู้</p>
         <a href="/guides">Guides & playbooks</a>
         <a href="/interview">Interview bank</a>
-        <a href="/glossary">Glossary 105 คำ</a>
+        <a href="/glossary">Glossary {glossary.length} คำ</a>
         <a href="/resources">Resources</a>
         <a href="/cheatsheets">Cheatsheets</a>
         <a href="/progress">ความคืบหน้าของฉัน</a>

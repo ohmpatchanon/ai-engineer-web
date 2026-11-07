@@ -27,7 +27,7 @@ const shapes = {
       <div class="dash-hero panel reveal">
         <Gauge size={20} class="text-acid" />
         <p class="mono micro">OVERALL COMPLETION</p>
-        <div class="dash-ring" data-dash-ring style="--pct: 0">
+        <div class="dash-ring" data-dash-ring role="progressbar" aria-valuemin="0" aria-valuemax={modules.length} aria-valuenow="0" aria-label="ความคืบหน้าภาพรวม" style="--pct: 0">
           <div><strong data-dash-done>0</strong><span>/{modules.length}</span></div>
         </div>
         <p class="mono tiny faint" data-dash-label>ยังไม่ได้เริ่ม — เริ่มจาก module 01</p>
@@ -63,7 +63,7 @@ const shapes = {
                   <span class:list={['phase-dot', `phase-dot--${phase.color}`]}></span>
                   <div class="phase-progress__main">
                     <div class="phase-progress__label"><span>{phase.number} · {phase.title}</span><span class="mono" data-phase-label={phase.id}>0/{modules.filter((m) => m.phase === phase.id).length}</span></div>
-                    <div class="progress-track"><span data-phase-bar={phase.id} style="width:0%"></span></div>
+                    <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax={modules.filter((m) => m.phase === phase.id).length} aria-valuenow="0" aria-label={`ความคืบหน้า ${phase.title}`}><span data-phase-bar={phase.id} style="width:0%"></span></div>
                   </div>
                   <a href={`/roadmap#${phase.id}`} aria-label={`ไปยัง ${phase.title}`}><ArrowUpRight size={13} /></a>
                 </div>
@@ -104,7 +104,7 @@ const shapes = {
           <div class="dash-block panel">
             <div class="dash-block__head"><div><p class="mono micro">KEEP GOING</p><h2>ทำต่อเนื่อง</h2></div><Target size={15} class="text-acid" /></div>
             <ul class="dash-tips">
-              <li>เรียนสัปดาห์ละ 2 modules ก็จบ 28 modules ใน 14 สัปดาห์</li>
+              <li>เรียนสัปดาห์ละ 2 modules ก็จบ {modules.length} modules ใน 14 สัปดาห์</li>
               <li>ทำ lab ของบทนั้นก่อนไปบทถัดไป</li>
               <li>ถ้าติดเกิน 30 นาที ให้จดคำถามแล้วไปต่อ</li>
             </ul>
@@ -115,13 +115,23 @@ const shapes = {
   </section>
 </BaseLayout>
 
-<script type="application/json" data-shapes is:inline set:html={JSON.stringify(shapes)}></script>
+<script type="application/json" data-shapes is:inline set:html={JSON.stringify(shapes).replace(/</g, '\\u003c')}></script>
 <script>
+  import { escapeHtml } from '../lib/ui';
   interface ShapeModule { id: string; slug: string; number: string; title: string; phase: string; duration: string }
   interface ShapePhase { id: string; number: string; title: string; color: string; total: number }
-  const SHAPES: { modules: ShapeModule[]; phases: ShapePhase[]; planTotal: number } = JSON.parse(document.querySelector('[data-shapes]')?.textContent || '{}');
-  const moduleList = SHAPES.modules;
-  const phaseList = SHAPES.phases;
+  interface Shapes { modules: ShapeModule[]; phases: ShapePhase[]; planTotal: number }
+  const isStr = (v: unknown): v is string => typeof v === 'string';
+  const rawShapes = (() => {
+    try { return JSON.parse(document.querySelector('[data-shapes]')?.textContent || 'null'); } catch { return null; }
+  })() as Partial<Shapes> | null;
+  const moduleList: ShapeModule[] = (Array.isArray(rawShapes?.modules) ? rawShapes.modules : []).filter(
+    (m): m is ShapeModule => !!m && isStr(m.id) && isStr(m.slug) && isStr(m.number) && isStr(m.title) && isStr(m.phase) && isStr(m.duration)
+  );
+  const phaseList: ShapePhase[] = (Array.isArray(rawShapes?.phases) ? rawShapes.phases : []).filter(
+    (p): p is ShapePhase => !!p && isStr(p.id) && isStr(p.number) && isStr(p.title) && isStr(p.color) && typeof p.total === 'number'
+  );
+  const planTotal = typeof rawShapes?.planTotal === 'number' ? rawShapes.planTotal : 0;
   const moduleById = Object.fromEntries(moduleList.map((m) => [m.id, m]));
   const KEY = 'aie:modules';
   const PLAN_KEY = 'aie:plan';
@@ -140,19 +150,19 @@ const shapes = {
   };
 
   function render() {
-    const completed = done();
+    const completed = done().filter((id: unknown): id is string => typeof id === 'string');
     const count = completed.filter((id) => moduleById[id]).length;
-    const pct = Math.round((count / moduleList.length) * 100);
+    const pct = moduleList.length ? Math.round((count / moduleList.length) * 100) : 0;
 
     document.querySelectorAll<HTMLElement>('[data-dash-done]').forEach((el) => { el.textContent = String(count); });
-    document.querySelectorAll<HTMLElement>('[data-dash-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); });
+    document.querySelectorAll<HTMLElement>('[data-dash-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); el.setAttribute('aria-valuenow', String(count)); });
     document.querySelectorAll<HTMLElement>('[data-dash-label]').forEach((el) => {
-      el.textContent = count === 0 ? 'ยังไม่ได้เริ่ม — เริ่มจาก module 01' : count === moduleList.length ? 'จบครบทั้ง 28 modules — ไปที่ projects เพื่อต่อยอด' : `${pct}% ของหลักสูตร — ทำต่อจากบทถัดไป`;
+      el.textContent = count === 0 ? 'ยังไม่ได้เริ่ม — เริ่มจาก module 01' : count === moduleList.length ? `จบครบทั้ง ${moduleList.length} modules — ไปที่ projects เพื่อต่อยอด` : `${pct}% ของหลักสูตร — ทำต่อจากบทถัดไป`;
     });
     document.querySelectorAll<HTMLElement>('[data-stat-modules]').forEach((el) => { el.textContent = String(count); });
     const touchedPhases = phaseList.filter((p) => completed.some((id) => moduleById[id]?.phase === p.id)).length;
     document.querySelectorAll<HTMLElement>('[data-stat-phases]').forEach((el) => { el.textContent = String(touchedPhases); });
-    document.querySelectorAll<HTMLElement>('[data-stat-plan]').forEach((el) => { el.textContent = String(planDone().filter((w) => w >= 1 && w <= SHAPES.planTotal).length); });
+    document.querySelectorAll<HTMLElement>('[data-stat-plan]').forEach((el) => { el.textContent = String(planDone().filter((w) => w >= 1 && w <= planTotal).length); });
     document.querySelectorAll<HTMLElement>('[data-stat-streak]').forEach((el) => { el.textContent = count > 0 ? `${count}` : '—'; });
 
     phaseList.forEach((phase) => {
@@ -161,7 +171,10 @@ const shapes = {
       const label = document.querySelector<HTMLElement>(`[data-phase-label="${phase.id}"]`);
       if (label) label.textContent = `${phaseDone}/${phaseModules.length}`;
       const bar = document.querySelector<HTMLElement>(`[data-phase-bar="${phase.id}"]`);
-      if (bar) bar.style.width = `${phaseModules.length ? (phaseDone / phaseModules.length) * 100 : 0}%`;
+      if (bar) {
+        bar.style.width = `${phaseModules.length ? (phaseDone / phaseModules.length) * 100 : 0}%`;
+        bar.closest('.progress-track')?.setAttribute('aria-valuenow', String(phaseDone));
+      }
     });
 
     const next = moduleList.find((m) => !completed.includes(m.id));
@@ -170,12 +183,12 @@ const shapes = {
     const nextLink = document.querySelector<HTMLAnchorElement>('[data-next-link]');
     if (!next) {
       if (nextTitle) nextTitle.textContent = 'จบหลักสูตรแล้ว — ไปทำโปรเจกต์';
-      if (nextDesc) nextDesc.textContent = 'คุณทำครบทั้ง 28 modules แล้ว ถึงเวลาสร้างหลักฐานจากงานจริง';
-      if (nextLink) { nextLink.href = '/projects'; nextLink.innerHTML = 'ดูโจทย์โปรเจกต์ <span aria-hidden="true">→</span>'; }
+      if (nextDesc) nextDesc.textContent = `คุณทำครบทั้ง ${moduleList.length} modules แล้ว ถึงเวลาสร้างหลักฐานจากงานจริง`;
+      if (nextLink) { nextLink.href = '/projects'; nextLink.textContent = 'ดูโจทย์โปรเจกต์ →'; }
     } else {
       if (nextTitle) nextTitle.textContent = `${next.number} · ${next.title}`;
       if (nextDesc) nextDesc.textContent = `${next.duration} · ยังไม่ได้ทำเครื่องหมาย — เปิดบทนี้เพื่อไปต่อ`;
-      if (nextLink) { nextLink.href = `/modules/${next.slug}`; nextLink.innerHTML = 'ไปยังบทถัดไป <span aria-hidden="true">→</span>'; }
+      if (nextLink) { nextLink.href = `/modules/${next.slug}`; nextLink.textContent = 'ไปยังบทถัดไป →'; }
     }
 
     const list = document.querySelector<HTMLElement>('[data-done-list]');
@@ -186,20 +199,21 @@ const shapes = {
     if (empty) empty.hidden = completedModules.length > 0;
     if (list) {
       list.innerHTML = completedModules.map((m) => `
-        <a href="/modules/${m.slug}" class="done-row">
+        <a href="/modules/${escapeHtml(m.slug)}" class="done-row">
           <span class="done-row__check"><svg viewBox="0 0 24 24" width="11" height="11" fill="none" stroke="currentColor" stroke-width="3"><path d="m5 12 5 5L20 7"/></svg></span>
-          <span class="done-row__num mono">${m.number}</span>
-          <span class="done-row__title">${m.title}</span>
-          <span class="mono tiny faint">${m.duration}</span>
+          <span class="done-row__num mono">${escapeHtml(m.number)}</span>
+          <span class="done-row__title">${escapeHtml(m.title)}</span>
+          <span class="mono tiny faint">${escapeHtml(m.duration)}</span>
         </a>`).join('');
     }
 
-    const assess = get(ASSESS_KEY);
+    const rawAssess = get(ASSESS_KEY);
+    const assess = rawAssess && typeof rawAssess === 'object' && !Array.isArray(rawAssess) ? rawAssess : null;
     const box = document.querySelector<HTMLElement>('[data-assessment-box]');
     if (box && assess) {
       box.innerHTML = `
-        <p class="dash-assess-score"><strong>${assess.score ?? 0}</strong><small>/12</small></p>
-        <p class="dash-empty-text">เริ่มที่ <strong>${assess.startSlug || 'python-for-ai'}</strong> · เป้าหมาย ${assess.goal || '—'} · ~${assess.weeks || '—'} สัปดาห์</p>
+        <p class="dash-assess-score"><strong>${escapeHtml(String(Math.round(Number(assess.score) || 0)))}</strong><small>/12</small></p>
+        <p class="dash-empty-text">เริ่มที่ <strong>${escapeHtml(typeof assess.startSlug === 'string' && /^[a-z0-9-]+$/i.test(assess.startSlug) ? assess.startSlug : 'python-for-ai')}</strong> · เป้าหมาย ${escapeHtml(typeof assess.goal === 'string' ? assess.goal : '—')} · ~${escapeHtml(String(Math.round(Number(assess.weeks) || 0) || '—'))} สัปดาห์</p>
         <a href="/start" class="link-arrow">ทำแบบประเมินใหม่ <span aria-hidden="true">→</span></a>`;
     }
   }
@@ -212,7 +226,7 @@ const shapes = {
     a.download = 'road-to-ai-progress.json';
     a.click();
     URL.revokeObjectURL(a.href);
-    (window as any).AIE?.toast('Export ความคืบหน้าแล้ว');
+    window.AIE?.toast('Export ความคืบหน้าแล้ว');
   });
 
   document.querySelector<HTMLInputElement>('[data-import]')?.addEventListener('change', async (event) => {
@@ -221,13 +235,28 @@ const shapes = {
     if (!file) return;
     try {
       const parsed = JSON.parse(await file.text());
-      if (Array.isArray(parsed.modules)) localStorage.setItem(KEY, JSON.stringify(parsed.modules));
-      if (Array.isArray(parsed.plan)) localStorage.setItem(PLAN_KEY, JSON.stringify(parsed.plan));
-      if (parsed.assessment) localStorage.setItem(ASSESS_KEY, JSON.stringify(parsed.assessment));
+      const allowedModuleIds = new Set(moduleList.map((m) => m.id));
+      if (Array.isArray(parsed?.modules)) {
+        const clean = [...new Set(parsed.modules.filter((x: unknown): x is string => typeof x === 'string' && allowedModuleIds.has(x)))];
+        localStorage.setItem(KEY, JSON.stringify(clean));
+      }
+      if (Array.isArray(parsed?.plan)) {
+        const cleanPlan = [...new Set(parsed.plan.filter((x: unknown): x is number => Number.isInteger(x) && (x as number) >= 1 && (x as number) <= planTotal))];
+        localStorage.setItem(PLAN_KEY, JSON.stringify(cleanPlan));
+      }
+      if (parsed?.assessment && typeof parsed.assessment === 'object' && !Array.isArray(parsed.assessment)) {
+        const a = parsed.assessment as Record<string, unknown>;
+        const cleanAssess: Record<string, unknown> = {};
+        if (typeof a.score === 'number' && Number.isFinite(a.score)) cleanAssess.score = a.score;
+        if (typeof a.startSlug === 'string' && moduleList.some((m) => m.slug === a.startSlug)) cleanAssess.startSlug = a.startSlug;
+        if (typeof a.goal === 'string' && a.goal.length <= 100) cleanAssess.goal = a.goal;
+        if (typeof a.weeks === 'number' && Number.isFinite(a.weeks) && a.weeks >= 0 && a.weeks <= 52) cleanAssess.weeks = a.weeks;
+        if (Object.keys(cleanAssess).length > 0) localStorage.setItem(ASSESS_KEY, JSON.stringify(cleanAssess));
+      }
       document.querySelectorAll<HTMLElement>('[data-data-status]').forEach((el) => { el.textContent = 'Import สำเร็จ ✓'; });
       window.dispatchEvent(new CustomEvent('aie:progress'));
       render();
-      (window as any).AIE?.toast('Import ความคืบหน้าแล้ว');
+      window.AIE?.toast('Import ความคืบหน้าแล้ว');
     } catch {
       document.querySelectorAll<HTMLElement>('[data-data-status]').forEach((el) => { el.textContent = 'ไฟล์ไม่ถูกต้อง — ต้องเป็น JSON ที่ export จากหน้านี้'; });
     }
@@ -239,7 +268,7 @@ const shapes = {
     [KEY, PLAN_KEY, ASSESS_KEY].forEach((k) => localStorage.removeItem(k));
     window.dispatchEvent(new CustomEvent('aie:progress'));
     render();
-    (window as any).AIE?.toast('ล้างข้อมูลทั้งหมดแล้ว');
+    window.AIE?.toast('ล้างข้อมูลทั้งหมดแล้ว');
   });
 
   render();

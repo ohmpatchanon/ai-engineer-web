@@ -32,6 +32,7 @@ export const projects: Project[] = [
       'รองรับ PDF/DOCX/HTML อย่างน้อย 2 รูปแบบ และรักษาโครงสร้างหน้า/หัวข้อ',
       'มี metadata และ filter ตามแผนก/สิทธิ์',
       'แสดง citation ที่ตรวจสอบกลับไปยังหน้าเอกสารได้',
+      'pgvector เก็บเฉพาะ dense vectors — BM25 ต้องแยก implement เป็น full-text index หรือ rank_bm25 เพื่อทำ hybrid search',
       'มี eval set 40 คำถาม ครอบคลุมคำถามที่ไม่มีคำตอบ',
       'รายงาน retrieval recall, faithfulness, latency และต้นทุนต่อคำถาม',
       'มีหน้า admin สำหรับ ingest/ลบเอกสารและดู failure cases'
@@ -97,7 +98,7 @@ export const projects: Project[] = [
     skills: ['OCR', 'vision LLM', 'Pydantic', 'queue', 'human-in-the-loop'],
     requirements: [
       'รองรับ PDF และภาพถ่ายที่เอียง/แสงไม่ดี',
-      'สกัดฟิลด์หลักพร้อม confidence และ source bounding box',
+      'สกัดฟิลด์หลักพร้อม confidence และ source bounding box (bbox ต้องมี OCR/vision grounding รองรับ ไม่ควรแต่งตำแหน่งเอง)',
       'validate ตัวเลขและผลรวม พร้อม flag เมื่อไม่ตรง',
       'มี review UI สำหรับเคสที่ confidence ต่ำ',
       'วัด field-level accuracy บน 50 เอกสาร',
@@ -198,7 +199,7 @@ export const projects: Project[] = [
       'สร้าง point-in-time features จากข้อมูลธุรกรรม',
       'เปรียบเทียบ baseline กับอย่างน้อย 2 โมเดล',
       'เลือก threshold จากต้นทุน campaign และมูลค่าลูกค้า',
-      'มี calibration และ uplift estimate เบื้องต้น',
+      'มี calibration ของโมเดล',
       'deploy API พร้อม batch scoring',
       'monitor drift และ quality ของ input'
     ],
@@ -304,7 +305,8 @@ export const projects: Project[] = [
     milestones: [
       { week: 'สัปดาห์ 1', title: 'Dataset + baseline', body: 'เก็บข้อมูลจริง สร้าง prompt template วัด baseline กับ API ก่อนลงทุนเทรน' },
       { week: 'สัปดาห์ 2', title: 'LoRA + วัดผล', body: 'รันเทรนด้วยชุด hyperparameter สั้น ๆ และเทียบ performance อย่างซื่อสัตย์' },
-      { week: 'สัปดาห์ 3', title: 'Stable + deploy', body: 'เลือก model ที่ชนะใน eval, containerize และเขียนบทวิเคราะห์ราคา/คุณภาพ' }
+      { week: 'สัปดาห์ 3', title: 'Stable + deploy', body: 'เลือก model ที่ชนะใน eval, containerize และเขียนบทวิเคราะห์ราคา/คุณภาพ' },
+      { week: 'สัปดาห์ 4', title: 'Case study + หา trade-off', body: 'เขียน case study เปรียบเทียบ fine-tune vs API พร้อมต้นทุน/คุณภาพ และเปิดให้ทีมทบทวน' }
     ],
     rubric: [
       { label: 'คุณภาพข้อมูล', detail: 'dataset มีการตรวจสอบ, ปราศจาก label leak และมี split ที่ถูกต้อง' },

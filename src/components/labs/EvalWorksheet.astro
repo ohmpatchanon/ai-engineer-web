@@ -25,7 +25,7 @@ const failureModes = ['ตอบผิดแต่ดูมั่นใจ', '�
           </div>
           <div class="lab__field">
             <label for="el-size">ขนาด eval set</label>
-            <input id="el-size" class="input" type="number" min="0" max="1000" value="40" data-el="size" />
+            <input id="el-size" class="input" type="number" min="0" max="1000" value="0" data-el="size" />
           </div>
         </div>
         <div class="lab__field">
@@ -49,11 +49,11 @@ const failureModes = ['ตอบผิดแต่ดูมั่นใจ', '�
         <div class="lab__grid lab__grid--2">
           <div class="lab__field">
             <label for="el-gate">เกณฑ์ปล่อย launch (% ผ่าน)</label>
-            <input id="el-gate" class="input" type="number" min="0" max="100" value="85" data-el="gate" />
+            <input id="el-gate" class="input" type="number" min="0" max="100" value="0" data-el="gate" />
           </div>
           <div class="lab__field">
             <label for="el-human">สัดส่วนที่คนตรวจ (%)</label>
-            <input id="el-human" class="input" type="number" min="0" max="100" value="100" data-el="human" />
+            <input id="el-human" class="input" type="number" min="0" max="100" value="0" data-el="human" />
           </div>
         </div>
         <div class="lab__field">
@@ -66,7 +66,7 @@ const failureModes = ['ตอบผิดแต่ดูมั่นใจ', '�
         <div class="lab__result">
           <p class="mono tiny faint">WORKSHEET COMPLETENESS</p>
           <p class="lab__score" data-el-score>0<small>%</small></p>
-          <div class="lab__meter"><span data-el-meter></span></div>
+          <div class="lab__meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="ความสมบูรณ์ worksheet ประเมิน"><span data-el-meter></span></div>
           <ul class="lab__checklist" data-el-checks></ul>
         </div>
         <div class="lab__actions">
@@ -118,7 +118,7 @@ const failureModes = ['ตอบผิดแต่ดูมั่นใจ', '�
       const passed = checksList.filter((c) => c.ok).length;
       const pct = Math.round((passed / checksList.length) * 100);
       if (scoreEl) scoreEl.innerHTML = `${pct}<small>%</small>`;
-      if (meter) meter.style.width = pct + '%';
+      if (meter) { meter.style.width = pct + '%'; meter.closest('.lab__meter')?.setAttribute('aria-valuenow', String(pct)); }
       if (status) status.textContent = `${pct}% complete`;
       if (checks) checks.innerHTML = checksList.map((c) => `<li class="${c.ok ? 'is-pass' : 'is-fail'}"><span class="mark">✓</span><span>${c.label}</span></li>`).join('');
       persist();
@@ -173,10 +173,10 @@ ${s.notes || '-'}
       a.href = URL.createObjectURL(blob);
       a.download = 'eval-scorecard.md';
       a.click();
-      URL.revokeObjectURL(a.href);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
     root.querySelector('[data-el-reset]')?.addEventListener('click', () => {
-      fields.forEach((f) => { if (f.type === 'number') f.value = f.dataset.el === 'size' ? '40' : f.dataset.el === 'gate' ? '85' : '100'; else f.value = ''; });
+      fields.forEach((f) => { if (f.type === 'number') f.value = '0'; else f.value = ''; });
       groups.forEach((g) => g.querySelectorAll<HTMLInputElement>('input').forEach((i) => { i.checked = false; }));
       if (output) { output.hidden = true; output.textContent = ''; }
       try { localStorage.removeItem(KEY); } catch {}

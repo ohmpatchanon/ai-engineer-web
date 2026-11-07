@@ -58,6 +58,12 @@ export const coreModules: Module[] = [
         options: ['train error สูงและ validation error สูง', 'train error ต่ำแต่ validation error สูง', 'ทั้งสองต่ำเท่ากัน', 'โมเดลเทรนช้า'],
         answer: 1,
         explanation: 'Overfitting คือโมเดลจำข้อมูล train ได้ดี แต่ไม่ generalize ไปยังข้อมูลใหม่ จึงเห็นช่องว่างระหว่าง error สองชุด'
+      },
+      {
+        question: 'Bias–variance trade-off บอกอะไร?',
+        options: ['โมเดลซับซ้อนยิ่งดีเสมอ', 'โมเดลง่าย bias สูงแต่ variance ต่ำ โมเดลซับซ้อน bias ต่ำแต่ variance สูง', 'ต้องใช้ deep learning เท่านั้น', 'regularization ไม่จำเป็น'],
+        answer: 1,
+        explanation: 'การเลือกโมเดลคือจุดสมดุลระหว่าง bias (อคติจากการ oversimplify) และ variance (ไวต่อข้อมูล train)'
       }
     ]
   },
@@ -118,6 +124,12 @@ export const coreModules: Module[] = [
         options: ['พิสูจน์สาเหตุของโรค', 'ลดมิติเพื่อ visualization/compression', 'เพิ่ม label', 'แทนที่ test set'],
         answer: 1,
         explanation: 'PCA สร้างองค์ประกอบที่อธิบายความแปรปรวนได้มากที่สุด เหมาะกับการลดมิติ แต่ไม่ให้ความหมายเชิงสาเหตุ'
+      },
+      {
+        question: 'สิ่งที่ต้องระวังเมื่อ fit scaler ใน pipeline คืออะไร?',
+        options: ['ต้อง fit บน train เท่านั้น ไม่ใช่ข้อมูลทั้งชุด', 'fit หลัง predict', 'ไม่ต้องทำ scaler', 'fit บน test เท่านั้น'],
+        answer: 0,
+        explanation: 'การ fit scaler บนข้อมูลทั้งชุดทำให้ค่า test รั่วและการประเมินสูงเกินจริง ต้อง fit เฉพาะ train fold'
       }
     ]
   },
@@ -178,6 +190,12 @@ export const coreModules: Module[] = [
         options: ['class balance เท่ากัน', 'positive class หายากมาก', 'ข้อมูลเป็น time series', 'ไม่มี label'],
         answer: 1,
         explanation: 'เมื่อ positive class หายาก ROC-AUC อาจดูดีแม้โมเดลจับ positive ได้ไม่ดี PR-AUC จึงสะท้อนประสิทธิภาพได้ตรงกว่า'
+      },
+      {
+        question: 'โมเดล ranking เก่งแต่ probability ไม่น่าเชื่อถือ หมายถึงอะไร?',
+        options: ['calibration ไม่ดี despite ranking ดี', 'โมเดลไม่เคยรัน', 'ต้องเพิ่มข้อมูลเท่านั้น', 'ไม่เกี่ยวกับ metric'],
+        answer: 0,
+        explanation: 'โมเดลอาจแยกลำดับได้ดี (ranking/AUC ดี) แต่ probability ที่ให้ไม่ตรงกับโอกาสจริง วิธีดูคือ calibration curve และ Brier score'
       }
     ]
   },
@@ -238,6 +256,12 @@ export const coreModules: Module[] = [
         options: ['ใช้ยอดขายเดือนหน้าทำนายเดือนนี้', 'ใช้สีเป็น feature', 'แบ่งข้อมูลไม่เท่ากัน', 'ลบ outlier'],
         answer: 0,
         explanation: 'การใช้ข้อมูลจากอนาคตในขณะที่ ณ เวลาทำนายยังไม่รู้ค่า คือการรั่วของเวลาและทำให้ผลประเมินไม่น่าเชื่อถือ'
+      },
+      {
+        question: 'Point-in-time feature หมายถึงอะไร?',
+        options: ['feature ที่ใช้ข้อมูลอนาคต', 'feature ที่สร้าง ณ เวลาที่ต้องทำนายเท่าที่รู้จริงตอนนั้น', 'feature ที่ไม่ต้องมี', 'feature จาก test set'],
+        answer: 1,
+        explanation: 'ต้องสร้าง feature ด้วยข้อมูลที่มีอยู่จริง ณ จุดทำนาย เพื่อให้ train และ inference สอดคล้องกัน'
       }
     ]
   }

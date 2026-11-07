@@ -5,6 +5,7 @@ import { exercises } from '../data/exercises';
 import { projects } from '../data/projects';
 import { paths } from '../data/paths';
 import { glossary } from '../data/glossary';
+import { interviewQuestions } from '../data/interview';
 
 export const GET = () => {
   const items = [
@@ -67,8 +68,8 @@ export const GET = () => {
     { title: 'Roadmap', subtitle: '26 สัปดาห์', url: '/roadmap', type: 'Page', description: 'เส้นทางเรียน 6 phase พร้อมบันทึกความคืบหน้า', keywords: 'roadmap curriculum' },
     { title: 'เริ่มตรงนี้', subtitle: 'Self assessment', url: '/start', type: 'Page', description: 'ตอบคำถาม 6 ข้อเพื่อหาจุดเริ่มต้นและเส้นทางที่เหมาะกับคุณ', keywords: 'start beginner assessment' },
     { title: 'Projects', subtitle: 'Portfolio briefs', url: '/projects', type: 'Page', description: 'โจทย์โปรเจกต์พร้อม milestone และ rubric สำหรับ portfolio', keywords: 'project portfolio' },
-    { title: 'Interview Bank', subtitle: '64 questions', url: '/interview', type: 'Page', description: 'คำถามสัมภาษณ์ AI Engineer พร้อมแนวทางตอบ', keywords: 'interview job career' },
-    { title: 'Glossary', subtitle: '105 terms', url: '/glossary', type: 'Page', description: 'อภิธานศัพท์ AI ภาษาไทย–อังกฤษ', keywords: 'glossary dictionary' },
+    { title: 'Interview Bank', subtitle: `${interviewQuestions.length} questions`, url: '/interview', type: 'Page', description: 'คำถามสัมภาษณ์ AI Engineer พร้อมแนวทางตอบ', keywords: 'interview job career' },
+    { title: 'Glossary', subtitle: `${glossary.length} terms`, url: '/glossary', type: 'Page', description: 'อภิธานศัพท์ AI ภาษาไทย–อังกฤษ', keywords: 'glossary dictionary' },
     { title: 'Resources', subtitle: 'คอร์สและเครื่องมือ', url: '/resources', type: 'Page', description: 'แหล่งเรียนที่คัดสรรสำหรับ AI Engineer', keywords: 'resources courses books' },
     { title: 'Study Plan', subtitle: '12 สัปดาห์', url: '/plan', type: 'Page', description: 'แผนเรียน 12 สัปดาห์แบบทำไปด้วยทำงานไปด้วย', keywords: 'plan schedule study' },
     { title: 'Cheatsheets', subtitle: 'Quick reference', url: '/cheatsheets', type: 'Page', description: 'สรุป metric, prompt, RAG และ system design สำหรับทบทวนเร็ว', keywords: 'cheatsheet reference' }

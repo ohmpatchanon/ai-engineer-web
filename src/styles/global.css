@@ -17,7 +17,7 @@
   --panel-3: #18231a;
   --text: #f1f4e9;
   --muted: #a1ada2;
-  --faint: #748076;
+  --faint: #8d9a8e;
   --line: rgba(229, 244, 216, 0.12);
   --line-strong: rgba(229, 244, 216, 0.22);
   --acid: #d3fa7c;
@@ -55,7 +55,7 @@ html[data-theme='light'] {
   --panel-3: #eeede4;
   --text: #141812;
   --muted: #59645a;
-  --faint: #7c857d;
+  --faint: #5c665e;
   --line: rgba(20, 24, 18, 0.13);
   --line-strong: rgba(20, 24, 18, 0.24);
   --acid: #c9f276;
@@ -690,6 +690,18 @@ html[data-theme='light'] .btn--primary:hover { --btn-bg: #dcffa0; }
   outline: none;
   border-color: var(--acid);
   background: var(--panel);
+  box-shadow: 0 0 0 3px var(--acid-soft);
+}
+
+.field input:focus-visible,
+.field textarea:focus-visible,
+.field select:focus-visible,
+.input:focus-visible,
+.textarea:focus-visible,
+.select:focus-visible {
+  outline: none;
+  border-color: var(--acid);
+  box-shadow: 0 0 0 3px var(--acid-soft);
 }
 
 .field input::placeholder,

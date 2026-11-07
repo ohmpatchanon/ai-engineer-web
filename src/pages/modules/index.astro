@@ -8,11 +8,11 @@ import ModuleCard from '../../components/ModuleCard.astro';
 
 const levels = ['เริ่มต้น', 'กลาง', 'สูง'];
 ---
-<BaseLayout title="หลักสูตร 28 Modules" description="หลักสูตร AI Engineer แบบครบวงจร 28 modules ตั้งแต่ Python และคณิตศาสตร์ ไปจนถึง LLM, RAG, agents, MLOps และ responsible AI">
+<BaseLayout title={`หลักสูตร ${modules.length} Modules`} description={`หลักสูตร AI Engineer แบบครบวงจร ${modules.length} modules ตั้งแต่ Python และคณิตศาสตร์ ไปจนถึง LLM, RAG, agents, MLOps และ responsible AI`}>
   <header class="page-hero">
     <div class="container page-hero__grid">
       <div>
-        <p class="eyebrow reveal">CURRICULUM / 28 MODULES</p>
+        <p class="eyebrow reveal">CURRICULUM / {modules.length} MODULES</p>
         <h1 class="reveal">ทุกอย่างที่ต้องรู้<br />เรียงให้แล้ว</h1>
         <p class="lead reveal">ไม่ใช่รายการหัวข้อกระจัดกระจาย แต่เป็นหลักสูตรที่แต่ละบทต่อยอดจากบทก่อนหน้า ตั้งแต่ฐานรากจนถึงระบบที่ deploy ได้จริง</p>
         <div class="hero-actions reveal">
@@ -42,13 +42,13 @@ const levels = ['เริ่มต้น', 'กลาง', 'สูง'];
           <input type="search" placeholder="ค้นหา module, เครื่องมือ, แนวคิด..." aria-label="ค้นหา module" data-module-search />
         </div>
         <div class="filter-group" role="group" aria-label="กรองตามสาย">
-          <button class="chip is-active" data-track="all">ทั้งหมด</button>
-          {tracks.map((track) => <button class="chip" data-track={track.id}>{track.short}</button>)}
+          <button class="chip is-active" data-track="all" aria-pressed="true">ทั้งหมด</button>
+          {tracks.map((track) => <button class="chip" data-track={track.id} aria-pressed="false">{track.short}</button>)}
         </div>
         <div class="filter-group filter-group--levels" role="group" aria-label="กรองตามระดับ">
           <SlidersHorizontal size={13} class="filter-icon" />
-          <button class="chip is-active" data-level="all">ทุกระดับ</button>
-          {levels.map((level) => <button class="chip" data-level={level}>{level}</button>)}
+          <button class="chip is-active" data-level="all" aria-pressed="true">ทุกระดับ</button>
+          {levels.map((level) => <button class="chip" data-level={level} aria-pressed="false">{level}</button>)}
         </div>
       </div>
 
@@ -102,13 +102,13 @@ const levels = ['เริ่มต้น', 'กลาง', 'สูง'];
 
   trackBtns.forEach((btn) => btn.addEventListener('click', () => {
     track = btn.dataset.track || 'all';
-    trackBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    trackBtns.forEach((b) => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
     apply();
   }));
 
   levelBtns.forEach((btn) => btn.addEventListener('click', () => {
     level = btn.dataset.level || 'all';
-    levelBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    levelBtns.forEach((b) => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
     apply();
   }));
 
@@ -117,8 +117,8 @@ const levels = ['เริ่มต้น', 'กลาง', 'สูง'];
   document.querySelector('[data-clear-filter]')?.addEventListener('click', () => {
     if (search) search.value = '';
     track = 'all'; level = 'all';
-    trackBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.track === 'all'));
-    levelBtns.forEach((b) => b.classList.toggle('is-active', b.dataset.level === 'all'));
+    trackBtns.forEach((b) => { const active = b.dataset.track === 'all'; b.classList.toggle('is-active', active); b.setAttribute('aria-pressed', String(active)); });
+    levelBtns.forEach((b) => { const active = b.dataset.level === 'all'; b.classList.toggle('is-active', active); b.setAttribute('aria-pressed', String(active)); });
     apply();
   });
 </script>

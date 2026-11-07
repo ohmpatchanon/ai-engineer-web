@@ -38,7 +38,7 @@ export const glossary: GlossaryTerm[] = [
   { term: 'Calibration', th: 'ความสอดคล้องของความน่าจะเป็น', category: 'Machine Learning', definition: 'ระดับที่ probability ที่โมเดลให้สอดคล้องกับความถี่จริงของเหตุการณ์' },
   { term: 'Data Leakage', th: 'การรั่วของข้อมูล', category: 'Machine Learning', definition: 'การที่ข้อมูลอนาคตหรือ target ปนเข้า training ทำให้ผลประเมินดีเกินจริง' },
   { term: 'Data Drift', th: 'การเลื่อนของข้อมูล', category: 'Machine Learning', definition: 'การเปลี่ยนแปลงของ distribution ข้อมูล input เมื่อเทียบกับตอนเทรน' },
-  { term: 'Concept Drift', th: 'การเปลี่ยนความสัมพันธ์', category: 'MLOps', definition: 'ความสัมพันธ์ระหว่าง input กับ target เปลี่ยนไป ทำให้โมเดลเดิมทำนายผิดขึ้น' },
+  { term: 'Concept Drift', th: 'การเปลี่ยนความสัมพันธ์', category: 'Machine Learning', definition: 'ความสัมพันธ์ระหว่าง input กับ target เปลี่ยนไป ทำให้โมเดลเดิมทำนายผิดขึ้น (ดู Data Drift เรื่องการเลื่อนของ distribution ข้อมูล)' },
   { term: 'Imbalanced Data', th: 'ข้อมูลไม่สมดุล', category: 'Machine Learning', definition: 'สถานการณ์ที่จำนวนตัวอย่างแต่ละ class ต่างกันมาก' },
   { term: 'Feature Engineering', th: 'วิศวกรรมคุณลักษณะ', category: 'Machine Learning', definition: 'การสร้างหรือแปลง feature เพื่อให้โมเดลเรียนรู้ได้ง่ายขึ้น' },
   { term: 'One-hot Encoding', th: 'การเข้ารหัสแบบone-hot', category: 'Machine Learning', definition: 'การแทน categorical variable เป็นเวกเตอร์ที่มี 1 ในตำแหน่งของหมวดนั้น' },
@@ -71,7 +71,7 @@ export const glossary: GlossaryTerm[] = [
   { term: 'Hallucination', th: 'การสร้างข้อมูลผิด', category: 'LLM', definition: 'การที่โมเดลสร้างข้อความที่ดูน่าเชื่อถือแต่ไม่จริงหรือไม่มีหลักฐาน' },
   { term: 'Grounding', th: 'การยึดโยงหลักฐาน', category: 'LLM', definition: 'การทำให้คำตอบอ้างอิงข้อมูลภายนอกที่ตรวจสอบได้ เช่น เอกสารหรือฐานข้อมูล' },
   { term: 'RLHF', th: 'การเรียนรู้จาก feedback มนุษย์', category: 'LLM', definition: 'การปรับโมเดลด้วย reward model ที่เรียนรู้จาก preference ของมนุษย์' },
-  { term: 'DPO', th: 'การปรับpreferenceโดยตรง', category: 'LLM', definition: 'วิธี alignment ที่ใช้คู่คำตอบ preferred/rejected โดยไม่ต้องเทรน reward model แยก' },
+  { term: 'DPO', th: 'การปรับ preference โดยตรง', category: 'LLM', definition: 'วิธี alignment ที่ใช้คู่คำตอบ preferred/rejected โดยไม่ต้องเทรน reward model แยก' },
   { term: 'SFT', th: 'การ fine-tune แบบมีผู้สอน', category: 'LLM', definition: 'การ fine-tune โมเดลด้วยตัวอย่างคำสั่งและคำตอบที่ต้องการ' },
   { term: 'LoRA', th: 'โลรา', category: 'LLM', definition: 'เทคนิค fine-tuning ที่เพิ่ม low-rank adapter ขนาดเล็กแทนการอัปเดตพารามิเตอร์ทั้งหมด' },
   { term: 'QLoRA', th: 'คิวโลรา', category: 'LLM', definition: 'LoRA บนโมเดลฐานที่ quantize แล้วเพื่อลดหน่วยความจำในการ fine-tune' },
@@ -114,5 +114,3 @@ export const glossary: GlossaryTerm[] = [
   { term: 'Model Card', th: 'บัตรข้อมูลโมเดล', category: 'Security & Product', definition: 'เอกสารสรุปวัตถุประสงค์ ข้อมูล ประสิทธิภาพ ข้อจำกัด และความเสี่ยงของโมเดล' },
   { term: 'Guardrail Metric', th: 'ตัวชี้วัดป้องกันผลข้างเคียง', category: 'Security & Product', definition: 'metric ที่ต้องไม่แย่ลงแม้ metric หลักจะดีขึ้น เช่น ความปลอดภัยหรือความพึงพอใจ' }
 ];
-
-export const glossaryCount = glossary.length;

@@ -23,7 +23,7 @@ const featuredGuides = ['start-ai-engineering', 'rag-production-checklist', 'por
 const featuredProjects = projects.slice(0, 3);
 const totalQuizQuestions = modules.reduce((sum, m) => sum + m.quiz.length, 0) + interviewQuestions.length;
 ---
-<BaseLayout title="Road to AI Engineer" description="Field manual ภาษาไทยสำหรับสร้างระบบ AI ตั้งแต่ Python, ML, LLM ไปจนถึง RAG, agents และ production — 28 modules, 6 phases, labs และโจทย์ portfolio จริง">
+<BaseLayout title="Road to AI Engineer" description={`Field manual ภาษาไทยสำหรับสร้างระบบ AI ตั้งแต่ Python, ML, LLM ไปจนถึง RAG, agents และ production — ${modules.length} modules, 6 phases, labs และโจทย์ portfolio จริง`}>
   <section class="hero">
     <div class="hero__orbit" aria-hidden="true">
       <svg viewBox="0 0 800 800" fill="none">
@@ -77,7 +77,7 @@ const totalQuizQuestions = modules.reduce((sum, m) => sum + m.quiz.length, 0) + 
         </div>
 
         <div class="mission__orbit">
-          <div class="mission__ring" data-hero-ring style="--pct: 0">
+          <div class="mission__ring" data-hero-ring role="progressbar" aria-valuemin="0" aria-valuemax={modules.length} aria-valuenow="0" aria-label="ความคืบหน้าหลักสูตร" style="--pct: 0">
             <div class="mission__ring-inner">
               <span class="mission__big mono"><span data-hero-done>0</span><small>/{modules.length}</small></span>
               <span class="mono micro">MODULES</span>
@@ -425,7 +425,7 @@ const totalQuizQuestions = modules.reduce((sum, m) => sum + m.quiz.length, 0) + 
           <a href="/roadmap" class="btn btn--ghost">เปิด Roadmap <ArrowUpRight size={14} /></a>
         </div>
         <div class="final-cta__meta mono">
-          <span>28 MODULES</span><span>·</span><span>10 LABS</span><span>·</span><span>POSITIVE-SUM LEARNING</span>
+          <span>{modules.length} MODULES</span><span>·</span><span>{exercises.length} LABS</span><span>·</span><span>POSITIVE-SUM LEARNING</span>
         </div>
       </div>
     </div>
@@ -437,10 +437,12 @@ const totalQuizQuestions = modules.reduce((sum, m) => sum + m.quiz.length, 0) + 
     try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
   };
   function syncHero() {
+    const total = Number(document.querySelector('[data-hero-ring]')?.getAttribute('aria-valuemax') || 0) || Number(document.body.dataset.moduleTotal) || 28;
     const done = getDone().length;
     document.querySelectorAll<HTMLElement>('[data-hero-done]').forEach((el) => { el.textContent = String(done); });
     document.querySelectorAll<HTMLElement>('[data-hero-ring]').forEach((el) => {
-      el.style.setProperty('--pct', String(Math.min(100, (done / 28) * 100)));
+      el.style.setProperty('--pct', String(total ? Math.min(100, (done / total) * 100) : 0));
+      el.setAttribute('aria-valuenow', String(done));
     });
   }
   syncHero();

@@ -25,9 +25,9 @@ const { id, label = 'ทำเครื่องหมายว่าเรี�
   }
   buttons.forEach((btn) => {
     btn.addEventListener('click', () => {
-      const api = (window as any).AIE;
+      const api = window.AIE;
       if (!api) return;
-      const active = api.toggleModule(btn.dataset.completeId);
+      const active = api.toggleModule(btn.dataset.completeId || "");
       sync();
       api.toast(active ? 'บันทึกความคืบหน้าแล้ว ✓' : 'ยกเลิกเครื่องหมายแล้ว');
     });

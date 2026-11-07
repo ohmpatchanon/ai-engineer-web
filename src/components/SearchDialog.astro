@@ -1,5 +1,6 @@
 ---
 import { Search, X, CornerDownLeft, Command } from '@lucide/astro';
+import { modules } from '../data/modules';
 ---
 <dialog class="search-dialog" data-search-dialog aria-label="ค้นหาเว็บไซต์">
   <div class="search-box">
@@ -23,7 +24,7 @@ import { Search, X, CornerDownLeft, Command } from '@lucide/astro';
         <div class="quick-grid">
           <a href="/start"><span>เริ่มตรงนี้</span><small>Self assessment</small></a>
           <a href="/roadmap"><span>Roadmap</span><small>6 phases · 26 สัปดาห์</small></a>
-          <a href="/modules"><span>หลักสูตร</span><small>28 modules</small></a>
+          <a href="/modules"><span>หลักสูตร</span><small>{modules.length} modules</small></a>
           <a href="/theory"><span>ทฤษฎี</span><small>ความเข้าใจเชิงลึก</small></a>
           <a href="/exercises"><span>Interactive Labs</span><small>10 แบบฝึกหัด</small></a>
           <a href="/projects"><span>Projects</span><small>Portfolio briefs</small></a>

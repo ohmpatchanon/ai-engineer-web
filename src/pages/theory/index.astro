@@ -35,7 +35,7 @@ const byPhase = phases.map((phase) => ({
           <div><strong>~{totalMinutes}</strong><span>นาที</span></div>
           <div><strong>{phases.filter((p) => lessons.some((l) => l.phase === p.id)).length}</strong><span>phase</span></div>
         </div>
-        <p>เนื้อหาความรู้ทั้งหมด {Math.round(totalWords / 20) / 100}K+ คำ ทุกบทระบุ prereq และโยงถึง module ที่ต้องลงมือทำ</p>
+        <p>เนื้อหาความรู้ทั้งหมด {Math.round(totalWords / 100) / 10}K+ คำ ทุกบทระบุ prereq และโยงถึง module ที่ต้องลงมือทำ</p>
       </div>
     </div>
   </header>

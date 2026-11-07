@@ -50,7 +50,7 @@ const guardOptions = ['ยืนยันก่อนทำลายข้อม
         <div class="lab__grid lab__grid--2">
           <div class="lab__field">
             <label for="al-steps">Max steps</label>
-            <input id="al-steps" class="input" type="number" min="1" max="30" value="6" data-al="steps" />
+            <input id="al-steps" class="input" type="number" min="1" max="12" value="6" data-al="steps" />
           </div>
           <div class="lab__field">
             <label for="al-success">เกณฑ์สำเร็จ</label>
@@ -63,7 +63,7 @@ const guardOptions = ['ยืนยันก่อนทำลายข้อม
         <div class="lab__result">
           <p class="mono tiny faint">BLUEPRINT READINESS</p>
           <p class="lab__score" data-al-score>0<small>%</small></p>
-          <div class="lab__meter"><span data-al-meter></span></div>
+          <div class="lab__meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="ความพร้อม blueprint agent"><span data-al-meter></span></div>
           <ul class="lab__checklist" data-al-checks></ul>
           <div class="lab__warning" data-al-warn hidden><span>!</span><p data-al-warn-text></p></div>
         </div>
@@ -116,13 +116,13 @@ const guardOptions = ['ยืนยันก่อนทำลายข้อม
       const passed = list.filter((l) => l.ok).length;
       const pct = Math.round((passed / list.length) * 100);
       if (scoreEl) scoreEl.innerHTML = `${pct}<small>%</small>`;
-      if (meter) meter.style.width = pct + '%';
+      if (meter) { meter.style.width = pct + '%'; meter.closest('.lab__meter')?.setAttribute('aria-valuenow', String(pct)); }
       if (status) status.textContent = patternLabel(pattern);
       if (checks) checks.innerHTML = list.map((l) => `<li class="${l.ok ? 'is-pass' : 'is-fail'}"><span class="mark">✓</span><span>${l.label}</span></li>`).join('');
 
       const issues: string[] = [];
-      if ((pattern === 'agent' || pattern === 'multi') && steps > 10) issues.push('Agent loop ที่ยาวเกิน 10 steps มักวนซ้ำและเปลืองต้นทุน ลองลดหรือเพิ่มการตัดสินใจที่ชัดเจน');
-      if ((pattern === 'agent' || pattern === 'multi') && !guards.includes('human approval') && tools.some((t) => t.includes('เขียน') || t.includes('ส่ง') || t.includes('ลบ'))) issues.push('มี tool ที่เขียนข้อมูลแต่ไม่มี human approval — ควรเพิ่มจุดยืนยัน');
+      if ((pattern === 'agent' || pattern === 'multi') && steps > 12) issues.push('Agent loop ที่ยาวเกิน 12 steps มักวนซ้ำและเปลืองต้นทุน ลองลดหรือเพิ่มการตัดสินใจที่ชัดเจน');
+      if ((pattern === 'agent' || pattern === 'multi') && !guards.includes('human approval') && tools.some((t) => t.includes('เขียน') || t.includes('ส่ง'))) issues.push('มี tool ที่เขียนข้อมูลแต่ไม่มี human approval — ควรเพิ่มจุดยืนยัน');
       if (pattern === 'multi' && tools.length < 2) issues.push('Multi-agent มักไม่คุ้มถ้าไม่มี tool หลายอย่าง ลองเริ่มจาก single agent ก่อน');
       if (pattern === 'single' && tools.length > 2) issues.push('งานดูซับซ้อนกว่าจะจบใน single call — พิจารณา chain หรือ router');
       if (warn && warnText) { warn.hidden = issues.length === 0; warnText.textContent = issues.join(' · '); }
@@ -177,7 +177,7 @@ ${v.success || '_ยังไม่ระบุ_'}
       a.href = URL.createObjectURL(blob);
       a.download = 'agent-blueprint.md';
       a.click();
-      URL.revokeObjectURL(a.href);
+      setTimeout(() => URL.revokeObjectURL(a.href), 1000);
     });
     root.querySelector('[data-al-reset]')?.addEventListener('click', () => {
       fields.forEach((f) => { if (f.type === 'number') f.value = '6'; else f.value = ''; });

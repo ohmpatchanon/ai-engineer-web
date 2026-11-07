@@ -58,6 +58,18 @@ export const llmModules: Module[] = [
         options: ['ปรับสไตล์การพูด', 'ตอบคำถามจากเอกสารที่เปลี่ยนบ่อย', 'สอนรูปแบบ JSON ใหม่', 'ลดขนาดโมเดล'],
         answer: 1,
         explanation: 'RAG เหมาะเมื่อความรู้เปลี่ยนบ่อยและต้องอ้างอิงแหล่งข้อมูล เพราะอัปเดต index ได้โดยไม่ต้องเทรนโมเดลใหม่'
+      },
+      {
+        question: 'SFT ต่างจาก pretraining อย่างไร?',
+        options: ['SFT เทรนจาก scratch', 'pretraining แบบ next-token บนข้อมูลดิบ ส่วน SFT สอนตาม instruction-response คู่', 'SFT ไม่ใช้ gradient', 'pretraining ใช้ข้อมูลน้อยกว่า'],
+        answer: 1,
+        explanation: 'Pretraining เรียนรู้ภาษาและความรู้จากคลังข้อมูลขนาดใหญ่ ส่วน SFT ปรับพฤติกรรมให้ทำตามคำสั่งและรูปแบบที่ต้องการ'
+      },
+      {
+        question: 'DPO ต่างจาก RLHF แบบคลาสสิกอย่างไร?',
+        options: ['DPO ไม่ต้องเทรน', 'DPO ปรับโดยตรงจากคู่ preference ที่ชอบ/ไม่ชอบโดยไม่ต้อง train reward model แยก', 'RLHF ไม่มีมนุษย์', 'DPO ใช้ข้อมูลน้อยกว่า pretraining'],
+        answer: 1,
+        explanation: 'RLHF ฝึก reward model จาก human feedback แล้วใช้ RL ปรับ policy ส่วน DPO ปรับ policy โดยตรงจาก preference pairs โดยไม่ต้องใช้ RL แยก'
       }
     ]
   },
@@ -118,6 +130,12 @@ export const llmModules: Module[] = [
         options: ['ไม่ต้องตรวจ', 'validate ด้วย schema ก่อนใช้งาน', 'แปลงเป็นภาพ', 'สุ่มค่า'],
         answer: 1,
         explanation: 'แม้บังคับ schema โมเดลอาจสร้างค่าที่ผิดเชิงตรรกะ จึงต้อง validate และจัดการ error ที่ขอบระบบ'
+      },
+      {
+        question: 'Few-shot examples ควรมาจากไหน?',
+        options: ['เรื่องแต่งสุ่ม', 'ตัวอย่างจริงที่ครอบคลุม edge case พร้อม output ที่ต้องการ', 'คำถามเดียวกันซ้ำ', 'ผลลัพธ์ที่ผิด'],
+        answer: 1,
+        explanation: 'ตัวอย่างควรสะท้อนรูปแบบและ edge case ที่จะเจอ เพราะโมเดลจะเลียนแบบรูปแบบที่เห็น'
       }
     ]
   },
@@ -178,6 +196,12 @@ export const llmModules: Module[] = [
         options: ['ความเร็วในการค้น', 'สัดส่วนเอกสารที่เกี่ยวข้องซึ่งถูกดึงมาใน top k', 'ขนาดของ index', 'จำนวน token ที่ใช้'],
         answer: 1,
         explanation: 'Recall@k คือสัดส่วน relevant documents ที่ปรากฏในผลลัพธ์ k อันดับแรก เหมาะวัดว่าข้อมูลที่จำเป็นถูกดึงมาครบหรือไม่'
+      },
+      {
+        question: 'Normalization ของ embedding ช่วยอะไรเมื่อใช้ cosine similarity?',
+        options: ['ลดจำนวนจุดทศนิยม', 'ทำให้ dot product เท่ากับ cosine โดยเทียบทิศเท่านั้น ไม่ใช่ขนาด', 'เพิ่มจำนวนมิติ', 'ลบการจัดอันดับ'],
+        answer: 1,
+        explanation: 'เวกเตอร์ที่ normalize แล้วมีขนาด 1 ทำให้ cosine และ dot product ให้อันดับเดียวกันและลดผลจากค่านอร์ม'
       }
     ]
   },
@@ -238,6 +262,18 @@ export const llmModules: Module[] = [
         options: ['ความเร็ว', 'คำตอบสอดคล้องกับ context ที่ให้หรือไม่', 'จำนวนเอกสาร', 'ขนาด embedding'],
         answer: 1,
         explanation: 'Faithfulness ตรวจว่าคำตอบมีหลักฐานรองรับจาก context จริง ไม่ได้แต่งข้อมูลนอกเหนือหลักฐาน'
+      },
+      {
+        question: 'Chunk ใหญ่เกินไปส่งผลอย่างไรต่อ retrieval?',
+        options: ['ดีกว่าทุกอย่าง', 'context ปนหลายเรื่อง ประสิทธิภาพและความแม่นยำลดลงและ reranking ยาก', 'ลดต้นทุนเสมอ', 'ไม่มีผล'],
+        answer: 1,
+        explanation: 'Chunk ใหญ่ปนหลายหัวข้อทำให้ embedding ปนกันและความเกี่ยวข้องลดลง ส่วน chunk เล็กเกินไปจะขาดบริบท'
+      },
+      {
+        question: 'ทำไมต้องแยกวัด retrieval กับ generation?',
+        options: ['เพื่อให้ช้า', 'เพื่อบอก root cause ว่าพังที่ดึงหลักฐานหรือการเรียบเรียงคำตอบ', 'ไม่จำเป็น', 'เพื่อลดเอกสาร'],
+        answer: 1,
+        explanation: 'ถ้า context ไม่มีคำตอบ ปัญหาอยู่ที่ retrieval/chunking ถ้า context ถูกแต่คำตอบผิด ปัญหาอยู่ที่ generation หรือ prompt'
       }
     ]
   },
@@ -295,9 +331,15 @@ export const llmModules: Module[] = [
       },
       {
         question: 'งานใดไม่เหมาะกับการ fine-tune เป็นทางแรก?',
-        options: ['ปรับโทนการตอบ', 'บังคับ JSON schema', 'ตอบข้อมูลที่อัปเดตทุกวัน', 'จัดหมวดหมู่เฉพาะโดเมน'],
+        options: ['ปรับโทนการตอบให้เป็นทางการ', 'เรียนรู้รูปแบบการตอบเฉพาะโดเมน', 'ตอบข้อมูลที่อัปเดตทุกวัน', 'จัดหมวดหมู่เฉพาะโดเมน'],
         answer: 2,
         explanation: 'ความรู้ที่เปลี่ยนบ่อยควรอยู่ใน RAG หรือฐานข้อมูล เพื่ออัปเดตได้ทันทีโดยไม่ต้องเทรนใหม่'
+      },
+      {
+        question: 'Catastrophic forgetting คืออะไร?',
+        options: ['โมเดลลืมข้อมูล train เก่า', 'เมื่อ fine-tune งานใหม่จนความสามารถเดิมลดลง', 'โมเดลจำทุกอย่าง', 'loss ลดลงเร็ว'],
+        answer: 1,
+        explanation: 'การเทรนเฉพาะงานใหม่โดยไม่ผสมข้อมูลทั่วไปหรือ benchmark เดิมอาจทำลายความสามารถเดิมของโมเดล'
       }
     ]
   },
@@ -323,7 +365,7 @@ export const llmModules: Module[] = [
     topics: [
       { title: 'Evaluation taxonomy', detail: 'capability eval, task eval, safety eval และ online metric แยกวัตถุประสงค์ให้ชัด' },
       { title: 'Golden set design', detail: 'sampling จากผู้ใช้จริง, edge cases, adversarial cases, stratification และการรักษา test set ไม่ให้รั่ว' },
-      { title: 'Metrics', detail: 'exact match, F1, semantic similarity, rubric score, pass@k และการวัด latency/ต้นทุนร่วมด้วย' },
+      { title: 'Metrics', detail: 'exact match, F1, semantic similarity, rubric score, pass@k (สำหรับ code generation เท่านั้น: วัดสัดส่วนปัญหาที่โมเดลสร้างโค้ดที่ผ่าน test ทั้งหมดใน k ครั้งที่ลอง) และการวัด latency/ต้นทุนร่วมด้วย' },
       { title: 'LLM-as-judge', detail: 'position bias, verbosity bias, self-preference, การให้ rubric ชัดเจน และการตรวจ agreement กับมนุษย์' },
       { title: 'Human evaluation', detail: 'คำถาม rating ที่ไม่กำกวม, inter-annotator agreement, calibration และการสุ่มตรวจ' },
       { title: 'Regression และ monitoring', detail: 'versioned eval suite, CI gate, canary, user feedback และการติดตาม degradation หลัง deploy' }
@@ -358,6 +400,12 @@ export const llmModules: Module[] = [
         options: ['เฉพาะเคสง่าย', 'เคสจริงหลากหลายรวม edge case', 'คำถามที่โมเดลตอบถูกแล้วเท่านั้น', 'เฉพาะภาษาอังกฤษ'],
         answer: 1,
         explanation: 'ชุดประเมินต้องสะท้อนการใช้งานจริงและครอบคลุม edge case เพื่อตรวจจับจุดที่ระบบล้มเหลว'
+      },
+      {
+        question: 'pass@k ใช้กับงานใดเท่านั้น?',
+        options: ['งานสรุปบทความ', 'code generation ที่วัดว่าโค้ดผ่าน test ใน k ครั้งที่ลอง', 'ทุกงานเขียน', 'งานแปล'],
+        answer: 1,
+        explanation: 'pass@k หมายถึงสัดส่วนปัญหาที่โมเดลสร้างโค้ดผ่านใน k sample ใช้เฉพาะ code generation ที่มี test ตรวจสอบได้'
       }
     ]
   }

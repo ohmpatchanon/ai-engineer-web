@@ -40,7 +40,7 @@ export interface Lesson {
 }
 
 export function lessonWordCount(lesson: Lesson): number {
-  const count = lesson.sections.reduce((sum, section) => {
+  const chars = lesson.sections.reduce((sum, section) => {
     const text = [
       ...(section.paragraphs ?? []),
       ...(section.bullets ?? []),
@@ -48,11 +48,12 @@ export function lessonWordCount(lesson: Lesson): number {
       section.callout?.text ?? '',
       section.example?.body ?? ''
     ].join(' ');
-    return sum + text.split(/\s+/).filter(Boolean).length;
+    return sum + text.replace(/\s+/g, '').length;
   }, 0);
-  return count;
+  // Thai has no spaces between words — estimate words from characters (ตัวอักษร ÷ 5)
+  return Math.round(chars / 5);
 }
 
 export function lessonMinutes(lesson: Lesson): number {
-  return Math.max(4, Math.round(lessonWordCount(lesson) / 200));
+  return Math.max(4, Math.round(lessonWordCount(lesson) / 150));
 }

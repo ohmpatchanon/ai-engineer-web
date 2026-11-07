@@ -107,9 +107,9 @@ const totalItems = cheatsheets.reduce((sum, g) => sum + g.items.length, 0);
       const code = btn.closest('.cs-code')?.querySelector('code')?.textContent || '';
       try {
         await navigator.clipboard.writeText(code);
-        (window as any).AIE?.toast('คัดลอกโค้ดแล้ว');
+        window.AIE?.toast('คัดลอกโค้ดแล้ว');
       } catch {
-        (window as any).AIE?.toast('คัดลอกไม่สำเร็จ');
+        window.AIE?.toast('คัดลอกไม่สำเร็จ');
       }
     });
   });

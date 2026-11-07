@@ -22,7 +22,7 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
     </div>
   </header>
 
-  <div class="quiz__progress progress-track"><span data-quiz-progress></span></div>
+  <div class="quiz__progress progress-track" role="progressbar" aria-valuemin="0" aria-valuemax={questions.length} aria-valuenow="0" aria-label="ความคืบหน้าแบบทดสอบ"><span data-quiz-progress></span></div>
 
   <div class="quiz__stage">
     {questions.map((q, qi) => (
@@ -31,14 +31,14 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
         <h3 class="quiz-q__question">{q.question}</h3>
         <div class="quiz-q__options" role="group" aria-label={`ตัวเลือกข้อ ${qi + 1}`}>
           {q.options.map((opt, oi) => (
-            <button type="button" class="quiz-option" data-option data-index={oi}>
+            <button type="button" class="quiz-option" data-option data-index={oi} aria-pressed="false">
               <span class="quiz-option__letter mono">{letters[oi]}</span>
               <span class="quiz-option__text">{opt}</span>
               <span class="quiz-option__mark" aria-hidden="true"></span>
             </button>
           ))}
         </div>
-        <div class="quiz-q__explain" data-explain hidden>
+        <div class="quiz-q__explain" data-explain hidden aria-live="polite" tabindex="-1">
           <div class="quiz-explain__icon" data-explain-icon></div>
           <p data-explain-text></p>
         </div>
@@ -52,7 +52,7 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
     <button type="button" class="btn btn--primary btn--small" data-quiz-next disabled>ข้อถัดไป <ArrowRight size={13} /></button>
   </footer>
 
-  <div class="quiz__summary" data-quiz-summary hidden>
+  <div class="quiz__summary" data-quiz-summary hidden aria-live="polite" tabindex="-1">
     <div class="quiz-summary__score">
       <span data-quiz-final>0</span>
       <small>/{questions.length}</small>
@@ -124,6 +124,7 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
         const oi = Number(btn.dataset.index);
         btn.classList.remove('is-correct', 'is-wrong', 'is-dim');
         btn.disabled = false;
+        btn.setAttribute('aria-pressed', String(selected >= 0 && oi === selected));
         const mark = btn.querySelector<HTMLElement>('.quiz-option__mark');
         if (mark) mark.innerHTML = '';
         if (selected < 0) return;
@@ -155,9 +156,13 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
     }
 
     function updateChrome() {
-      if (count) count.textContent = `${answeredCount()}/${total}`;
+      const answered = answeredCount();
+      if (count) count.textContent = `${answered}/${total}`;
       if (scoreEl) scoreEl.textContent = String(score());
-      if (progress) progress.style.width = `${(answeredCount() / total) * 100}%`;
+      if (progress) {
+        progress.style.width = `${(answered / total) * 100}%`;
+        progress.closest('.quiz__progress')?.setAttribute('aria-valuenow', String(answered));
+      }
       if (prev) prev.disabled = index === 0;
       if (next) {
         next.disabled = answers[index] < 0;
@@ -181,6 +186,7 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
       stage.hidden = true;
       footer.hidden = true;
       summary.hidden = false;
+      summary.focus();
       const finalEl = root.querySelector<HTMLElement>('[data-quiz-final]');
       const verdict = root.querySelector<HTMLElement>('[data-quiz-verdict]');
       const message = root.querySelector<HTMLElement>('[data-quiz-message]');
@@ -224,6 +230,7 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
         persist();
         applyQuestionState(qi);
         updateChrome();
+        q.querySelector<HTMLElement>('[data-explain]')?.focus();
       });
     });
 
@@ -285,6 +292,7 @@ const letters = ['A', 'B', 'C', 'D', 'E'];
   }
   .quiz__hint { color: var(--faint); font-size: 0.6rem; text-align: center; }
   .quiz__footer .btn { gap: 0.35rem; }
+  .quiz-q__explain:focus-visible, .quiz__summary:focus-visible { outline: 2px solid var(--acid); outline-offset: 3px; }
   .quiz__summary {
     display: grid; grid-template-columns: auto 1fr auto; align-items: center; gap: 1.4rem;
     margin-top: 1.4rem; padding-top: 1.5rem; border-top: 1px solid var(--line);

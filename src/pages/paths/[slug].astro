@@ -45,10 +45,10 @@ const first = pathModules[0];
 
           <aside class="path-progress panel reveal">
             <div class="path-progress__top mono"><span>PATH PROGRESS</span><span class="text-acid" data-path-pct>0%</span></div>
-            <div class="path-progress__ring" data-path-ring style="--pct: 0">
+            <div class="path-progress__ring" data-path-ring role="progressbar" aria-valuemin="0" aria-valuemax={pathModules.length} aria-valuenow="0" aria-label="ความคืบหน้าเส้นทาง" style="--pct: 0">
               <div><strong data-path-done>0</strong><span>/{pathModules.length}</span></div>
             </div>
-            <div class="progress-track"><span data-path-bar></span></div>
+            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax={pathModules.length} aria-valuenow="0" aria-label="ความคืบหน้าเส้นทาง"><span data-path-bar></span></div>
             <p data-path-next class="path-progress__next">เริ่มจาก {first.title}</p>
             <a href={`/modules/${first.slug}`} class="btn btn--ghost btn--small">ไปยังบทถัดไป <ArrowRight size={12} /></a>
           </aside>
@@ -138,8 +138,11 @@ const first = pathModules[0];
     const pct = ids.length ? Math.round((count / ids.length) * 100) : 0;
     document.querySelectorAll<HTMLElement>('[data-path-done]').forEach((el) => { el.textContent = String(count); });
     document.querySelectorAll<HTMLElement>('[data-path-pct]').forEach((el) => { el.textContent = pct + '%'; });
-    document.querySelectorAll<HTMLElement>('[data-path-bar]').forEach((el) => { el.style.width = pct + '%'; });
-    document.querySelectorAll<HTMLElement>('[data-path-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); });
+    document.querySelectorAll<HTMLElement>('[data-path-bar]').forEach((el) => {
+      el.style.width = pct + '%';
+      el.closest('.progress-track')?.setAttribute('aria-valuenow', String(count));
+    });
+    document.querySelectorAll<HTMLElement>('[data-path-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); el.setAttribute('aria-valuenow', String(count)); });
     rows.forEach((row) => {
       const active = done.includes(row.dataset.id || '');
       row.classList.toggle('is-done', active);
@@ -149,9 +152,9 @@ const first = pathModules[0];
   checks.forEach((check) => {
     check.addEventListener('click', () => {
       const row = check.closest<HTMLElement>('[data-path-check-row]');
-      const api = (window as any).AIE;
+      const api = window.AIE;
       if (!row || !api) return;
-      const active = api.toggleModule(row.dataset.id);
+      const active = api.toggleModule(row.dataset.id || "");
       api.toast(active ? 'บันทึกความคืบหน้าแล้ว ✓' : 'ยกเลิกเครื่องหมายแล้ว');
       sync();
     });
@@ -159,8 +162,8 @@ const first = pathModules[0];
   document.querySelector('[data-path-copy]')?.addEventListener('click', async () => {
     try {
       await navigator.clipboard.writeText(location.href);
-      (window as any).AIE?.toast('คัดลอกลิงก์แล้ว');
-    } catch { (window as any).AIE?.toast('คัดลอกไม่สำเร็จ'); }
+      window.AIE?.toast('คัดลอกลิงก์แล้ว');
+    } catch { window.AIE?.toast('คัดลอกไม่สำเร็จ'); }
   });
   sync();
   window.addEventListener('aie:progress', sync);

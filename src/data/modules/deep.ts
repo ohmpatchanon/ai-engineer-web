@@ -21,7 +21,7 @@ export const deepModules: Module[] = [
       'อ่าน learning curve และปรับการเทรนอย่างมีเหตุผล'
     ],
     topics: [
-      { title: 'Perceptron และ multilayer network', detail: 'linear layer, activation function และความจำเป็นของnon-linearity เพื่อให้ network เรียนรู้ความสัมพันธ์ที่ซับซ้อน' },
+      { title: 'Perceptron และ multilayer network', detail: 'linear layer, activation function และความจำเป็นของ non-linearity เพื่อให้ network เรียนรู้ความสัมพันธ์ที่ซับซ้อน' },
       { title: 'Forward pass และ loss', detail: 'คำนวณ output, เปรียบเทียบกับ target และแปลงเป็น scalar loss ที่ differentiable' },
       { title: 'Backpropagation', detail: 'computational graph, chain rule และการไหลของ gradient จาก loss กลับไปยังทุกพารามิเตอร์' },
       { title: 'Optimizers', detail: 'SGD, momentum, Adam, AdamW และผลของ learning rate, weight decay ต่อการลู่เข้า' },
@@ -58,6 +58,18 @@ export const deepModules: Module[] = [
         options: ['Bayes theorem', 'Chain rule', 'Central limit theorem', 'Euclidean algorithm'],
         answer: 1,
         explanation: 'Chain rule ช่วยให้คำนวณอนุพันธ์ของฟังก์ชันประกอบย้อนกลับผ่าน computational graph'
+      },
+      {
+        question: 'Dropout ช่วยเรื่องอะไร?',
+        options: ['ลดจำนวน layer', 'regularization โดยปิด neuron บางตัวแบบสุ่มตอนเทรนเพื่อป้องกัน overfitting', 'เพิ่มข้อมูล', 'เร่ง GPU'],
+        answer: 1,
+        explanation: 'Dropout สุ่มปิดหน่วยประสาทระหว่างเทรน ทำให้โมเดลไม่พึ่ง neuron เดียวและ generalize ดีขึ้น'
+      },
+      {
+        question: 'Adam ต่างจาก SGD อย่างไรในเชิงปฏิบัติ?',
+        options: ['Adam ใช้ gradient ประมาณเท่าเดิม', 'Adam ปรับ lr แยกต่อพารามิเตอร์โดยใช้โมเมนต์', 'SGD ไม่ต้องใช้ข้อมูล', 'Adam ไม่ต้อง normalize'],
+        answer: 1,
+        explanation: 'Adam ใช้ค่าเฉลี่ยและกำลังสองของ gradient เพื่อปรับ adaptive lr ต่อพารามิเตอร์'
       }
     ]
   },
@@ -118,6 +130,12 @@ export const deepModules: Module[] = [
         options: ['Overfit batch เดียว', 'เพิ่ม test set', 'ลบ dropout', 'ลดจำนวน layer เหลือศูนย์'],
         answer: 0,
         explanation: 'การ overfit ข้อมูล batch เดียวควรทำให้ loss ลดลงมาก ถ้าทำไม่ได้มักมี bug ใน data, loss หรือ optimization'
+      },
+      {
+        question: 'การ checkpoint ใน PyTorch ใช้เพื่ออะไร?',
+        options: ['ลดจำนวน epoch', 'บันทึกโมเดล optimizer และ state เพื่อ resume การเทรน', 'ล้าง GPU', 'แปลง prediction'],
+        answer: 1,
+        explanation: 'Checkpoint ที่ครบ (model + optimizer + epoch + scheduler) ทำให้เทรนต่อได้โดยไม่ต้องเริ่มใหม่'
       }
     ]
   },
@@ -130,7 +148,7 @@ export const deepModules: Module[] = [
     en: 'Natural Language Processing',
     summary: 'เข้าใจว่าคอมพิวเตอร์อ่านภาษาได้อย่างไร ตั้งแต่ token, embedding ไปจนถึง language modeling และ metric',
     why: 'LLM คือความต่อเนื่องของ NLP ดั้งเดิม การรู้จัก tokenization, distributional semantics และข้อจำกัดของ metric ช่วยให้คุณออกแบบระบบภาษาได้ดีขึ้น',
-    mentalModel: 'ภาษาเป็นลำดับของสัญลักษณ์ที่เราพยายามแทนด้วยเวกเตอร์ เพื่อให้Similarityในปริภูมิสะท้อนความหมาย',
+    mentalModel: 'ภาษาเป็นลำดับของสัญลักษณ์ที่เราพยายามแทนด้วยเวกเตอร์ เพื่อให้ similarity ในปริภูมิสะท้อนความหมาย',
     duration: '1–2 สัปดาห์',
     level: 'กลาง',
     tracks: ['llm', 'ml'],
@@ -178,6 +196,12 @@ export const deepModules: Module[] = [
         options: ['เพิ่ม context length', 'ปรับความแหลมของ probability distribution', 'ลบ token ที่ไม่ใช้', 'ลดต้นทุน'],
         answer: 1,
         explanation: 'อุณหภูมิสูงทำให้ distribution แบนลงและคำตอบหลากหลายขึ้น อุณหภูมิต่ำทำให้เลือกคำที่น่าจะเป็นมากที่สุดชัดขึ้น'
+      },
+      {
+        question: 'BLEU ใดไม่เหมาะสำหรับอะไร?',
+        options: ['เหมาะกับ chat ทั้งหมด', 'BLEU ไม่เหมาะวัดคุณภาพแชทหรือ paraphrase ที่ใช้คำต่างกันแต่ความหมายถูก', 'BLEU ใช้กับโค้ดเท่านั้น', 'ไม่ต้องมี metric'],
+        answer: 1,
+        explanation: 'BLEU วัด overlap ของ n-gram เหมาะกับ translation แต่แชทที่ตอบถูกด้วยคำต่างกันจะได้คะแนนต่ำ'
       }
     ]
   },
@@ -238,6 +262,12 @@ export const deepModules: Module[] = [
         options: ['ลดคุณภาพคำตอบ', 'ลดการคำนวณซ้ำระหว่าง generate token ต่อ ๆ ไป', 'เพิ่ม context window', 'ลบ positional encoding'],
         answer: 1,
         explanation: 'การ cache key/value ของ token ก่อนหน้าช่วยไม่ต้องคำนวณซ้ำทุกครั้งที่ generate token ใหม่ แต่ใช้หน่วยความจำเพิ่ม'
+      },
+      {
+        question: 'Multi-head attention ช่วยให้โมเดลทำอะไร?',
+        options: ['ลดจำนวนจุดทศนิยม', 'เรียนรู้ความสัมพันธ์หลายแบบพร้อมกันโดยแต่ละ head เรียน subspace ต่างกัน', 'ลบ Q/K/V', 'ตัด RoPE'],
+        answer: 1,
+        explanation: 'แต่ละ head มองความสัมพันธ์ต่างชนิด (เช่น syntax vs position) แล้วยังรวมเป็น representation เดียว'
       }
     ]
   }

@@ -2,6 +2,7 @@
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { ArrowLeft, ArrowRight, Clock, Copy, Check, BookOpen, Lightbulb, ArrowUpRight } from '@lucide/astro';
 import { guides } from '../../data/guides';
+import { modules } from '../../data/modules';
 import { readingTime } from '../../lib/ui';
 import GuideCard from '../../components/GuideCard.astro';
 
@@ -111,7 +112,7 @@ const suggested = related.length >= 2 ? related : [...related, ...fallbackRelate
           </nav>
           <div class="side-cta panel">
             <BookOpen size={17} class="text-acid" />
-            <p>guide นี้เป็นส่วนหนึ่งของหลักสูตร 28 modules</p>
+            <p>guide นี้เป็นส่วนหนึ่งของหลักสูตร {modules.length} modules</p>
             <a href="/modules" class="link-arrow">ดูหลักสูตร <ArrowUpRight size={12} /></a>
           </div>
         </div>

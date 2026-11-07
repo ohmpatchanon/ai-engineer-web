@@ -58,6 +58,12 @@ export const productionModules: Module[] = [
         options: ['เพิ่ม temperature', 'ตรวจสิทธิ์และยืนยันก่อนทำ', 'ซ่อนผลลัพธ์', 'เรียกซ้ำหลายครั้ง'],
         answer: 1,
         explanation: 'เครื่องมือที่เปลี่ยนแปลงข้อมูลต้องมี authorization และ human confirmation ตามความเสี่ยง รวมถึง audit log'
+      },
+      {
+        question: 'วิธีกัน agent วนซ้ำไม่จบคืออะไร?',
+        options: ['เพิ่มโมเดลใหญ่', 'กำหนด step limit budget และเงื่อนไขหยุด', 'เพิ่ม tool', 'ลบ trace'],
+        answer: 1,
+        explanation: 'การจำกัด steps/tokens/time และการตรวจ loop ทำให้ agent หยุดเมื่อไม่ก้าวหน้า'
       }
     ]
   },
@@ -72,7 +78,7 @@ export const productionModules: Module[] = [
     why: 'งานจริงจำนวนมากไม่ได้มีแค่ข้อความ: ใบเสร็จ สกรีนช็อต เอกสารสแกน เสียงประชุม และวิดีโอ ระบบ multimodal ที่ดีต้องจัดการคุณภาพ input, alignment และ evaluation แยกตาม modality',
     mentalModel: 'ทุก modality ถูกแปลงเป็น representation ที่โมเดลเปรียบเทียบได้ แต่การแปลงนั้นสูญเสียข้อมูลเสมอ',
     duration: '1–2 สัปดาห์',
-    level: 'กลาง',
+    level: 'สูง',
     tracks: ['llm', 'product'],
     outcomes: [
       'เลือก pipeline สำหรับ OCR, document AI, vision และ speech ได้',
@@ -118,6 +124,12 @@ export const productionModules: Module[] = [
         options: ['สุ่มหน้า', 'รักษาลำดับหน้าและโครงสร้าง', 'ย่อทุกหน้าเป็นข้อความเดียว', 'ลบตาราง'],
         answer: 1,
         explanation: 'การรักษา reading order และโครงสร้างช่วยให้ retrieval และ citation ทำงานถูกต้อง'
+      },
+      {
+        question: 'ทำไม OCR ยังจำเป็นแม้มี multimodal LLM?',
+        options: ['ไม่จำเป็น', 'ภาพความละเอียดต่ำหรือตารางซับซ้อนอาจต้อง OCR แบบเฉพาะและตรวจ field แยก', 'LLM ไม่เคยดึงภาพ', 'OCR เร็วกว่าเสมอ'],
+        answer: 1,
+        explanation: 'OCR pipeline พร้อม layout analysis ช่วยสกัดตัวเลขและตารางได้แม่นยำและวัด WER/field accuracy แยกได้'
       }
     ]
   },
@@ -178,6 +190,12 @@ export const productionModules: Module[] = [
         options: ['ใช้หน่วยความจำมาก', 'คืนคำตอบของบริบทหรือผู้ใช้อื่น', 'ทำให้โมเดลเก่งขึ้น', 'เพิ่ม context window'],
         answer: 1,
         explanation: 'คำถามที่คล้ายกันเชิงความหมายอาจต้องการคำตอบต่างกันตามสิทธิ์ ข้อมูลส่วนตัว หรือเวลา'
+      },
+      {
+        question: 'Continuous batching ช่วยเรื่องอะไร?',
+        options: ['ลดคุณภาพคำตอบ', 'ปรับ batch ตาม request ที่เข้ามาเพื่อใช้ GPU ให้เต็มและลดคอย', 'ลบ caching', 'เพิ่ม license'],
+        answer: 1,
+        explanation: 'Continuous batching รวม request ที่กำลัง decode ไว้ด้วยกันแบบพลวัต ช่วย throughput และ tail latency'
       }
     ]
   },
@@ -238,6 +256,12 @@ export const productionModules: Module[] = [
         options: ['ลบเวอร์ชันเก่าทันที', 'ปล่อย traffic ส่วนเล็กไปเวอร์ชันใหม่ก่อนขยาย', 'รันทุกเวอร์ชันพร้อมกัน', 'ปิด monitoring'],
         answer: 1,
         explanation: 'Canary ช่วยจำกัดผลกระทบหากเวอร์ชันใหม่มีปัญหา และให้ข้อมูลจริงก่อน rollout เต็มรูปแบบ'
+      },
+      {
+        question: 'ทำไมต้อง pin image digest แทนแค่ tag?',
+        options: ['เพื่อให้ช้า', 'tag เปลี่ยนได้ digest ชี้เนื้อหาเฉพาะและทำซ้ำได้', 'ไม่จำเป็น', 'ลดการสแกน'],
+        answer: 1,
+        explanation: 'Image tag เช่น latest อาจชี้ image คนละตัว การ pin digest ทำให้รู้ว่า deploy ตัวเดียวกับที่ test ผ่าน'
       }
     ]
   },
@@ -298,6 +322,12 @@ export const productionModules: Module[] = [
         options: ['เพิ่ม log ทุกบรรทัด', 'ใช้ correlation ID และ distributed trace', 'ปิด metric', 'ใช้ print'],
         answer: 1,
         explanation: 'Correlation ID และ trace ทำให้เห็นเส้นทางของ request เดียวข้าม service และหาจุดที่ช้า/ผิดได้'
+      },
+      {
+        question: 'ทำไมต้อง monitor คุณภาพคำตอบ ไม่ใช่แค่อุปเสท?',
+        options: ['เพื่อความบันเทิง', 'เพราะ drift ของข้อมูลหรือโมเดลทำให้คุณภาพแย่ลงโดย service ยังขึ้นอยู่', 'ไม่จำเป็น', 'เพื่อลด log'],
+        answer: 1,
+        explanation: 'LLM app แย่ลงได้จาก data drift หรือ provider update โดยไม่มี deploy อะไร ต้องวัด quality metric และ sampled human review'
       }
     ]
   }

@@ -25,7 +25,7 @@ export const cheatsheets: CheatGroup[] = [
       { title: 'ROC-AUC', detail: 'ความสามารถแยกสองคลาสในทุก threshold — ไม่บอกคุณภาพที่ threshold ที่คุณจะใช้จริง' },
       { title: 'PR-AUC', detail: 'เหมาะกับข้อมูลไม่สมดุลมาก ๆ เช่น fraud หรือ retrieval' },
       { title: 'RMSE / MAE', detail: 'RMSE ลงโทษ error ใหญ่มากกว่า MAE — เลือกตามว่าคุณรับ error ขนาดใหญ่ได้แค่ไหน' },
-      { title: 'Recall@k', detail: 'ใน k ผลลัพธ์แรก มีเอกสารที่ถูกอย่างน้อยหนึ่งรายการหรือไม่ — metric หลักของ retrieval' },
+      { title: 'Recall@k', detail: 'สัดส่วนของเอกสารที่เกี่ยวข้องทั้งหมดที่ปรากฏใน k ผลลัพธ์แรก (จำนวนที่เจอ ÷ จำนวนที่เกี่ยวข้องทั้งหมด) — ค่า 1.0 หมายถึงเจอครบ' },
       { title: 'Latency p95', detail: 'ค่าเฉลี่ยหลอกคุณได้ ใช้ percentile เพื่อเห็นประสบการณ์ของผู้ใช้ส่วนท้าย' }
     ]
   },
@@ -56,7 +56,7 @@ export const cheatsheets: CheatGroup[] = [
       { title: 'Context', detail: 'ให้ข้อมูลที่จำเป็น แต่ตัดสิ่งที่ไม่เกี่ยวกับคำตอบออกเพื่อลด token และ noise' },
       { title: 'Constraints', detail: 'ระบุสิ่งที่ห้ามทำ ความยาว ภาษา และวิธีจัดการเมื่อข้อมูลไม่พอ' },
       { title: 'Output schema', detail: 'กำหนด JSON schema หรือรูปแบบตาราง เมื่อต้องนำไปใช้ต่อ' },
-      { title: 'Examples', detail: 'Few-shot 1–3 คู่ ช่วยเรื่องรูปแบบมากกว่าความรู้ โดยเฉพาะงาน extraction' },
+      { title: 'Examples', detail: 'Few-shot 2–5 คู่ ช่วยเรื่องรูปแบบมากกว่าความรู้ โดยเฉพาะงาน extraction' },
       { title: 'Success criteria', detail: 'บอกว่า “ดี” หมายถึงอะไร เพื่อให้ตรวจและปรับได้' },
       { title: 'Versioning', detail: 'เก็บ prompt ใน repo พร้อม changelog และ eval result ทุกครั้งที่แก้' }
     ]
@@ -99,7 +99,7 @@ export const cheatsheets: CheatGroup[] = [
     items: [
       { title: 'อ่านไฟล์ใหญ่ทีละบรรทัด', code: "with open('data.jsonl') as f:\n    for line in f:\n        row = json.loads(line)" },
       { title: 'หลีกเลี่ยง mutable default', code: 'def add(item, bucket=None):\n    bucket = [] if bucket is None else bucket\n    bucket.append(item)\n    return bucket' },
-      { title: 'Retry แบบ exponential backoff', code: 'for attempt in range(5):\n    try:\n        return call_api()\n    except RateLimitError:\n        time.sleep(min(2 ** attempt, 30))' },
+      { title: 'Retry แบบ exponential backoff', code: 'import random\n\nfor attempt in range(5):\n    try:\n        return call_api()\n    except RateLimitError:\n        time.sleep(min(2 ** attempt, 30) + random.uniform(0, 1))' },
       { title: 'Validate ที่ขอบระบบ', code: 'class Request(BaseModel):\n    query: str = Field(min_length=1, max_length=2000)\n    top_k: int = Field(default=5, ge=1, le=20)' },
       { title: 'Pandas: reset index หลัง concat', code: 'df = pd.concat(parts, ignore_index=True)' },
       { title: 'แยก train/test ก่อนทำ feature', code: 'from sklearn.model_selection import train_test_split\nX_train, X_test, y_train, y_test = train_test_split(\n    X, y, test_size=0.2, stratify=y, random_state=42\n)' }

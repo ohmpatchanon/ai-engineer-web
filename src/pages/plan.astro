@@ -29,7 +29,7 @@ const totalModules = plan.reduce((sum, week) => sum + week.modules.length, 0);
         <p>แผนนี้เป็น sprint เร่งรัด หากต้องการเส้นทางเต็ม 26 สัปดาห์ให้ดู Roadmap</p>
         <div class="plan-progress">
           <div class="plan-progress__head"><span class="mono micro">YOUR PLAN PROGRESS</span><span class="mono tiny text-acid" data-plan-pct>0%</span></div>
-          <div class="progress-track"><span data-plan-bar></span></div>
+          <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" aria-label="ความคืบหน้าแผนเรียน"><span data-plan-bar></span></div>
           <p class="mono tiny faint"><span data-plan-done>0</span> / 12 สัปดาห์</p>
         </div>
       </div>
@@ -119,7 +119,10 @@ const totalModules = plan.reduce((sum, week) => sum + week.modules.length, 0);
     });
     const pct = Math.round((done.length / 12) * 100);
     document.querySelectorAll<HTMLElement>('[data-plan-pct]').forEach((el) => { el.textContent = pct + '%'; });
-    document.querySelectorAll<HTMLElement>('[data-plan-bar]').forEach((el) => { el.style.width = pct + '%'; });
+    document.querySelectorAll<HTMLElement>('[data-plan-bar]').forEach((el) => {
+      el.style.width = pct + '%';
+      el.closest('.progress-track')?.setAttribute('aria-valuenow', String(done.length));
+    });
     document.querySelectorAll<HTMLElement>('[data-plan-done]').forEach((el) => { el.textContent = String(done.length); });
   }
   checks.forEach((btn) => {
@@ -130,7 +133,7 @@ const totalModules = plan.reduce((sum, week) => sum + week.modules.length, 0);
       const done = getDone();
       const next = done.includes(id) ? done.filter((x) => x !== id) : [...done, id];
       try { localStorage.setItem(KEY, JSON.stringify(next)); } catch {}
-      (window as any).AIE?.toast(next.includes(id) ? `สัปดาห์ ${id} เสร็จแล้ว ✓` : `ยกเลิกสัปดาห์ ${id}`);
+      window.AIE?.toast(next.includes(id) ? `สัปดาห์ ${id} เสร็จแล้ว ✓` : `ยกเลิกสัปดาห์ ${id}`);
       sync();
     });
   });
@@ -138,7 +141,7 @@ const totalModules = plan.reduce((sum, week) => sum + week.modules.length, 0);
     if (!confirm('ล้างความคืบหน้าของแผน 12 สัปดาห์หรือไม่?')) return;
     try { localStorage.removeItem(KEY); } catch {}
     sync();
-    (window as any).AIE?.toast('ล้างความคืบหน้าแผนแล้ว');
+    window.AIE?.toast('ล้างความคืบหน้าแผนแล้ว');
   });
   document.querySelector('[data-plan-print]')?.addEventListener('click', () => window.print());
   sync();

@@ -130,7 +130,7 @@ const questions = [
           <div class="result__score">
             <span class="mono micro">EXPERIENCE SCORE</span>
             <p><span data-result-score>0</span><small>/12</small></p>
-            <div class="progress-track"><span data-result-bar></span></div>
+            <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax="12" aria-valuenow="0" aria-label="คะแนนประสบการณ์"><span data-result-bar></span></div>
             <p class="mono tiny faint" data-result-level></p>
           </div>
           <div class="result__copy">
@@ -191,7 +191,7 @@ const questions = [
     form.addEventListener('submit', (event) => {
       event.preventDefault();
       if (answered() < 6) {
-        (window as any).AIE?.toast('ตอบให้ครบทั้ง 6 ข้อก่อนดูผลลัพธ์');
+        window.AIE?.toast('ตอบให้ครบทั้ง 6 ข้อก่อนดูผลลัพธ์');
         return;
       }
       const value = (name: string) => form.querySelector<HTMLInputElement>(`input[name="${name}"]:checked`)?.value || '';
@@ -256,7 +256,10 @@ const questions = [
       const pathLink = result.querySelector<HTMLAnchorElement>('[data-result-path]');
       if (pathLink) pathLink.href = `/paths/${path.slug}`;
       const bar = result.querySelector<HTMLElement>('[data-result-bar]');
-      if (bar) bar.style.width = `${Math.round((score / 12) * 100)}%`;
+      if (bar) {
+        bar.style.width = `${Math.round((score / 12) * 100)}%`;
+        bar.closest('.progress-track')?.setAttribute('aria-valuenow', String(score));
+      }
 
       form.hidden = true;
       result.hidden = false;

@@ -21,7 +21,7 @@ export const foundationModules: Module[] = [
       'เรียก HTTP API พร้อม retry, timeout และการจัดการ error ได้'
     ],
     topics: [
-      { title: 'โครงสร้างภาษาและ type system', detail: 'ทำความคุ้นเคยกับ list/dict/set, slicing, comprehensions, unpacking และ type hints โดยเฉพาะ Optional, Union, Literal และ Generic ซึ่งจะเจอบ่อยในโค้ด AI' },
+      { title: 'โครงสร้างภาษาและ type system', detail: 'ทำความคุ้นเคยกับ list/dict/set, slicing, comprehensions, unpacking และ type hints สำหรับ Python 3.10+ โดยเฉพาะ | (pipe) แทน Optional/Union เช่น str | None แทน Optional[str] และ str | int แทน Union[str, int] พร้อม Literal และ Generic ซึ่งจะเจอบ่อยในโค้ด AI' },
       { title: 'ฟังก์ชัน, โมดูล และ packaging', detail: 'แยกโค้ดเป็น package, ใช้ __init__.py, จัดการ import และสร้าง CLI ด้วย argparse หรือ Typer เพื่อให้ pipeline เรียกใช้ซ้ำได้' },
       { title: 'NumPy และ Pandas', detail: 'เข้าใจ vectorization, broadcasting, index alignment และ dtype ที่เป็นต้นเหตุของ bug เงียบ ๆ ในงานข้อมูล' },
       { title: 'I/O, API และ async', detail: 'อ่าน/เขียน JSON, CSV, Parquet, เรียก REST API และใช้ asyncio หรือ concurrency อย่างจำกัดขอบเขต เพื่อเรียก LLM หลายครั้งโดยไม่ชน rate limit' },
@@ -58,6 +58,12 @@ export const foundationModules: Module[] = [
         options: ['ใช้ dict ต่อได้ทันที', 'ตรวจ schema ด้วย Pydantic ก่อนใช้', 'แปลงเป็น string ก่อน', 'ลบ field ที่ไม่รู้จักทั้งหมด'],
         answer: 1,
         explanation: 'Validation ที่ขอบระบบช่วยให้ error เกิดขึ้นชัดเจนและป้องกันข้อมูลผิดรูปร่างไหลลึกเข้าไปในระบบ'
+      },
+      {
+        question: 'ใน Python 3.10+ วิธีเขียน type hint "str หรือ None" แบบใหม่คืออะไร?',
+        options: ['Union[str, None]', 'str | None', 'OptionalStr', 'str or None'],
+        answer: 1,
+        explanation: 'Python 3.10+ ใช้ | (pipe) แทน Optional/Union เช่น str | None แทน Optional[str] และ str | int แทน Union[str, int]'
       }
     ]
   },
@@ -82,10 +88,10 @@ export const foundationModules: Module[] = [
     ],
     topics: [
       { title: 'เวกเตอร์ เมทริกซ์ และมิติ', detail: 'dot product, norm, transpose, matrix multiplication และการอ่าน shape ให้ถูก เพราะ shape mismatch คือ bug อันดับต้น ๆ ของ deep learning' },
-      { title: 'Cosine similarity และระยะทาง', detail: 'ความต่างระหว่าง Euclidean distance กับ cosine similarity และเหตุใด embedding search จึงมักใช้ cosine หรือ dot product หลัง normalize' },
+      { title: 'Cosine similarity และระยะทาง', detail: 'cos(A,B) = (A·B)/(|A||B|) อยู่ในช่วง −1 ถึง 1 ค่า 1 หมายถึงทิศเดียวกัน; ความต่างระหว่าง Euclidean distance กับ cosine similarity และเหตุใด embedding search จึงมักใช้ cosine หรือ dot product หลัง normalize (normalize แล้ว dot product เท่ากับ cosine similarity)' },
       { title: 'Derivative, gradient และ chain rule', detail: 'อ่าน gradient ว่าเป็นทิศทางที่ทำให้ loss เพิ่มเร็วที่สุด และเข้าใจว่าทำไม backpropagation คือ chain rule บน computational graph' },
       { title: 'Optimization', detail: 'gradient descent, learning rate, momentum และข้อจำกัดของ local minima ในพื้นที่มิติสูง โดยเน้น intuition มากกว่าการพิสูจน์' },
-      { title: 'Probability และ Bayes', detail: 'conditional probability, independence, Bayes theorem, prior/likelihood/posterior และนำไปใช้กับ confusion matrix กับ uncertainty' },
+      { title: 'Probability และ Bayes', detail: 'P(A|B) = P(B|A)P(A)/P(B) (posterior ∝ likelihood × prior); conditional probability, independence, Bayes theorem, prior/likelihood/posterior และนำไปใช้กับ confusion matrix กับ uncertainty' },
       { title: 'Statistics ที่ต้องระวัง', detail: 'mean vs median, variance, sampling bias, confidence interval และ multiple comparisons ซึ่งเป็นสาเหตุให้ผลทดลองดูดีเกินจริง' }
     ],
     lab: 'ใช้ NumPy implement linear regression ด้วย gradient descent เอง แล้วเทียบผลกับ scikit-learn พร้อมกราฟ loss',
@@ -118,6 +124,18 @@ export const foundationModules: Module[] = [
         options: ['Median', 'Mode', 'Mean', 'Interquartile range'],
         answer: 2,
         explanation: 'ค่าเฉลี่ยใช้ทุกค่าหารด้วยจำนวนข้อมูล จึงถูกค่าสุดโต่งดึงได้ง่าย'
+      },
+      {
+        question: 'Posterior ใน Bayes theorem คืออะไร?',
+        options: ['P(B)', 'P(A|B) ค่าความน่าจะเป็นของสมมติฐานหลังเห็นข้อมูล', 'P(A)', 'P(B|A) อย่างเดียว'],
+        answer: 1,
+        explanation: 'P(A|B) = P(B|A)P(A)/P(B) posterior คือความเชื่อที่อัปเดตแล้วหลังเห็นหลักฐาน B'
+      },
+      {
+        question: 'Gradient descent ปรับพารามิเตอร์อย่างไร?',
+        options: ['เดินไปทิศ gradient', 'เดินทิศตรงข้าม gradient ตามขนาด learning rate', 'สุ่มพารามิเตอร์ใหม่', 'เพิ่มจำนวน layer'],
+        answer: 1,
+        explanation: 'Optimizer ก้าวไปทิศตรงข้าม gradient เพื่อลด loss โดย learning rate เป็นขนาดก้าว'
       }
     ]
   },
@@ -178,6 +196,12 @@ export const foundationModules: Module[] = [
         options: ['อ่านไฟล์', 'คำนวณค่า mean สำหรับ imputation', 'ตั้งชื่อคอลัมน์', 'บันทึกเป็น Parquet'],
         answer: 1,
         explanation: 'ค่า statistic ที่ใช้ preprocessing ต้องเรียนรู้จาก train set เท่านั้น ไม่เช่นนั้นข้อมูล test จะรั่วเข้าไป'
+      },
+      {
+        question: 'ก่อน train ควรตรวจ leakage แบบใดเป็นอันดับแรก?',
+        options: ['ตรวจจำนวน GPU', 'ตรวจว่า feature หรือสถิติจาก test/target รั่วเข้า train หรือไม่', 'ตรวจขนาดไฟล์', 'ตรวจจำนวน epoch'],
+        answer: 1,
+        explanation: 'Leakage จาก target เวลา หรือ preprocessing ที่ fit บนข้อมูลทั้งชุดทำให้ผลประเมินสูงเกินจริง'
       }
     ]
   },
@@ -238,6 +262,12 @@ export const foundationModules: Module[] = [
         options: ['ใช้ได้กับตัวเลขเท่านั้น', 'ไม่ลดจำนวนแถวผลลัพธ์', 'เร็วกว่าเสมอ', 'ใช้แทน JOIN ได้'],
         answer: 1,
         explanation: 'Window function คำนวณข้ามกลุ่มแต่ยังคงรายละเอียดของแต่ละแถวไว้ ในขณะที่ GROUP BY ยุบแถวเป็นกลุ่ม'
+      },
+      {
+        question: 'CTE ใน SQL ให้ประโยชน์หลักอะไร?',
+        options: ['ทำให้ query เร็วเสมอ', 'แบ่ง logic ซับซ้อนเป็นขั้นตอนที่มีชื่อและอ่านออก', 'แทนที่ index ได้', 'ลบการ join'],
+        answer: 1,
+        explanation: 'WITH clause ทำให้ query อ่านง่ายและ debug ได้ โดยแบ่งเป็นขั้นตอนชื่อแทน subquery ซ้อนกัน'
       }
     ]
   },
@@ -264,6 +294,7 @@ export const foundationModules: Module[] = [
       { title: 'Git workflow', detail: 'branch, commit ที่มีความหมาย, merge vs rebase, conflict resolution และการเขียน PR description ที่ reviewer เข้าใจ' },
       { title: 'Testing pyramid', detail: 'unit test สำหรับ logic, integration test สำหรับขอบระบบ และ smoke test ก่อน deploy โดยไม่พยายาม test ทุกอย่างเท่ากัน' },
       { title: 'API design', detail: 'REST endpoint, request/response schema, status code, idempotency และ error message ที่ช่วยให้ client แก้ปัญหาได้' },
+      { title: 'Docker และ containerization', detail: 'ปรับ service ให้รันใน container ด้วย Dockerfile (multi-stage build, pin dependency, non-root user) เพื่อให้ environment เดียวกันทุกที่และสอดคล้องกับ lab ที่ต้องส่ง Dockerfile คู่กับ FastAPI service' },
       { title: 'Config และ secrets', detail: '12-factor config, .env, secret manager และการแยก dev/staging/prod อย่างชัดเจน' },
       { title: 'Logging และ observability', detail: 'structured log, correlation ID, log level และการไม่ log ข้อมูลส่วนบุคคลหรือ prompt ที่มี sensitive data' },
       { title: 'Code review และ documentation', detail: 'เขียน README ที่รันได้จริง, architecture note, ADR และ review checklist สำหรับงาน AI ที่มีความไม่แน่นอนสูง' }
@@ -298,6 +329,12 @@ export const foundationModules: Module[] = [
         options: ['ตรวจว่า third-party API ทำงาน', 'ตรวจ logic ที่แยกออกมาได้', 'วัดคุณภาพคำตอบ LLM', 'ทดสอบ network latency'],
         answer: 1,
         explanation: 'Unit test ควรเร็วและแยก dependency ภายนอกออก เพื่อบอกว่า logic ภายในถูกต้องหรือไม่'
+      },
+      {
+        question: 'Dockerfile ช่วยอะไรหลักในบริบทนี้?',
+        options: ['เพิ่มความเร็ว GPU', 'ทำให้ environment ของ FastAPI service สร้างซ้ำได้ทุกที่', 'ลดจำนวนบรรทัด Python', 'แทนที่ test'],
+        answer: 1,
+        explanation: 'Container บรรจุ dependency และ config ที่เหมือนกัน ทำให้ service รันซ้ำได้ทั้ง dev และ deploy'
       }
     ]
   }

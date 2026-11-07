@@ -536,4 +536,4 @@ export const interviewByCategory = Object.fromEntries(
   interviewCategories.map((category) => [category, interviewQuestions.filter((q) => q.category === category)])
 );
 
-export const interviewCount = interviewQuestions.length + 50;
+export const interviewCount = interviewQuestions.length;

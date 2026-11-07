@@ -34,4 +34,6 @@ export function moduleNeighbors(slug: string) {
   };
 }
 
+export const TOTAL_MODULES = modules.length;
+// totalMinutes เป็นค่าประเมินคร่าว (28*60) ไม่ได้คำนวณจาก durations รายบท 1–2 สัปดาห์
 export const totalMinutes = 28 * 60;

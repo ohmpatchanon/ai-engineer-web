@@ -11,8 +11,9 @@ export function phaseName(phase: string) {
   return phaseMap[phase]?.title ?? phase;
 }
 
-export function phaseNumber(phase: string) {
-  return phaseMap[phase]?.number ?? '—';
+/** Escape a string for safe interpolation into HTML (e.g. innerHTML templates). */
+export function escapeHtml(value: string): string {
+  return value.replace(/[&<>"']/g, (ch) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[ch] || ch));
 }
 
 export const trackLabels: Record<Track, string> = {
@@ -29,13 +30,13 @@ export const levelTone: Record<Level, string> = {
 };
 
 export function readingTime(sections: { paragraphs?: string[]; bullets?: string[]; steps?: unknown[] }[]) {
+  // Thai has no spaces between words, so whitespace tokenisation under-counts.
+  // 180 wpm is an EN-equivalent pacing figure; the 3-minute floor keeps Thai
+  // estimates conservative rather than understating reading time.
+  const WORDS_PER_MINUTE = 180;
   const words = sections.reduce((sum, section) => {
     const text = [...(section.paragraphs ?? []), ...(section.bullets ?? [])].join(' ');
     return sum + text.split(/\s+/).filter(Boolean).length;
   }, 0);
-  return Math.max(3, Math.round(words / 180));
-}
-
-export function formatDate(date = new Date()) {
-  return date.toLocaleDateString('th-TH', { year: 'numeric', month: 'short', day: 'numeric' });
+  return Math.max(3, Math.round(words / WORDS_PER_MINUTE));
 }

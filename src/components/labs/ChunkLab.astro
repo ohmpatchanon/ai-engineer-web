@@ -84,12 +84,18 @@ const sample = `นโยบายการลาพักร้อนของ�
     const warn = root.querySelector<HTMLElement>('[data-cl-warn]');
     const warnText = root.querySelector<HTMLElement>('[data-cl-warn-text]');
     const status = root.querySelector<HTMLElement>('[data-cl-status]');
+    const KEY = 'aie:lab:chunk';
     const initial = text?.value || '';
+
+    function clampOverlap(chunkSize: number, overlapSize: number) {
+      return Math.min(Math.max(0, overlapSize), Math.max(0, chunkSize - 20));
+    }
 
     function makeChunks(source: string, chunkSize: number, overlapSize: number) {
       const clean = source.replace(/\r/g, '').trim();
       if (!clean) return [] as string[];
-      const step = Math.max(1, chunkSize - overlapSize);
+      const effectiveOverlap = clampOverlap(chunkSize, overlapSize);
+      const step = Math.max(20, chunkSize - effectiveOverlap);
       const chunks: string[] = [];
       for (let start = 0; start < clean.length; start += step) {
         const end = Math.min(clean.length, start + chunkSize);
@@ -99,9 +105,16 @@ const sample = `นโยบายการลาพักร้อนของ�
       return chunks;
     }
 
+    function persist() {
+      try {
+        localStorage.setItem(KEY, JSON.stringify({ text: text?.value || '', chunkSize: Number(size?.value || 420), overlap: Number(overlap?.value || 60) }));
+      } catch {}
+    }
+
     function render() {
       const chunkSize = Number(size?.value || 420);
-      const overlapSize = Number(overlap?.value || 60);
+      const rawOverlap = Number(overlap?.value || 60);
+      const overlapSize = clampOverlap(chunkSize, rawOverlap);
       if (sizeOut) sizeOut.textContent = String(chunkSize);
       if (overlapOut) overlapOut.textContent = String(overlapSize);
       const chunks = makeChunks(text?.value || '', chunkSize, overlapSize);
@@ -114,23 +127,27 @@ const sample = `นโยบายการลาพักร้อนของ�
       if (status) status.textContent = `${chunks.length} chunks · ${chunkSize}/${overlapSize}`;
 
       if (output) {
-        output.innerHTML = chunks.map((chunk, i) => `
+        const shown = chunks.slice(0, 100);
+        const extra = chunks.length - shown.length;
+        output.innerHTML = shown.map((chunk, i) => `
           <article class="chunk-card">
             <header><span class="mono">CHUNK ${String(i + 1).padStart(2, '0')}</span><span class="mono">${chunk.length} chars</span></header>
             <p>${chunk.replace(/[&<>]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;' }[c] || c))}</p>
             ${i > 0 ? `<small class="mono">ทับซ้อนกับ chunk ก่อน ${Math.min(overlapSize, chunk.length)} ตัวอักษร</small>` : ''}
-          </article>`).join('');
+          </article>`).join('') + (extra > 0 ? `<p class="lab__hint">แสดง 100 จาก ${chunks.length} chunks (+${extra} more)</p>` : '');
       }
 
       const issues: string[] = [];
-      if (overlapSize >= chunkSize) issues.push('Overlap ต้องน้อยกว่า chunk size ไม่อย่างนั้นการเลื่อนหน้าต่างจะไม่เดินหน้า');
+      if (rawOverlap >= chunkSize) issues.push('Overlap ต้องน้อยกว่า chunk size ไม่อย่างนั้นการเลื่อนหน้าต่างจะไม่เดินหน้า');
       if (chunkSize < 180) issues.push('Chunk เล็กมากอาจทำให้ขาดบริบท ต้องพึ่ง metadata หรือการดึงเพื่อนบ้านเพิ่ม');
       if (chunkSize > 900) issues.push('Chunk ใหญ่อาจทำให้ retrieval ไม่แม่นและเปลือง token');
       if (chunks.length === 0) issues.push('ยังไม่มีข้อความให้แบ่ง');
+      if (chunks.length > 100) issues.push(`chunks จำนวนมาก (${chunks.length}) แสดงผลเพียง 100 รายการแรก`);
       if (warn && warnText) {
         warn.hidden = issues.length === 0;
         warnText.textContent = issues.join(' · ');
       }
+      persist();
     }
 
     root.querySelector('[data-cl-run]')?.addEventListener('click', render);
@@ -143,6 +160,14 @@ const sample = `นโยบายการลาพักร้อนของ�
     size?.addEventListener('input', render);
     overlap?.addEventListener('input', render);
     text?.addEventListener('input', render);
+    try {
+      const saved = JSON.parse(localStorage.getItem(KEY) || 'null');
+      if (saved) {
+        if (saved.text != null && text) text.value = saved.text;
+        if (saved.chunkSize != null && size) size.value = String(saved.chunkSize);
+        if (saved.overlap != null && overlap) overlap.value = String(saved.overlap);
+      }
+    } catch {}
     render();
   }
 </script>

@@ -5,7 +5,7 @@ import { modules, modulesByPhase } from '../data/modules';
 import { phases } from '../data/phases';
 
 ---
-<BaseLayout title="Roadmap 26 สัปดาห์" description="Roadmap เรียน AI Engineer 6 phases 28 modules พร้อม pace calculator และบันทึกความคืบหน้าในเครื่องของคุณ">
+<BaseLayout title="Roadmap 26 สัปดาห์" description={`Roadmap เรียน AI Engineer 6 phases ${modules.length} modules พร้อม pace calculator และบันทึกความคืบหน้าในเครื่องของคุณ`}>
   <header class="page-hero roadmap-hero">
     <div class="container page-hero__grid">
       <div>
@@ -18,9 +18,9 @@ import { phases } from '../data/phases';
         </div>
       </div>
 
-      <div class="flight-plan panel reveal">
+      <div class="flight-plan panel reveal" data-total={modules.length}>
         <div class="flight-plan__top mono"><span>YOUR FLIGHT PLAN</span><span class="text-acid" data-flight-pct>0%</span></div>
-        <div class="flight-plan__ring" data-flight-ring style="--pct: 0">
+        <div class="flight-plan__ring" data-flight-ring role="progressbar" aria-valuemin="0" aria-valuemax={modules.length} aria-valuenow="0" aria-label="ความคืบหน้าหลักสูตร" style="--pct: 0">
           <div class="flight-plan__ring-inner">
             <strong><span data-flight-done>0</span><small>/{modules.length}</small></strong>
             <span class="mono">COMPLETE</span>
@@ -47,11 +47,11 @@ import { phases } from '../data/phases';
         <div>
           <p class="mono small muted">FILTER BY TRACK</p>
           <div class="track-filters">
-            <button class="chip is-active" data-roadmap-track="all">ทั้งหมด</button>
-            <button class="chip" data-roadmap-track="llm">LLM</button>
-            <button class="chip" data-roadmap-track="ml">ML</button>
-            <button class="chip" data-roadmap-track="product">Product</button>
-            <button class="chip" data-roadmap-track="mlops">MLOps</button>
+            <button class="chip is-active" data-roadmap-track="all" aria-pressed="true">ทั้งหมด</button>
+            <button class="chip" data-roadmap-track="llm" aria-pressed="false">LLM</button>
+            <button class="chip" data-roadmap-track="ml" aria-pressed="false">ML</button>
+            <button class="chip" data-roadmap-track="product" aria-pressed="false">Product</button>
+            <button class="chip" data-roadmap-track="mlops" aria-pressed="false">MLOps</button>
           </div>
         </div>
         <div class="toolbar-right">
@@ -114,7 +114,7 @@ import { phases } from '../data/phases';
 
                 <div class="phase__foot">
                   <span class="mono tiny text-faint">PHASE COMPLETE</span>
-                  <div class="progress-track"><span data-phase-bar={phase.id} style="width: 0%"></span></div>
+                  <div class="progress-track" role="progressbar" aria-valuemin="0" aria-valuemax={phaseModules.length} aria-valuenow="0" aria-label={`ความคืบหน้า ${phase.title}`}><span data-phase-bar={phase.id} style="width: 0%"></span></div>
                   <a href={`/roadmap#${phase.id}`} class="mono tiny">#{phase.id}</a>
                 </div>
               </div>
@@ -137,7 +137,7 @@ import { phases } from '../data/phases';
 </BaseLayout>
 
 <script>
-  const TOTAL = 28;
+  const TOTAL = Number(document.querySelector('.flight-plan')?.getAttribute('data-total') || 0) || Number(document.body.dataset.moduleTotal) || 28;
   const getDone = (): string[] => {
     try { return JSON.parse(localStorage.getItem('aie:modules') || '[]'); } catch { return []; }
   };
@@ -149,11 +149,11 @@ import { phases } from '../data/phases';
   function update() {
     const done = getDone();
     const count = done.length;
-    const pct = Math.round((count / TOTAL) * 100);
+    const pct = TOTAL ? Math.round((count / TOTAL) * 100) : 0;
     document.querySelectorAll<HTMLElement>('[data-flight-done]').forEach((el) => { el.textContent = String(count); });
     document.querySelectorAll<HTMLElement>('[data-flight-pct]').forEach((el) => { el.textContent = pct + '%'; });
     document.querySelectorAll<HTMLElement>('[data-flight-remaining]').forEach((el) => { el.textContent = String(TOTAL - count); });
-    document.querySelectorAll<HTMLElement>('[data-flight-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); });
+    document.querySelectorAll<HTMLElement>('[data-flight-ring]').forEach((el) => { el.style.setProperty('--pct', String(pct)); el.setAttribute('aria-valuenow', String(count)); });
 
     const hours = Number(pace?.value || 5);
     const weeks = Math.max(1, Math.ceil(((TOTAL - count) * 4.5) / hours));
@@ -173,16 +173,19 @@ import { phases } from '../data/phases';
       const countEl = section.querySelector<HTMLElement>(`[data-phase-count="${section.dataset.phase}"]`);
       if (countEl) countEl.textContent = `${phaseDone}/${phaseRows.length}`;
       const bar = section.querySelector<HTMLElement>(`[data-phase-bar="${section.dataset.phase}"]`);
-      if (bar) bar.style.width = `${phaseRows.length ? (phaseDone / phaseRows.length) * 100 : 0}%`;
+      if (bar) {
+        bar.style.width = `${phaseRows.length ? (phaseDone / phaseRows.length) * 100 : 0}%`;
+        bar.closest('.progress-track')?.setAttribute('aria-valuenow', String(phaseDone));
+      }
     });
   }
 
   checks.forEach((check) => {
     check.addEventListener('click', () => {
       const row = check.closest<HTMLElement>('[data-roadmap-module]');
-      const api = (window as any).AIE;
+      const api = window.AIE;
       if (!row || !api) return;
-      const active = api.toggleModule(row.dataset.id);
+      const active = api.toggleModule(row.dataset.id || "");
       api.toast(active ? 'บันทึกความคืบหน้าแล้ว ✓' : 'ยกเลิกเครื่องหมายแล้ว');
       update();
     });
@@ -193,7 +196,7 @@ import { phases } from '../data/phases';
   document.querySelectorAll<HTMLButtonElement>('[data-roadmap-track]').forEach((btn) => {
     btn.addEventListener('click', () => {
       track = btn.dataset.roadmapTrack || 'all';
-      document.querySelectorAll<HTMLButtonElement>('[data-roadmap-track]').forEach((b) => b.classList.toggle('is-active', b === btn));
+      document.querySelectorAll<HTMLButtonElement>('[data-roadmap-track]').forEach((b) => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
       let visible = 0;
       rows.forEach((row) => {
         const match = track === 'all' || (row.dataset.tracks || '').split(' ').includes(track);
@@ -212,7 +215,7 @@ import { phases } from '../data/phases';
     localStorage.removeItem('aie:modules');
     window.dispatchEvent(new CustomEvent('aie:progress'));
     update();
-    (window as any).AIE?.toast('ล้างความคืบหน้าแล้ว');
+    window.AIE?.toast('ล้างความคืบหน้าแล้ว');
   });
 
   update();

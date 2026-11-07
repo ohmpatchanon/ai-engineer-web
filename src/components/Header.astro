@@ -27,9 +27,9 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
     </nav>
 
     <div class="header-actions">
-      <a href="/progress" class="header-progress" aria-label="ดูความคืบหน้าของคุณ">
-        <span class="header-progress__ring" data-progress-ring aria-hidden="true">
-          <svg viewBox="0 0 24 24">
+      <a href="/progress" class="header-progress" aria-label="ดูความคืบหน้าของคุณ" data-total={modules.length}>
+        <span class="header-progress__ring" data-progress-ring role="progressbar" aria-valuemin="0" aria-valuemax={modules.length} aria-valuenow="0" aria-label="ความคืบหน้าหลักสูตร">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
             <circle cx="12" cy="12" r="9" class="ring-bg"></circle>
             <circle cx="12" cy="12" r="9" class="ring-fill" data-ring></circle>
           </svg>
@@ -129,17 +129,21 @@ const isActive = (href: string) => path === href || path.startsWith(href + '/');
   }
 
   function updateProgress() {
-    const done = getDone().length;
+    const total = Number(document.querySelector('.header-progress')?.getAttribute('data-total') || 0) || Math.max(1, Number(document.body.dataset.moduleTotal) || 0) || 28;
+    const done = Math.min(getDone().length, total);
     document.querySelectorAll('[data-progress-count]').forEach((el) => { el.textContent = String(done); });
+    document.querySelectorAll('[data-progress-ring]').forEach((ringEl) => {
+      ringEl.setAttribute('aria-valuenow', String(done));
+    });
     document.querySelectorAll('[data-ring]').forEach((ring) => {
       const circle = ring as SVGCircleElement;
       const r = 9;
       const c = 2 * Math.PI * r;
       circle.style.strokeDasharray = String(c);
-      circle.style.strokeDashoffset = String(c - (Math.min(done / 28, 1) * c));
+      circle.style.strokeDashoffset = String(c - (Math.min(done / total, 1) * c));
     });
     document.querySelectorAll('[data-progress-pct]').forEach((el) => {
-      el.textContent = `${Math.round((done / 28) * 100)}%`;
+      el.textContent = `${Math.round((done / total) * 100)}%`;
     });
   }
 

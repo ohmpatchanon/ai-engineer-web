@@ -96,6 +96,7 @@ export const plan: PlanWeek[] = [
     title: 'Fine-tuning และ agents',
     theme: 'Fine-tuning + Agents',
     modules: ['fine-tuning', 'agents-tool-use'],
+    optional: ['multimodal-ai'],
     hours: '10–12 ชั่วโมง',
     deliverable: 'agent เล็กที่ใช้ 2 tools พร้อม max steps, guardrail และ trace log',
     checkpoint: 'ตัดสินใจได้ว่าเมื่อไร fine-tune คุ้มกว่า prompt/retrieval'
@@ -114,8 +115,7 @@ export const plan: PlanWeek[] = [
     week: 12,
     title: 'Monitor, system design และ portfolio',
     theme: 'Reliability + Career',
-    modules: ['monitoring-reliability', 'ai-system-design', 'portfolio-career'],
-    optional: ['responsible-ai-product'],
+    modules: ['monitoring-reliability', 'ai-system-design', 'responsible-ai-product', 'portfolio-career'],
     hours: '10–12 ชั่วโมง',
     deliverable: 'case study 1 ชิ้นพร้อม architecture, eval results, failure cases และบทเรียน',
     checkpoint: 'นำเสนอผลงานใน 5 นาทีโดยตอบคำถาม trade-off ได้'

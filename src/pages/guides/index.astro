@@ -32,8 +32,8 @@ const rest = guides.slice(1);
           <input type="search" placeholder="ค้นหา guide..." data-guide-search aria-label="ค้นหา guide" />
         </div>
         <div class="cats">
-          <button class="chip is-active" data-guide-cat="all">ทั้งหมด</button>
-          {guideCategories.map((cat) => <button class="chip" data-guide-cat={cat}>{cat}</button>)}
+          <button class="chip is-active" data-guide-cat="all" aria-pressed="true">ทั้งหมด</button>
+          {guideCategories.map((cat) => <button class="chip" data-guide-cat={cat} aria-pressed="false">{cat}</button>)}
         </div>
         <span class="mono tiny faint" data-guide-count>{guides.length} guides</span>
       </div>
@@ -78,7 +78,7 @@ const rest = guides.slice(1);
   }
   catBtns.forEach((btn) => btn.addEventListener('click', () => {
     cat = btn.dataset.guideCat || 'all';
-    catBtns.forEach((b) => b.classList.toggle('is-active', b === btn));
+    catBtns.forEach((b) => { b.classList.toggle('is-active', b === btn); b.setAttribute('aria-pressed', String(b === btn)); });
     apply();
   }));
   search?.addEventListener('input', apply);

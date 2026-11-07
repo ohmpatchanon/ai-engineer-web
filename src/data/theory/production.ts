@@ -99,7 +99,7 @@ export const productionLessons: Lesson[] = [
       {
         heading: 'drift คือต้นตอ "เมื่อวานยังดีวันนี้พัง"',
         paragraphs: [
-          'Model doesn\'t "พัง" จากโค้ดที่เปลี่ยน แต่จากสิ่งที่รอบตัวเปลี่ยน: input distribution เปลี่ยน (ผู้ใช้ถามแนวใหม่), data source เปลี่ยน (เอกสารใหม่ format ใหม่), หรือ behaviour ของผู้ใช้เปลี่ยน (กด "ถูกใจ" ต่าง) — กรณี RAG เอกสารเปลี่ยน ทำให้ retrieval เปลี่ยนทั้งระบบ สังเกตแบบเฝ้า: monitor การกระจายของ input, อัตรา refusal, citation rate และ feedback ไม่ใช่แค่ accuracy ตัวเดียว',
+          'โมเดลไม่ได้ "พัง" จากโค้ดที่เปลี่ยน แต่จากสิ่งที่รอบตัวเปลี่ยน: input distribution เปลี่ยน (ผู้ใช้ถามแนวใหม่), data source เปลี่ยน (เอกสารใหม่ format ใหม่), หรือ behaviour ของผู้ใช้เปลี่ยน (กด "ถูกใจ" ต่าง) — กรณี RAG เอกสารเปลี่ยน ทำให้ retrieval เปลี่ยนทั้งระบบ สังเกตแบบเฝ้า: monitor การกระจายของ input, อัตรา refusal, citation rate และ feedback ไม่ใช่แค่ accuracy ตัวเดียว',
           'เมื่อเจอ drift: ต้อง "ดีบักแบบมีหลักฐาน" กลับไปดูตัวอย่างจริงว่าเปลี่ยนตรงไหน (ด้วย trace) แล้วตัดสินใจ: อัปเดตข้อมูล/เอกสาร, ปรับ threshold, ปรับ prompt ใหม่, หรือ re-eval ทั้งชุด — การตอบสนองต้องมี "ปุ่ม" ที่ predefined (runbook) ไม่ใช่การแก้แบบตื่น'
         ],
         callout: {

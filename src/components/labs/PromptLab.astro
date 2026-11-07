@@ -12,7 +12,7 @@ const example = `คุณคือนักวิเคราะห์ใบเ
 ---
 
 <section class="lab" data-prompt-lab>
-  <script type="application/json" data-pl-example is:inline set:html={JSON.stringify(example)}></script>
+  <script type="application/json" data-pl-example-json is:inline set:html={JSON.stringify(example)}></script>
   <div class="lab__bar">
     <span>PROMPT AUDIT / 8 ELEMENTS</span>
     <strong data-pl-status>รอตรวจ</strong>
@@ -33,7 +33,7 @@ const example = `คุณคือนักวิเคราะห์ใบเ
       <div class="lab__result" aria-live="polite">
         <p class="mono tiny faint">QUALITY SCORE</p>
         <p class="lab__score" data-pl-score>0<small>/100</small></p>
-        <div class="lab__meter"><span data-pl-meter></span></div>
+        <div class="lab__meter" role="progressbar" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" aria-label="คะแนนคุณภาพ prompt"><span data-pl-meter></span></div>
         <p class="lab__hint" data-pl-verdict style="margin-top:.6rem">กด “ตรวจ prompt” เพื่อเริ่ม</p>
         <ul class="lab__checklist" data-pl-list></ul>
         <div class="lab__warning" data-pl-warning hidden>
@@ -56,7 +56,7 @@ const example = `คุณคือนักวิเคราะห์ใบเ
     const warning = root.querySelector<HTMLElement>('[data-pl-warning]');
     const status = root.querySelector<HTMLElement>('[data-pl-status]');
     const KEY = 'aie:lab:prompt';
-    const example = JSON.parse(root.querySelector('[data-pl-example]')?.textContent || '""') as string;
+    const example = JSON.parse(root.querySelector('[data-pl-example-json]')?.textContent || '""') as string;
 
     const checks = [
       { id: 'role', label: 'ระบุบทบาทหรือ persona', re: /(คุณคือ|ในฐานะ|บทบาท|acting as|you are|as an? )/i, tip: 'บอกโมเดลว่ามันรับบทเป็นใคร เพื่อกำหนดมุมมองและความเชี่ยวชาญ' },
@@ -77,13 +77,13 @@ const example = `คุณคือนักวิเคราะห์ใบเ
         list.innerHTML = checks.map((c) => {
           const ok = text.length > 0 && c.re.test(text);
           if (ok) passed++;
-          return `<li class="${ok ? 'is-pass' : 'is-fail'}"><span class="mark">✓</span><span><strong>${c.label}</strong><br><span class="lab__hint">${ok ? 'พบองค์ประกอบนี้แล้ว' : c.tip}</span></span></li>`;
+          return `<li class="${ok ? 'is-pass' : 'is-fail'}"><span class="mark">${ok ? '✓' : '✗'}</span><span><strong>${c.label}</strong><br><span class="lab__hint">${ok ? 'พบองค์ประกอบนี้แล้ว' : c.tip}</span></span></li>`;
         }).join('');
       }
       const lengthScore = text.length === 0 ? 0 : Math.min(20, Math.round((Math.min(words, 160) / 160) * 20));
       const score = text.length === 0 ? 0 : Math.min(100, Math.round((passed / checks.length) * 80) + lengthScore);
       if (scoreEl) scoreEl.innerHTML = `${score}<small>/100</small>`;
-      if (meter) meter.style.width = score + '%';
+      if (meter) { meter.style.width = score + '%'; meter.closest('.lab__meter')?.setAttribute('aria-valuenow', String(score)); }
       if (scoreEl) scoreEl.className = 'lab__score ' + (score >= 80 ? 'lab__score--good' : score >= 50 ? 'lab__score--mid' : 'lab__score--low');
       if (verdict) {
         verdict.textContent = text.length === 0
@@ -114,7 +114,7 @@ const example = `คุณคือนักวิเคราะห์ใบเ
       try { localStorage.removeItem(KEY); } catch {}
       if (list) list.innerHTML = '';
       if (scoreEl) scoreEl.innerHTML = '0<small>/100</small>';
-      if (meter) meter.style.width = '0%';
+      if (meter) { meter.style.width = '0%'; meter.closest('.lab__meter')?.setAttribute('aria-valuenow', '0'); }
       if (verdict) verdict.textContent = 'กด “ตรวจ prompt” เพื่อเริ่ม';
       if (status) status.textContent = 'รอตรวจ';
       if (warning) warning.hidden = true;

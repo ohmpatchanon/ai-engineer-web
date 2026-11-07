@@ -177,7 +177,7 @@ export const coreLessons: Lesson[] = [
     teaches: [
       'อธิบายหลักของแบบจำลองแต่ละตระกูลและ trade-off',
       'เลือก "โมเดลแรก" ที่ควรลองจากขนาดข้อมูลและความต้องการอธิบายผล',
-      'เข้าใจความต่างระหว่าง tree-based กับ linear ในเรื่อง eigenvalues ของ feature',
+      'เข้าใจความต่างระหว่าง tree-based กับ linear ในเรื่อง scale และ collinearity ของ feature',
       'รู้ว่าทำไม gradient boosting มักชนะที่นี่ แต่เสียค่า interpretability'
     ],
     keywords: ['linear regression', 'logistic regression', 'decision tree', 'random forest', 'gradient boosting', 'XGBoost', 'scikit-learn'],
