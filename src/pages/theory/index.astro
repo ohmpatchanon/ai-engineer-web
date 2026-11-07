@@ -1,13 +1,16 @@
 ---
 import BaseLayout from '../../layouts/BaseLayout.astro';
 import { ArrowRight, BookOpenText, Compass, Layers } from '@lucide/astro';
-import { lessons } from '../../data/theory';
-import { lessonSequence } from '../../data/theory';
-import { lessonMinutes, lessonWordCount } from '../../data/theory';
+import { getCollection } from 'astro:content';
+import { entryToLesson, lessonMinutes, lessonWordCount } from '../../data/theory/types';
 import { phases } from '../../data/phases';
 import LessonCard from '../../components/LessonCard.astro';
 
-const sequence = lessonSequence();
+const entries = await getCollection('theory');
+const lessons = entries.map(entryToLesson).sort((a, b) => a.number.localeCompare(b.number, 'en', { numeric: true }));
+const sequence = lessons;
+const bySlug = new Map(lessons.map((l) => [l.slug, l]));
+const prereqNumbersFor = (l: (typeof lessons)[number]) => l.prereqLessons.map((slug) => bySlug.get(slug)?.number).filter(Boolean) as string[];
 const totalMinutes = lessons.reduce((sum, l) => sum + lessonMinutes(l), 0);
 const totalWords = lessons.reduce((sum, l) => sum + lessonWordCount(l), 0);
 const byPhase = phases.map((phase) => ({
@@ -81,7 +84,7 @@ const byPhase = phases.map((phase) => ({
               <span class="mono theory-phase__count">{group.items.length} บท</span>
             </div>
             <div class="lesson-grid">
-              {group.items.map((lesson) => <LessonCard lesson={lesson} />)}
+              {group.items.map((lesson) => <LessonCard lesson={lesson} prereqNumbers={prereqNumbersFor(lesson)} />)}
             </div>
           </div>
         ))}

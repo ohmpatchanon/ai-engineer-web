@@ -1,27 +1,15 @@
 import type { Level } from '../types';
+import type { CollectionEntry } from 'astro:content';
 
 /**
  * ชั้นเนื้อหาความรู้ (Theory) — โหมดตำรา
- * แยกจาก modules (โครงเรียน + ฝึกปฏิบัติ) ให้อ่านแล้วเข้าใจหลักการแบบยาว-ลึก
- * ทุก lesson โยงกลับไปที่ module ที่เกี่ยวข้องด้วย `linkedModules`
+ * แหล่งข้อมูลจริงคือ Markdown ใน src/content/theory/*.md
+ * (Astro Content Layer collection `theory`, นิยามใน src/content.config.ts)
+ * type นี้เป็น lesson-like object ที่ map มาจาก entry.data + entry.body
+ * เพื่อให้ component เดิม (LessonCard ฯลฯ) รับ prop เดิมได้
  */
 
-export interface TheoryFormula {
-  title: string;      // ชื่อสูตร/สัญลักษณ์
-  plain: string;      // สูตรในรูปแบบข้อความ (render เป็น mono block)
-  note: string;       // ความหมายสั้น ๆ ของสูตร
-}
-
-export interface TheorySection {
-  heading: string;
-  paragraphs?: string[];                    // เนื้อหาแบบ long-form
-  bullets?: string[];
-  formula?: TheoryFormula;                  // ตาราง/บล็อกสูตร
-  code?: { lang: string; content: string }; // pseudocode หรือโค้ดประกอบ
-  callout?: { label: string; text: string }; // จุดที่ต้องจำ/ต้องระวัง
-  example?: { title: string; body: string }; // ตัวอย่างนำไปใช้
-  figure?: { title: string; path: string; alt?: string; caption?: string }; // ไดอะแกรม SVG ใน public/diagrams/
-}
+export type TheoryEntry = CollectionEntry<'theory'>;
 
 export interface Lesson {
   id: string;                     // สั้น ไม่ซ้ำ ใช้เป็น key
@@ -35,26 +23,32 @@ export interface Lesson {
   prereqLessons: string[];        // slug ของทฤษฎีบทก่อนหน้าที่ควรอ่านก่อน (ว่าง = ไม่มี)
   linkedModules: string[];        // module slugs ที่เกี่ยวข้อง -> cross-link
   teaches: string[];              // สิ่งที่ผู้อ่านจะเข้าใจได้หลังอ่าน
-  sections: TheorySection[];
   keywords: string[];             // ใช้ใน search
   updated: string;
+  body?: string;                  // raw Markdown body (จาก entry.body) สำหรับนับคำ/นาที
 }
 
-export function lessonWordCount(lesson: Lesson): number {
-  const chars = lesson.sections.reduce((sum, section) => {
-    const text = [
-      ...(section.paragraphs ?? []),
-      ...(section.bullets ?? []),
-      section.formula?.note ?? '',
-      section.callout?.text ?? '',
-      section.example?.body ?? ''
-    ].join(' ');
-    return sum + text.replace(/\s+/g, '').length;
-  }, 0);
+/** Map แถว Content Layer entry ให้เป็น lesson-like object */
+export function entryToLesson(entry: TheoryEntry): Lesson {
+  return { ...entry.data, body: entry.body };
+}
+
+export function bodyWordCount(body: string): number {
+  const chars = body.replace(/\s+/g, '').length;
   // Thai has no spaces between words — estimate words from characters (ตัวอักษร ÷ 5)
   return Math.round(chars / 5);
 }
 
-export function lessonMinutes(lesson: Lesson): number {
-  return Math.max(4, Math.round(lessonWordCount(lesson) / 150));
+export function bodyMinutes(body: string): number {
+  return Math.max(4, Math.round(bodyWordCount(body) / 150));
+}
+
+export function lessonWordCount(lesson: { body?: string } | string): number {
+  const body = typeof lesson === 'string' ? lesson : (lesson.body ?? '');
+  return bodyWordCount(body);
+}
+
+export function lessonMinutes(lesson: { body?: string } | string): number {
+  const body = typeof lesson === 'string' ? lesson : (lesson.body ?? '');
+  return bodyMinutes(body);
 }

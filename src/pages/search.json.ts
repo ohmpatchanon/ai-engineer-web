@@ -1,5 +1,5 @@
+import { getCollection } from 'astro:content';
 import { modules } from '../data/modules';
-import { lessons } from '../data/theory';
 import { guides } from '../data/guides';
 import { exercises } from '../data/exercises';
 import { projects } from '../data/projects';
@@ -7,7 +7,9 @@ import { paths } from '../data/paths';
 import { glossary } from '../data/glossary';
 import { interviewQuestions } from '../data/interview';
 
-export const GET = () => {
+export const GET = async () => {
+  const theoryEntries = await getCollection('theory');
+  const lessons = theoryEntries.map((e) => e.data);
   const items = [
     ...modules.map((m) => ({
       title: m.title,

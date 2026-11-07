@@ -22,10 +22,13 @@ src/data/glossary.ts       105 glossary terms
 src/data/resources.ts      49 resources
 src/data/plan.ts           แผนเรียน 12 สัปดาห์
 src/data/cheatsheets.ts    8 cheat sheets
+src/content/theory/*.md    20 บททฤษฎี (Markdown + frontmatter — ดูข้อ 2.12)
+src/content.config.ts      นิยาม Content Layer collection `theory`
+src/data/theory/*          shim (types + async helpers) บน collection ข้างบน
 src/pages/**/              route ที่ generate จากข้อมูล (getStaticPaths)
 ```
 
-Route ที่ข้อมูลเป็นตัวกำหนด: `/modules/[slug]`, `/guides/[slug]`, `/exercises/[slug]`, `/projects/[slug]`, `/paths/[slug]` — เพิ่ม entry ใน array ข้อมูลแล้วหน้าใหม่จะถูกสร้างให้อัตโนมัติตอน build
+Route ที่ข้อมูลเป็นตัวกำหนด: `/modules/[slug]`, `/guides/[slug]`, `/exercises/[slug]`, `/projects/[slug]`, `/paths/[slug]`, `/theory/[slug]` — เพิ่ม entry ใน array ข้อมูล (หรือไฟล์ `.md` ใน `src/content/theory/` สำหรับ theory) แล้วหน้าใหม่จะถูกสร้างให้อัตโนมัติตอน build
 
 ---
 
@@ -183,42 +186,42 @@ Lab ประเภท interactive ต้องมี **component** ลงทะ
 
 `id` ใช้เป็น anchor ของหน้าและปุ่มกระโดด — ต้อง unique
 
-### 2.12 Theory Lesson — ชั้นความรู้เชิงลึก (ใน `src/data/theory/*.ts`)
+### 2.12 Theory Lesson — ชั้นความรู้เชิงลึก (Markdown: `src/content/theory/*.md`)
 
-ชั้นทฤษฎีเป็น "โหมดตำรา" แยกจาก modules ที่เน้นลงมือทำ บทเรียนแบ่งตาม phase เป็นไฟล์: `foundations.ts`, `core.ts`, `deep.ts`, `llm.ts`, `llm_advanced.ts`, `production.ts`, `impact.ts` แล้วรวมที่ `src/data/theory/index.ts`
+ชั้นทฤษฎีเป็น "โหมดตำรา" แยกจาก modules ที่เน้นลงมือทำ ข้อมูลจริงอยู่ใน **Astro Content Layer** — ไฟล์ Markdown หนึ่งไฟล์ต่อหนึ่งบทที่ `src/content/theory/<slug>.md` นิยาม collection ที่ `src/content.config.ts` (`theory`, loader `glob({ pattern: '**/*.md', base: './src/content/theory' })`) และ schema frontmatter แบบเดียวกับด้านล่าง ส่วน `src/data/theory/types.ts` + `index.ts` เป็น shim ที่ map `entry.data + entry.body` ให้เป็น lesson-like object พร้อม helper `getAllLessons()` / `getLessonBySlug()` / `lessonMinutes()` / `lessonWordCount()` (นับจาก `body`)
 
-```ts
-{
-  id: 't-rag',               // สั้น ไม่ซ้ำ
-  number: 'T.13',            // เรียงตามลำดับการอ่าน (T.01 →)
-  slug: 'rag-inside',        // kebab-case, URL: /theory/<slug>
-  phase: 'llm-engineering',  // phase id จาก phases.ts
-  title: 'RAG ภายในระบบ: ...',
-  en: 'Retrieval-Augmented Generation',
-  summary: '1-2 ประโยค',
-  level: 'กลาง',             // 'เริ่มต้น' | 'กลาง' | 'สูง'
-  prereqLessons: ['embeddings-and-search', 'how-llms-behave'],  // slug ของทฤษฎีที่ควรอ่านก่อน
-  linkedModules: ['rag-systems', 'llm-evaluation'],             // module slugs ที่เกี่ยวข้อง
-  teaches: ['สิ่งที่ผู้อ่านจะเข้าใจได้หลังอ่าน', '...'],
-  keywords: ['RAG', 'chunking'],
-  updated: 'ต.ค. 2026',
-  sections: [ TheorySection[] ]
-}
+```md
+---
+id: "t-rag"               # สั้น ไม่ซ้ำ
+number: "T.13"            # เรียงตามลำดับการอ่าน (T.01 →)
+slug: "rag-inside"        # kebab-case, URL: /theory/<slug> (ชื่อไฟล์ต้องตรงกับ slug)
+phase: "llm-engineering"  # phase id จาก phases.ts (string อิสระ)
+title: "RAG ภายในระบบ: ..."
+en: "Retrieval-Augmented Generation"
+summary: "1-2 ประโยค"
+level: "กลาง"             # ต้อง: 'เริ่มต้น' | 'กลาง' | 'สูง' (z.enum ใน schema)
+prereqLessons: ["embeddings-and-search", "how-llms-behave"]  # slug ของทฤษฎีที่ควรอ่านก่อน
+linkedModules: ["rag-systems", "llm-evaluation"]             # module slugs ที่เกี่ยวข้อง
+teaches: ["สิ่งที่ผู้อ่านจะเข้าใจได้หลังอ่าน", "..."]
+keywords: ["RAG", "chunking"]
+updated: "ต.ค. 2026"
+---
+## ชื่อหัวข้อ (H2 = TOC หนึ่งข้อ + section หนึ่งส่วน)
+ย่อหน้าอธิบายยาวแบบ long-form ...
+- bullet ได้ตามปกติ
 ```
 
-`TheorySection` (นิยามใน `src/data/theory/types.ts`) มี block ที่ใช้ได้:
+**รูปประโยค Markdown ที่ใช้ใน body** (หน้า `/theory/[slug]` render ตรง ๆ ผ่าน `Content`):
 
-```ts
-{
-  heading: 'ชื่อหัวข้อ',
-  paragraphs: ['ข้อความยาว ...', 'ย่อหน้าถัดไป ...'],   // เนื้อหาหลักแบบ long-form
-  bullets: ['ข้อหนึ่ง', ...],
-  formula: { title: 'ชื่อสูตร', plain: 'x = y', note: 'ความหมายสั้น ๆ' },   // บล็อกสูตร
-  code: { lang: 'python', content: '...' },
-  callout: { label: 'TAKEAWAY', text: '...' },
-  example: { title: 'อุปมา/ตัวอย่าง', body: '...' }      // กล่องตัวอย่าง
-}
-```
+| รูปแบบ | ใช้เมื่อไร |
+| --- | --- |
+| `## หัวข้อ` (H2) | หัวข้อหลักของบท — ถูกดึงเป็น TOC อัตโนมัติ (`headings` จาก `entry.render()`, anchor = slug ของหัวข้อ) |
+| `### สูตร: <ชื่อสูตร>` (H3) + บรรทัดถัดไปเป็นสูตร plain + `> คำอธิบาย` | บล็อกสูตร — `h3` แสดงเป็น mono สี acid, บรรทัดหลัง `h3` ถูก style เป็น mono block, blockquote ที่ตามมาคือคำอธิบายสูตร |
+| `> [!TAKEAWAY] / > [!STOP: ...]` + `> ข้อความ` | callout จุดจำ/ต้องระวัง (render เป็น blockquote) |
+| `**ตัวอย่าง — <ชื่อ>**` + ย่อหน้า | ตัวอย่าง/อุปมาในเนื้อความ |
+| `![alt](/diagrams/<ชื่อ>.svg)` + บรรทัดถัดไป `*<caption>*` | ไดอะแกรม SVG ใน `public/diagrams/` (ปัจจุบัน 10 ไฟล์) — path ต้องเริ่ม `/diagrams/` และไฟล์ต้องมีจริงใน `public/` |
+| ```` ```python / ```pytorch / ```json / ```text ```` | โค้ดตัวอย่าง — ต้องปิด fence ให้ครบ ไม่ใช้ indent-code |
+| `- ข้อ` | bullet list |
 
 **กฎการเขียนเนื้อหาทฤษฎี** (จากความต้องการของโปรเจกต์):
 - ต้อง**ละเอียด-อัดแน่น**: 1 บทควรมีหลายหัวข้อ แต่ละหัวข้อยาวพอให้ "อ่านแล้วเข้าใจ" เป็นหลักการ ไม่ใช่ลิสต์ bullet สั้น ๆ
@@ -254,12 +257,13 @@ Lab ประเภท interactive ต้องมี **component** ลงทะ
 
 ### วิธีเพิ่มบททฤษฎี (Theory lesson)
 
-1. เปิดไฟล์ phase ที่ตรงใน `src/data/theory/` (สร้างไฟล์ใหม่ได้ แล้วไปรวมที่ `index.ts`)
-2. เพิ่ม object `Lesson` ตาม schema ข้อ 2.12 — กำหนด `id`/`slug` ใหม่ และ `number` เป็นลำดับถัดไปของ sequence
+1. สร้างไฟล์ใหม่ `src/content/theory/<slug>.md` — ชื่อไฟล์ (ไม่รวม `.md`) ต้องตรงกับ frontmatter `slug` เพราะ Content Layer ใช้ชื่อไฟล์เป็น `id` และใช้ `slug` สร้าง URL `/theory/<slug>`
+2. ใส่ frontmatter ครบทุก field ตาม schema ข้อ 2.12 — กำหนด `id`/`slug` ใหม่ และ `number` เป็นลำดับถัดไปของ sequence (`T.01`, `T.02`, ...) ไม่ต้องเพิ่มไฟล์ phase ใด ๆ อีก
 3. เติม `prereqLessons` (slug ของบทที่ควรอ่านก่อน ถ้าเป็นบทเปิดใช้ `[]`) และ `linkedModules` (ต้องเป็น module slug ที่มีจริง)
-4. เขียน `sections` ให้ละเอียด อัดแน่น เข้าใจง่าย ตามกฎในข้อ 2.12 (ต้องถูกต้องตามทฤษฎี + ไม่มีอักขระหลุดภาษา)
-5. ตรวจสอบ: `npm run build`, `npm run check`, แล้ว `node --input-type=module -e "import('./src/data/theory/index.ts').then(m=>console.log(m.lessonSequence().map(l=>l.number).join(',')))"` (Astro resolve ได้ แม้ node ต้องใช้ path เต็มหาก import ไฟล์เดียว)
-6. หน้า `/theory` render หน้าใหม่ให้อัตโนมัติ และ `/search.json` + หน้าแรก feature 3 บทแรก ใช้ข้อมูลจริง — ไม่ต้องแก้
+4. เขียน body เป็น Markdown ตามตารางรูปประโยคในข้อ 2.12 ให้ละเอียด อัดแน่น เข้าใจง่าย (ต้องถูกต้องตามทฤษฎี + ไม่มีอักขระหลุดภาษา) — หัวข้อหลักใช้ `##`, สูตรใช้ `### สูตร: ...`, รูปใช้ `![alt](/diagrams/*.svg)`, โค้ดใช้ fenced code block
+5. ไม่ต้องแก้ `src/content.config.ts` (collection โหลด `*.md` ทุกไฟล์อัตโนมัติ), `src/data/theory/*` (shim อ่าน collection), หรือหน้าเว็บใด ๆ — route, TOC, `/theory` index, `/search.json` และหน้าแรก (feature 3 บทแรก) อ่านจาก collection เอง
+6. ตรวจสอบ: `npm run build`, `npm run check` — build จะ fail ถ้า frontmatter ขาด field ผิด type, `slug` ซ้ำ, หรือไฟล์รูปใน `public/diagrams/` หาย
+7. ตรวจ slug ซ้ำด้วย: `grep -h "^slug:" src/content/theory/*.md | sort | uniq -d` (ควรว่าง) และตรวจว่าไดอะแกรมที่อ้างถึงมีไฟล์จริง: `grep -rhoE "/diagrams/[a-z0-9-]+\.svg" src/content/theory | sort -u` เทียบกับ `ls public/diagrams/`
 
 ## 5. วิธีเพิ่ม lab แบบ interactive
 Lab ที่เป็น `kind` ไม่ใช่ `quiz` ต้องมี component ที่คล้าย trait ว่า "เครื่องมือในเบราว์เซอร์":

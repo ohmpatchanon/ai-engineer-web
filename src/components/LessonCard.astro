@@ -1,13 +1,14 @@
 ---
 import { ArrowUpRight, Clock } from '@lucide/astro';
-import type { Lesson } from '../data/theory';
-import { lessonMinutes } from '../data/theory';
-import { lessonBySlug } from '../data/theory';
+import type { Lesson } from '../data/theory/types';
+import { lessonMinutes } from '../data/theory/types';
 
-interface Props { lesson: Lesson; }
-const { lesson } = Astro.props;
+interface Props {
+  lesson: Lesson;
+  prereqNumbers?: string[];
+}
+const { lesson, prereqNumbers = [] } = Astro.props;
 const minutes = lessonMinutes(lesson);
-const prereq = lesson.prereqLessons.map((slug) => lessonBySlug[slug]).filter(Boolean);
 ---
 <a href={`/theory/${lesson.slug}`} class="lesson-card panel panel--hover" data-lesson-card>
   <div class="lesson-card__top">
@@ -20,10 +21,10 @@ const prereq = lesson.prereqLessons.map((slug) => lessonBySlug[slug]).filter(Boo
     <h3>{lesson.title}</h3>
     <p class="lesson-card__summary">{lesson.summary}</p>
   </div>
-  {prereq.length > 0 && (
+  {prereqNumbers.length > 0 && (
     <div class="lesson-card__prereq">
       <span class="mono micro">อ่านก่อน: </span>
-      <span class="mono">{prereq.map((p) => p.number).join(', ')}</span>
+      <span class="mono">{prereqNumbers.join(', ')}</span>
     </div>
   )}
 </a>

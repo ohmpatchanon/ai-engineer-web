@@ -1,17 +1,18 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
 import { ArrowRight, Compass, ShieldCheck, Users, BookOpen, Code, Scale, Lock, FlaskConical } from '@lucide/astro';
+import { getCollection } from 'astro:content';
 import { modules } from '../data/modules';
-import { lessons } from '../data/theory';
 import { guides } from '../data/guides';
 import { exercises } from '../data/exercises';
 import { projects } from '../data/projects';
 import { glossary } from '../data/glossary';
 import { resources } from '../data/resources';
 
+const theoryEntries = await getCollection('theory');
 const stats = [
   { value: String(modules.length), label: 'modules' },
-  { value: String(lessons.length), label: 'ทฤษฎี' },
+  { value: String(theoryEntries.length), label: 'ทฤษฎี' },
   { value: String(guides.length), label: 'guides' },
   { value: String(exercises.length), label: 'labs' },
   { value: String(projects.length), label: 'projects' },
