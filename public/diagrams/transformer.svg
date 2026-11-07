@@ -1,0 +1,68 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Transformer block with token embedding, positional encoding, Q K V attention, and scaled dot product">
+<title>Transformer block: attention and positional encoding</title>
+<desc>Tokens are embedded and positional encoding is added. Q, K, V are linear projections. Scaled dot-product attention is softmax of Q K transpose over root d k times V. Residual and norm follow.</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="30" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">Transformer block: Q·K attention + order signal</text>
+<text x="30" y="50" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Attention alone is order-blind. Positional encoding injects order; Q,K,V then decide what to attend.</text>
+<g>
+<rect x="30" y="66" width="540" height="350" rx="12" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<rect x="110" y="372" width="380" height="28" rx="7" fill="#17251c"/>
+<text x="300" y="390" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="600" fill="#f1f4e9">Token ids → Token Embedding + Positional Encoding</text>
+<line x1="300" y1="372" x2="300" y2="344" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<rect x="150" y="284" width="300" height="56" rx="8" fill="#6d28d9" fill-opacity="0.12" stroke="#6d28d9" stroke-width="2"/>
+<text x="300" y="306" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="700" fill="#5b21b6">x = E_token + P</text>
+<text x="300" y="323" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">P: sinusoidal · learned · RoPE / relative</text>
+<line x1="300" y1="284" x2="300" y2="258" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<g>
+<rect x="70" y="190" width="120" height="62" rx="8" fill="#ffffff" stroke="#1d4ed8" stroke-width="2"/>
+<rect x="240" y="190" width="120" height="62" rx="8" fill="#ffffff" stroke="#15803d" stroke-width="2"/>
+<rect x="410" y="190" width="120" height="62" rx="8" fill="#ffffff" stroke="#b45309" stroke-width="2"/>
+<text x="130" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#1e3a8a">Q = x Wp</text>
+<text x="130" y="232" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">queries: look for</text>
+<text x="300" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#166534">K = x Wk</text>
+<text x="300" y="232" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">keys: advertise</text>
+<text x="470" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#92400e">V = x Wv</text>
+<text x="470" y="232" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">values: content</text>
+<line x1="130" y1="190" x2="210" y2="258" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="300" y1="190" x2="300" y2="258" stroke="#15803d" stroke-width="1.5" stroke-dasharray="4 3"/>
+<line x1="470" y1="190" x2="390" y2="258" stroke="#b45309" stroke-width="1.5" stroke-dasharray="4 3"/>
+</g>
+<rect x="110" y="110" width="380" height="68" rx="8" fill="#17251c"/>
+<text x="300" y="135" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="13" fill="#d3fa7c">Attention = softmax(QKᵀ / √dₖ) V</text>
+<text x="300" y="155" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#a1ada2">scores n×n → weights → weighted sum</text>
+<text x="300" y="170" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#a1ada2">Q,K,V ∈ ℝⁿˣᵈᵏ · scale prevents saturated softmax</text>
+<g>
+<line x1="150" y1="190" x2="210" y2="110" stroke="#17251c" stroke-width="1.5"/>
+<line x1="300" y1="190" x2="300" y2="180" stroke="#17251c" stroke-width="1.5"/>
+<line x1="450" y1="190" x2="390" y2="110" stroke="#17251c" stroke-width="1.5"/>
+<line x1="300" y1="110" x2="300" y2="92" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+</g>
+<rect x="140" y="82" width="320" height="24" rx="6" fill="#ffffff" stroke="#d9dfd0"/>
+<text x="300" y="98" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">× H heads  →  concat  →  out proj  →  + Residual + Norm</text>
+</g>
+<g>
+<rect x="595" y="66" width="175" height="180" rx="10" fill="#f6f5ed" stroke="#d9dfd0"/>
+<text x="682" y="88" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="800" fill="#17251c">Why this works</text>
+<text x="612" y="110" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">• Parallel over n tokens</text>
+<text x="612" y="130" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">• Every token sees every</text>
+<text x="612" y="146" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">  other token in 1 hop</text>
+<text x="612" y="168" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">• Cost O(n²·d)</text>
+<text x="612" y="188" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">• Decoder masks future</text>
+<text x="682" y="214" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#6d28d9">causal mask</text>
+<text x="682" y="230" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">token i cannot see j &gt; i</text>
+</g>
+<g>
+<rect x="595" y="260" width="175" height="156" rx="10" fill="#ffffff" stroke="#d9dfd0"/>
+<text x="682" y="282" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="800" fill="#17251c">Feed-Forward</text>
+<text x="682" y="302" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">FFN(x)</text>
+<text x="682" y="320" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">= W₂ σ(W₁ x)</text>
+<text x="682" y="344" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">per-token, position-wise</text>
+<text x="682" y="362" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">then + Residual + Norm</text>
+<text x="682" y="390" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">stack × N layers</text>
+</g>
+</svg>

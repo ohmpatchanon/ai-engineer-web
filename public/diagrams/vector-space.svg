@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Vector space diagram showing two vectors a and b, angle theta, and cosine similarity">
+<title>Vector space and cosine similarity</title>
+<desc>Two vectors a and b from the same origin with angle theta between them. Cosine similarity is the dot product divided by the product of norms and equals cos(theta).</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#1d4ed8"/>
+</marker>
+<marker id="arrT" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="34" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">Vector space: direction is meaning</text>
+<text x="30" y="54" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Cosine similarity measures the angle between two embedding vectors, not their length</text>
+<g>
+<rect x="30" y="70" width="430" height="330" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="46" y="96" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">2-D projection of a higher-D space</text>
+<g stroke="#e8ecdf" stroke-width="1">
+<line x1="60" y1="130" x2="430" y2="130"/>
+<line x1="60" y1="170" x2="430" y2="170"/>
+<line x1="60" y1="210" x2="430" y2="210"/>
+<line x1="120" y1="110" x2="120" y2="380"/>
+<line x1="180" y1="110" x2="180" y2="380"/>
+<line x1="240" y1="110" x2="240" y2="380"/>
+<line x1="300" y1="110" x2="300" y2="380"/>
+<line x1="360" y1="110" x2="360" y2="380"/>
+</g>
+<line x1="60" y1="340" x2="440" y2="340" stroke="#17251c" stroke-width="1.5" marker-end="url(#arrT)"/>
+<line x1="100" y1="380" x2="100" y2="110" stroke="#17251c" stroke-width="1.5" marker-end="url(#arrT)"/>
+<text x="444" y="345" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#17251c">x</text>
+<text x="88" y="108" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#17251c">y</text>
+<circle cx="100" cy="340" r="5" fill="#17251c"/>
+<text x="82" y="366" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#17251c">O</text>
+<line x1="100" y1="340" x2="340" y2="250" stroke="#1d4ed8" stroke-width="4" marker-end="url(#arrB)"/>
+<line x1="100" y1="340" x2="270" y2="150" stroke="#15803d" stroke-width="4" marker-end="url(#arrB)"/>
+<path d="M 165 318 A 78 78 0 0 1 148 267" fill="none" stroke="#b91c1c" stroke-width="2"/>
+<text x="158" y="306" font-family="ui-monospace, Menlo, monospace" font-size="15" font-weight="700" fill="#b91c1c">θ</text>
+<text x="352" y="252" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#1d4ed8">a</text>
+<text x="282" y="152" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#15803d">b</text>
+<text x="215" y="300" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">||a||</text>
+<text x="180" y="235" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">||b||</text>
+<line x1="100" y1="340" x2="340" y2="340" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="4 4"/>
+<line x1="340" y1="250" x2="340" y2="340" stroke="#1d4ed8" stroke-width="1.5" stroke-dasharray="4 4"/>
+<text x="236" y="336" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1d4ed8">proj</text>
+</g>
+<g>
+<rect x="485" y="70" width="285" height="330" rx="10" fill="#17251c"/>
+<text x="503" y="98" font-family="ui-monospace, Menlo, monospace" font-size="11" letter-spacing="2" fill="#d3fa7c">FORMULAS</text>
+<text x="503" y="126" font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#f1f4e9">a · b = Σ aᵢ × bᵢ</text>
+<text x="503" y="150" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#a1ada2">sum of element-wise products</text>
+<line x1="503" y1="162" x2="752" y2="162" stroke="#334133" stroke-width="1"/>
+<text x="503" y="188" font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#f1f4e9">a · b = ||a|| ||b|| cos θ</text>
+<text x="503" y="212" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#a1ada2">same angle, any lengths</text>
+<line x1="503" y1="224" x2="752" y2="224" stroke="#334133" stroke-width="1"/>
+<text x="503" y="250" font-family="ui-monospace, Menlo, monospace" font-size="14" fill="#d3fa7c">cos θ = (a·b) / (||a|| ||b||)</text>
+<text x="503" y="272" font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#a1ada2">row cosine similarity</text>
+<line x1="503" y1="284" x2="752" y2="284" stroke="#334133" stroke-width="1"/>
+<g font-family="ui-monospace, Menlo, monospace" font-size="12" fill="#f1f4e9">
+<text x="503" y="308">cos = 1   same direction</text>
+<text x="503" y="330">cos = 0   orthogonal (θ = 90°)</text>
+<text x="503" y="352">cos = -1  opposite (θ = 180°)</text>
+</g>
+</g>
+<text x="30" y="426" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Normalize the vectors (a-hat = a / ||a||) and cosine similarity becomes just a dot product: a-hat · b-hat = cos θ.</text>
+</svg>

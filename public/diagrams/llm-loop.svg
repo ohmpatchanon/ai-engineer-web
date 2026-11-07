@@ -1,0 +1,65 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="LLM inference loop: prefill versus decode, KV cache growth">
+<title>LLM inference: prefill versus decode and KV cache</title>
+<desc>Prefill processes the whole prompt in parallel and fills the KV cache. Decode generates one token at a time, appending K and V and reading the whole cache each step. Cache memory grows linearly with sequence length.</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="30" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">LLM loop: prefill once, decode one token at a time</text>
+<text x="30" y="50" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Prefill is parallel and compute-bound. Decode is serial and memory-bandwidth-bound reading the cache.</text>
+<g>
+<rect x="30" y="66" width="350" height="180" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="48" y="90" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#1e3a8a">① PREFILL — whole prompt at once</text>
+<text x="48" y="108" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">matrix × matrix · all positions in parallel</text>
+<g>
+<rect x="60" y="120" width="36" height="36" rx="6" fill="#1d4ed8" fill-opacity="0.15" stroke="#1d4ed8"/>
+<rect x="100" y="120" width="36" height="36" rx="6" fill="#1d4ed8" fill-opacity="0.15" stroke="#1d4ed8"/>
+<rect x="140" y="120" width="36" height="36" rx="6" fill="#1d4ed8" fill-opacity="0.15" stroke="#1d4ed8"/>
+<rect x="180" y="120" width="36" height="36" rx="6" fill="#1d4ed8" fill-opacity="0.15" stroke="#1d4ed8"/>
+<rect x="220" y="120" width="36" height="36" rx="6" fill="#1d4ed8" fill-opacity="0.15" stroke="#1d4ed8"/>
+<text x="60" y="172" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">prompt tokens p₀ … pₙ</text>
+<line x1="138" y1="156" x2="138" y2="182" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<rect x="60" y="182" width="250" height="34" rx="6" fill="#1d4ed8" fill-opacity="0.10" stroke="#1d4ed8"/>
+<text x="185" y="203" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">→ KV cache: K₀…Kₙ, V₀…Vₙ</text>
+<text x="48" y="234" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">Slow first token = TTFT. GPU is busy, not waiting.</text>
+</g>
+<text x="48" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">Compute-bound: big parallel matmuls.</text>
+</g>
+<g>
+<rect x="420" y="66" width="350" height="180" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="438" y="90" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#15803d">② DECODE — 1 token per step</text>
+<text x="438" y="108" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">matrix × vector · attend over full cache</text>
+<g>
+<rect x="450" y="120" width="200" height="34" rx="6" fill="#15803d" fill-opacity="0.10" stroke="#15803d"/>
+<text x="550" y="141" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">cache  [K₀V₀ … KₜVₜ]</text>
+<line x1="550" y1="154" x2="550" y2="170" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<rect x="450" y="170" width="200" height="34" rx="6" fill="#ffffff" stroke="#17251c" stroke-width="2"/>
+<text x="550" y="191" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">sample next token tₜ₊₁</text>
+<line x1="650" y1="187" x2="690" y2="187" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<path d="M690 187 C 710 150, 700 120, 650 120" fill="none" stroke="#17251c" stroke-width="1.5" stroke-dasharray="4 3"/>
+<text x="468" y="224" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#17251c">Append K,V → loop. Never recompute old K,V.</text>
+<text x="468" y="238" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">Step time set by reading the cache.</text>
+</g>
+<text x="438" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">Memory-bound: bandwidth rules.</text>
+</g>
+<g>
+<rect x="30" y="262" width="740" height="148" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="48" y="286" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#17251c">KV cache memory grows linearly with tokens</text>
+<text x="48" y="304" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">bytes ≈ 2 × n_layers × n_kv_heads × d_head × seq_len × bytes_per_elem × batch</text>
+<line x1="80" y1="384" x2="730" y2="384" stroke="#17251c" stroke-width="1.5" marker-end="url(#arrB)"/>
+<line x1="80" y1="384" x2="80" y2="320" stroke="#17251c" stroke-width="1.5" marker-end="url(#arrB)"/>
+<text x="730" y="398" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">tokens</text>
+<text x="40" y="328" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">MB</text>
+<polygon points="80,384 200,366 320,348 440,330 560,318 700,318" fill="#1d4ed8" fill-opacity="0.10"/>
+<polyline points="80,384 200,366 320,348 440,330 560,318 700,318" fill="none" stroke="#1d4ed8" stroke-width="2.5"/>
+<g font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">
+<text x="90" y="378">prefill</text>
+<text x="470" y="316">decode: +1 block per token</text>
+<text x="590" y="310">context cap hits here</text>
+</g>
+<line x1="560" y1="318" x2="560" y2="384" stroke="#b91c1c" stroke-width="2" stroke-dasharray="4 3"/>
+<text x="48" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#b91c1c">Long context = large cache. Watch max length, batch, and quantization (fp16 → int8).</text>
+</g>
+</svg>

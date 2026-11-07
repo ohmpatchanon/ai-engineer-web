@@ -20,6 +20,7 @@ export interface TheorySection {
   code?: { lang: string; content: string }; // pseudocode หรือโค้ดประกอบ
   callout?: { label: string; text: string }; // จุดที่ต้องจำ/ต้องระวัง
   example?: { title: string; body: string }; // ตัวอย่างนำไปใช้
+  figure?: { title: string; path: string; alt?: string; caption?: string }; // ไดอะแกรม SVG ใน public/diagrams/
 }
 
 export interface Lesson {

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Bias variance tradeoff: underfit, good fit, and overfit curves">
+<title>Bias-variance tradeoff: underfit, good fit, overfit</title>
+<desc>Three fits to the same noisy points. Underfit has high bias, good fit balances bias and variance, overfit has high variance. Below, total error is U-shaped in model complexity.</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="30" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">Bias–variance: complexity trades bias for variance</text>
+<text x="30" y="50" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Total error = Bias² + Variance + Noise. Lowest total error sits at the sweet spot.</text>
+<g>
+<rect x="30" y="64" width="238" height="230" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="149" y="88" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#b91c1c">Underfit</text>
+<text x="149" y="104" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">high bias, low variance</text>
+<line x1="55" y1="270" x2="245" y2="270" stroke="#d9dfd0"/>
+<line x1="55" y1="270" x2="55" y2="120" stroke="#d9dfd0"/>
+<path d="M55 230 C 100 210, 180 205, 245 195" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M55 230 L245 195" fill="none" stroke="#b91c1c" stroke-width="3"/>
+<g fill="#17251c">
+<circle cx="75" cy="195" r="5"/><circle cx="110" cy="215" r="5"/><circle cx="135" cy="170" r="5"/>
+<circle cx="165" cy="200" r="5"/><circle cx="195" cy="165" r="5"/><circle cx="220" cy="195" r="5"/>
+<circle cx="90" cy="160" r="5"/><circle cx="185" cy="185" r="5"/>
+</g>
+<text x="149" y="290" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">too simple: misses the shape</text>
+</g>
+<g>
+<rect x="281" y="64" width="238" height="230" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="400" y="88" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#15803d">Good fit</text>
+<text x="400" y="104" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">bias ≈ variance (balanced)</text>
+<line x1="306" y1="270" x2="496" y2="270" stroke="#d9dfd0"/>
+<line x1="306" y1="270" x2="306" y2="120" stroke="#d9dfd0"/>
+<path d="M306 230 C 340 190, 370 240, 400 195 C 425 158, 465 200, 496 180" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M306 230 C 340 190, 370 240, 400 195 C 425 158, 465 200, 496 180" fill="none" stroke="#15803d" stroke-width="3"/>
+<g fill="#17251c">
+<circle cx="326" cy="195" r="5"/><circle cx="361" cy="215" r="5"/><circle cx="386" cy="170" r="5"/>
+<circle cx="416" cy="200" r="5"/><circle cx="446" cy="165" r="5"/><circle cx="471" cy="195" r="5"/>
+<circle cx="341" cy="160" r="5"/><circle cx="436" cy="185" r="5"/>
+</g>
+<text x="400" y="290" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">follows shape, ignores noise</text>
+</g>
+<g>
+<rect x="532" y="64" width="238" height="230" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="651" y="88" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#6d28d9">Overfit</text>
+<text x="651" y="104" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">low bias, high variance</text>
+<line x1="557" y1="270" x2="747" y2="270" stroke="#d9dfd0"/>
+<line x1="557" y1="270" x2="557" y2="120" stroke="#d9dfd0"/>
+<path d="M557 230 C 590 190, 610 240, 635 195 C 660 158, 685 220, 710 175 C 725 155, 735 190, 747 180" fill="none" stroke="#334155" stroke-width="2" stroke-dasharray="5 4"/>
+<path d="M557 230 L585 178 L605 222 L625 162 L650 205 L672 150 L695 202 L720 165 L747 188" fill="none" stroke="#6d28d9" stroke-width="3"/>
+<g fill="#17251c">
+<circle cx="577" cy="198" r="5"/><circle cx="612" cy="222" r="5"/><circle cx="637" cy="168" r="5"/>
+<circle cx="667" cy="208" r="5"/><circle cx="697" cy="152" r="5"/><circle cx="722" cy="202" r="5"/>
+<circle cx="592" cy="165" r="5"/><circle cx="687" cy="190" r="5"/>
+</g>
+<text x="651" y="290" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">memorizes noise: train ↓, val ↑</text>
+</g>
+<g>
+<rect x="30" y="308" width="740" height="104" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="48" y="332" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" font-weight="800" fill="#17251c">Expected error vs model complexity</text>
+<line x1="70" y1="390" x2="740" y2="390" stroke="#17251c" stroke-width="1.5" marker-end="url(#arrB)"/>
+<line x1="70" y1="390" x2="70" y2="344" stroke="#17251c" stroke-width="1.5" marker-end="url(#arrB)"/>
+<text x="735" y="408" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">complexity ↑</text>
+<text x="34" y="352" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#59645a">err</text>
+<path d="M80 350 C 200 352, 300 356, 520 386 C 600 395, 680 398, 735 399" fill="none" stroke="#b91c1c" stroke-width="2.5"/>
+<path d="M80 352 C 220 356, 340 368, 520 382" fill="none" stroke="#15803d" stroke-width="2"/>
+<path d="M80 352 C 220 356, 340 368, 520 382" fill="none" stroke="#15803d" stroke-width="2" stroke-dasharray="4 3"/>
+<path d="M520 382 C 600 390, 680 392, 735 393" fill="none" stroke="#6d28d9" stroke-width="2"/>
+<path d="M520 382 C 600 390, 680 392, 735 393" fill="none" stroke="#6d28d9" stroke-width="2" stroke-dasharray="3 3"/>
+<text x="170" y="344" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#15803d">Bias² ↓</text>
+<text x="620" y="374" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#6d28d9">Variance ↑</text>
+<text x="335" y="376" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#b91c1c">Total err (U)</text>
+<line x1="430" y1="390" x2="430" y2="368" stroke="#b91c1c" stroke-width="2"/>
+<text x="430" y="362" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#b91c1c">★ optimum</text>
+</g>
+</svg>

@@ -1,0 +1,66 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="ML workflow showing train, validation, and test splits, and a leakage warning">
+<title>Train-validate-test workflow with leakage warning</title>
+<desc>Dataset is split into train, validation, and test. Train fits parameters, validation tunes hyperparameters, test is locked and reported once. Leakage warning: never fit preprocessing on full data.</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+<marker id="arrR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#b91c1c"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="30" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">Train → Validate → Test: three splits, three jobs</text>
+<text x="30" y="50" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Split first, then lock the test set. Any statistic learned from test is leakage.</text>
+<g>
+<rect x="255" y="66" width="290" height="52" rx="10" fill="#17251c"/>
+<text x="400" y="88" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="700" fill="#f1f4e9">Full dataset D</text>
+<text x="400" y="106" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#a1ada2">i.i.d. sample of the target population</text>
+<line x1="320" y1="118" x2="180" y2="150" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<line x1="400" y1="118" x2="400" y2="150" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<line x1="480" y1="118" x2="620" y2="150" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+</g>
+<g>
+<rect x="60" y="150" width="240" height="120" rx="10" fill="#1d4ed8" fill-opacity="0.12" stroke="#1d4ed8" stroke-width="2"/>
+<text x="180" y="174" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="800" fill="#1e3a8a">TRAIN  ~70%</text>
+<text x="180" y="193" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">fit parameters θ</text>
+<text x="180" y="211" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">forward → loss → backward → update</text>
+<text x="180" y="244" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">model sees labels</text>
+</g>
+<g>
+<rect x="320" y="150" width="160" height="120" rx="10" fill="#b45309" fill-opacity="0.12" stroke="#b45309" stroke-width="2"/>
+<text x="400" y="174" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="800" fill="#92400e">VALIDATION  ~15%</text>
+<text x="400" y="193" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">tune &amp; stop</text>
+<text x="400" y="211" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">learning rate, depth,</text>
+<text x="400" y="226" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">threshold, early stop</text>
+<text x="400" y="244" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">model never fits here</text>
+</g>
+<g>
+<rect x="500" y="150" width="240" height="120" rx="10" fill="#6d28d9" fill-opacity="0.12" stroke="#6d28d9" stroke-width="2"/>
+<text x="620" y="174" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="14" font-weight="800" fill="#5b21b6">TEST  ~15%  🔒</text>
+<text x="620" y="193" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">final report only</text>
+<text x="620" y="211" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">run once at the end,</text>
+<text x="620" y="226" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">then never tune on it</text>
+<text x="620" y="244" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">locked away during dev</text>
+</g>
+<g>
+<rect x="60" y="292" width="240" height="44" rx="8" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="180" y="310" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">θ ← θ − η·∇L(θ)</text>
+<text x="180" y="326" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#59645a">train loss ↓</text>
+<line x1="180" y1="270" x2="180" y2="292" stroke="#1d4ed8" stroke-width="2" marker-end="url(#arrB)"/>
+<rect x="320" y="292" width="160" height="44" rx="8" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="400" y="310" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">pick h* = argmin val loss</text>
+<text x="400" y="326" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#59645a">val curve decides</text>
+<line x1="400" y1="270" x2="400" y2="292" stroke="#b45309" stroke-width="2" marker-end="url(#arrB)"/>
+<rect x="500" y="292" width="240" height="44" rx="8" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="620" y="310" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#17251c">report metric ± CI + n</text>
+<text x="620" y="326" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="10" fill="#59645a">unbiased estimate</text>
+<line x1="620" y1="270" x2="620" y2="292" stroke="#6d28d9" stroke-width="2" marker-end="url(#arrB)"/>
+</g>
+<g>
+<rect x="30" y="356" width="740" height="64" rx="10" fill="#b91c1c" fill-opacity="0.08" stroke="#b91c1c" stroke-width="2" stroke-dasharray="6 4"/>
+<text x="48" y="380" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#b91c1c">⚠ LEAKAGE — fit preprocessing INSIDE Train only</text>
+<text x="48" y="400" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#17251c">Scale / impute / encode / mean using Train statistics, then apply to Val/Test. Never compute any statistic on the full data.</text>
+<line x1="620" y1="150" x2="220" y2="356" stroke="#b91c1c" stroke-width="2" stroke-dasharray="5 4" marker-end="url(#arrR)"/>
+</g>
+</svg>

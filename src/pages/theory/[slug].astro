@@ -93,6 +93,13 @@ const suggested = related.length ? related : sequence.filter((l) => l.slug !== l
               </div>
             )}
 
+            {section.figure && (
+              <figure class="lesson-figure">
+                <img src={section.figure.path} alt={section.figure.alt ?? section.figure.title} loading="lazy" />
+                <figcaption><span class="mono micro">{section.figure.title}</span>{section.figure.caption && <p>{section.figure.caption}</p>}</figcaption>
+              </figure>
+            )}
+
             {section.example && (
               <aside class="lesson-example">
                 <div class="lesson-example__icon"><FlaskConical size={15} /></div>
@@ -223,6 +230,10 @@ const suggested = related.length ? related : sequence.filter((l) => l.slug !== l
   .lesson-formula__note { padding: 0.55rem 0.85rem 0.7rem; color: var(--faint); font-size: 0.74rem; line-height: 1.6; }
 
   .code-block { margin: 1.2rem 0; border: 1px solid var(--line); border-radius: 9px; overflow: hidden; }
+  .lesson-figure { margin: 1.4rem 0; border: 1px solid var(--line); border-radius: 10px; overflow: hidden; background: var(--panel); }
+  .lesson-figure img { display: block; width: 100%; height: auto; }
+  .lesson-figure figcaption { padding: 0.65rem 0.9rem; border-top: 1px solid var(--line); color: var(--muted); font-size: 0.76rem; line-height: 1.6; }
+  .lesson-figure figcaption .mono { display: block; color: var(--acid); margin-bottom: 0.25rem; }
   .code-block__bar { display: flex; justify-content: space-between; padding: 0.45rem 0.75rem; border-bottom: 1px solid var(--line); background: var(--panel-2); color: var(--faint); font-size: 0.56rem; }
   .code-block pre { border: 0; border-radius: 0; margin: 0; }
   .code-block code { font-size: 0.78rem; }

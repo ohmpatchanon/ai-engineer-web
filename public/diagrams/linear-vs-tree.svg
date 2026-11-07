@@ -1,0 +1,83 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Linear boundary versus decision tree splits on the same scatter">
+<title>Linear boundary versus tree splits on the same scatter</title>
+<desc>Left: a single linear hyperplane w dot x plus b equals zero misclassifies an XOR pattern. Right: axis-aligned tree splits x1 and x2 separate the same points perfectly. Identical point positions in both panels.</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="30" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">Same scatter, two decision rules</text>
+<text x="30" y="50" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">XOR pattern: no single straight line can separate it, but two axis-aligned splits can.</text>
+<g>
+<rect x="30" y="66" width="350" height="320" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="48" y="92" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#17251c">Linear / logistic: one hyperplane</text>
+<text x="48" y="110" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">boundary: w·x + b = 0</text>
+<rect x="60" y="120" width="290" height="240" rx="6" fill="#f6f5ed" stroke="#d9dfd0"/>
+<polygon points="60,240 350,120 350,360 250,360" fill="#1d4ed8" fill-opacity="0.08"/>
+<line x1="60" y1="240" x2="350" y2="120" stroke="#b91c1c" stroke-width="3"/>
+<text x="250" y="175" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#b91c1c">w·x + b = 0</text>
+<g stroke="#17251c" stroke-width="2" fill="#1d4ed8">
+<circle cx="110" cy="160" r="8"/>
+<circle cx="150" cy="180" r="8"/>
+<circle cx="120" cy="210" r="8"/>
+<circle cx="160" cy="230" r="8"/>
+<circle cx="240" cy="280" r="8"/>
+<circle cx="280" cy="300" r="8"/>
+<circle cx="260" cy="330" r="8"/>
+<circle cx="310" cy="320" r="8"/>
+</g>
+<g stroke="#17251c" stroke-width="2" fill="#ffbe70">
+<rect x="250" y="152" width="16" height="16" rx="3"/>
+<rect x="290" y="172" width="16" height="16" rx="3"/>
+<rect x="270" y="202" width="16" height="16" rx="3"/>
+<rect x="100" y="282" width="16" height="16" rx="3"/>
+<rect x="140" y="302" width="16" height="16" rx="3"/>
+<rect x="120" y="330" width="16" height="16" rx="3"/>
+<rect x="160" y="272" width="16" height="16" rx="3"/>
+</g>
+<text x="220" y="258" font-family="ui-monospace, Menlo, monospace" font-size="11" font-weight="700" fill="#b91c1c">errors ×</text>
+<text x="48" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">Boundary is straight: fails on XOR</text>
+</g>
+<g>
+<rect x="420" y="66" width="350" height="320" rx="10" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="438" y="92" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#17251c">Decision tree: recursive axis splits</text>
+<text x="438" y="110" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">x1 ≤ t1?  x2 ≤ t2?  (staircase regions)</text>
+<rect x="450" y="120" width="290" height="240" rx="6" fill="#f6f5ed" stroke="#d9dfd0"/>
+<line x1="450" y1="120" x2="450" y2="360" stroke="#15803d" stroke-width="3"/>
+<line x1="450" y1="120" x2="740" y2="120" stroke="#15803d" stroke-width="3"/>
+<line x1="450" y1="360" x2="595" y2="240" stroke="#15803d" stroke-width="3"/>
+<line x1="595" y1="240" x2="740" y2="240" stroke="#15803d" stroke-width="3"/>
+<line x1="595" y1="240" x2="595" y2="360" stroke="#15803d" stroke-width="3"/>
+<line x1="595" y1="240" x2="740" y2="240" stroke="#15803d" stroke-width="3"/>
+<rect x="450" y="120" width="145" height="120" fill="#1d4ed8" fill-opacity="0.10"/>
+<rect x="595" y="240" width="145" height="120" fill="#1d4ed8" fill-opacity="0.10"/>
+<rect x="595" y="120" width="145" height="120" fill="#ffbe70" fill-opacity="0.25"/>
+<rect x="450" y="240" width="145" height="120" fill="#ffbe70" fill-opacity="0.25"/>
+<text x="505" y="175" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1e3a8a">class A</text>
+<text x="650" y="175" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#92400e">class B</text>
+<text x="505" y="295" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#92400e">class B</text>
+<text x="650" y="295" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#1e3a8a">class A</text>
+<g stroke="#17251c" stroke-width="2" fill="#1d4ed8">
+<circle cx="500" cy="160" r="8"/>
+<circle cx="540" cy="180" r="8"/>
+<circle cx="510" cy="210" r="8"/>
+<circle cx="550" cy="230" r="8"/>
+<circle cx="630" cy="280" r="8"/>
+<circle cx="670" cy="300" r="8"/>
+<circle cx="650" cy="330" r="8"/>
+<circle cx="700" cy="320" r="8"/>
+</g>
+<g stroke="#17251c" stroke-width="2" fill="#ffbe70">
+<rect x="640" y="152" width="16" height="16" rx="3"/>
+<rect x="680" y="172" width="16" height="16" rx="3"/>
+<rect x="660" y="202" width="16" height="16" rx="3"/>
+<rect x="490" y="282" width="16" height="16" rx="3"/>
+<rect x="530" y="302" width="16" height="16" rx="3"/>
+<rect x="510" y="330" width="16" height="16" rx="3"/>
+<rect x="550" y="272" width="16" height="16" rx="3"/>
+</g>
+<text x="438" y="402" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">Axis-aligned splits fit XOR exactly</text>
+</g>
+<text x="30" y="432" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">● class A   ■ class B   •  same coordinates in both panels. Linear = 1 cut; tree = recursive cuts.</text>
+</svg>

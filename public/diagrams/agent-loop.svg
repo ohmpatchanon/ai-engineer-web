@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 450" role="img" aria-label="Agent loop: plan, act, observe, reflect, with tools">
+<title>Agent loop: plan, act, observe, reflect</title>
+<desc>ReAct loop cycles through reasoning and action with tool calls, observations, and reflection. Tools are called via schema with validation, timeout, allowlist, and human approval for destructive actions. Loop stops on done, step limit, or error.</desc>
+<defs>
+<marker id="arrB" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#17251c"/>
+</marker>
+<marker id="arrG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+<path d="M0 0L10 5L0 10z" fill="#15803d"/>
+</marker>
+</defs>
+<rect width="800" height="450" rx="12" fill="#fdfef9" stroke="#d9dfd0" stroke-width="2"/>
+<text x="30" y="30" font-family="ui-sans-serif, system-ui, sans-serif" font-size="17" font-weight="800" fill="#17251c">Agent loop (ReAct): think, act, observe, reflect</text>
+<text x="30" y="50" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">LLM plans, calls a tool, reads the result, checks if it is done, and loops — with hard limits.</text>
+<g>
+<rect x="30" y="64" width="480" height="310" rx="12" fill="#ffffff" stroke="#d9dfd0" stroke-width="1.5"/>
+<text x="48" y="90" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">CONTROL LOOP</text>
+<rect x="180" y="100" width="180" height="52" rx="10" fill="#1d4ed8" fill-opacity="0.12" stroke="#1d4ed8" stroke-width="2"/>
+<text x="270" y="122" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#1e3a8a">① Plan</text>
+<text x="270" y="139" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#17251c">Thought: what next?</text>
+<rect x="320" y="190" width="130" height="64" rx="10" fill="#15803d" fill-opacity="0.12" stroke="#15803d" stroke-width="2"/>
+<text x="385" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#166534">② Act</text>
+<text x="385" y="231" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#17251c">tool_call(args)</text>
+<text x="385" y="244" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#59645a">validate + timeout</text>
+<rect x="180" y="270" width="180" height="52" rx="10" fill="#b45309" fill-opacity="0.12" stroke="#b45309" stroke-width="2"/>
+<text x="270" y="292" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#92400e">③ Observe</text>
+<text x="270" y="309" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#17251c">tool output → context</text>
+<rect x="80" y="190" width="130" height="64" rx="10" fill="#6d28d9" fill-opacity="0.12" stroke="#6d28d9" stroke-width="2"/>
+<text x="145" y="214" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="13" font-weight="800" fill="#5b21b6">④ Reflect</text>
+<text x="145" y="231" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#17251c">done? budget? error?</text>
+<text x="145" y="244" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="9" fill="#59645a">guardrails here</text>
+<path d="M310 152 L350 190" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<path d="M385 254 L320 270" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<path d="M180 290 L120 260" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<path d="M145 190 L200 150" stroke="#17251c" stroke-width="2" marker-end="url(#arrB)"/>
+<circle cx="270" cy="212" r="30" fill="#17251c"/>
+<text x="270" y="208" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" font-weight="800" fill="#f1f4e9">LLM</text>
+<text x="270" y="222" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="8" fill="#a1ada2">policy</text>
+<text x="270" y="340" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#b91c1c">stop: done OR steps ≥ max OR error</text>
+<text x="270" y="358" text-anchor="middle" font-family="ui-sans-serif, system-ui, sans-serif" font-size="11" fill="#59645a">log every call: tool, args, latency, result → trace</text>
+</g>
+<g>
+<rect x="530" y="64" width="240" height="310" rx="12" fill="#17251c"/>
+<text x="650" y="90" text-anchor="middle" font-family="ui-monospace, Menlo, monospace" font-size="11" letter-spacing="2" fill="#d3fa7c">TOOLS VIA SCHEMA</text>
+<rect x="548" y="104" width="204" height="52" rx="8" fill="#1f2b24" stroke="#334133"/>
+<text x="560" y="124" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#f1f4e9">search(query)</text>
+<text x="560" y="141" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#a1ada2">read-only · fast</text>
+<rect x="548" y="164" width="204" height="52" rx="8" fill="#1f2b24" stroke="#334133"/>
+<text x="560" y="184" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#f1f4e9">db.read(sql)</text>
+<text x="560" y="201" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#a1ada2">allowlist · read-only</text>
+<rect x="548" y="224" width="204" height="52" rx="8" fill="#1f2b24" stroke="#334133"/>
+<text x="560" y="244" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#f1f4e9">api.call(...)</text>
+<text x="560" y="261" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#a1ada2">validate args first</text>
+<rect x="548" y="284" width="204" height="52" rx="8" fill="#4a1f1a" stroke="#ff897a"/>
+<text x="560" y="304" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#ffb4a2">write / delete</text>
+<text x="560" y="321" font-family="ui-monospace, Menlo, monospace" font-size="10" fill="#ffb4a2">human approval req.</text>
+<line x1="450" y1="222" x2="548" y2="222" stroke="#15803d" stroke-width="2" stroke-dasharray="5 3" marker-end="url(#arrG)"/>
+</g>
+<text x="30" y="404" font-family="ui-sans-serif, system-ui, sans-serif" font-size="12" fill="#59645a">Start with a fixed workflow. Add autonomy only when you can trace and limit it: max 10–20 steps, per-tool timeouts.</text>
+<text x="30" y="424" font-family="ui-monospace, Menlo, monospace" font-size="11" fill="#59645a">example: Thought → query_orders(order_id) → {status: shipped} → Reflect → done</text>
+</svg>
